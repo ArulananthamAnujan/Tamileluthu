@@ -4,7 +4,7 @@
 
 alter table public.school_settings
   add column sub_required boolean not null default true,
-  add column sub_price_cents int not null default 1000 check (sub_price_cents between 50 and 10000000),
+  add column sub_price_cents int not null default 4500 check (sub_price_cents between 50 and 10000000),
   add column sub_currency text not null default 'aud' check (sub_currency ~ '^[a-z]{3}$'),
   add column sub_checks_per_month int not null default 0 check (sub_checks_per_month between 0 and 100000),
   add column sub_trial_checks int not null default 3 check (sub_trial_checks between 0 and 1000);
@@ -35,7 +35,7 @@ language plpgsql stable security definer set search_path = '' as $$
 declare st record; sub public.subscriptions; p_role text; used_total int; used_period int; since timestamptz; active boolean;
 begin
   select p.role into p_role from public.profiles p where p.id = owner;
-  select coalesce(sub_required, true) req, coalesce(sub_price_cents, 1000) price, coalesce(sub_currency, 'aud') cur,
+  select coalesce(sub_required, true) req, coalesce(sub_price_cents, 4500) price, coalesce(sub_currency, 'aud') cur,
          coalesce(sub_checks_per_month, 0) quota, coalesce(sub_trial_checks, 0) trial
     into st from public.school_settings where id = 1;
   if p_role = 'teacher' or not coalesce(st.req, true) then
