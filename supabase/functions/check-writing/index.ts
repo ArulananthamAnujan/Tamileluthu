@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
     const { data: claim, error: claimError } = await admin.rpc("claim_writing_check", { sid: sub.id, owner: user.id });
     if (claimError || !claim) return json({ error: "Could not start the check. Please retry." }, 503);
     if (claim.status === "forbidden") return json({ error: "You can only check your own writing." }, 403);
-    if (["limited", "busy"].includes(claim.status)) return json({ error: "Check limit reached or another check is running. Please try later." }, 429);
+    if (["limited", "busy"].includes(claim.status)) return json({ error: "The school has set a limit on how many checks each person can do. Please try again later, or ask the school admin." }, 429);
     if (["checked", "checking"].includes(claim.status)) return json({ ok: true, status: claim.status });
     if (claim.status !== "claimed" || !claim.token) return json({ error: "Could not start the check." }, 503);
     // @ts-ignore EdgeRuntime is provided by Supabase

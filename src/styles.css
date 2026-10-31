@@ -594,3 +594,4 @@ a.btn.disabled{opacity:.55}
   .wreport{box-shadow:none;border:0}
   .wr-doc{background:#f3f8f4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+.limits{border:1px solid var(--rule);border-radius:12px;padding:12px;margin:0}.limits legend{font-size:13px;color:var(--muted);padding:0 6px}.limits input{width:7em}

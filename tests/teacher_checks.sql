@@ -37,14 +37,13 @@ do $$ begin
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
--- Teachers get higher limits than students.
+-- Several checks in a row are allowed (no limits by default).
 do $$ declare i int; r jsonb; sid uuid; begin
   for i in 1..12 loop
     insert into public.submissions(id,student_id,input_mode,original_text,checked_for) values(gen_random_uuid(),'c0000000-0000-4000-8000-000000000001','text','x','n') returning id into sid;
     r := private.claim_writing_check(sid,'c0000000-0000-4000-8000-000000000001');
-    update public.submissions set status='checked' where id=sid;
-    if r->>'status'<>'claimed' then raise exception 'Teacher limited too early at %: %', i, r; end if;
+    if r->>'status'<>'claimed' then raise exception 'Parallel check % blocked: %', i, r; end if;
   end loop;
 end $$;
-select 'PASS: teacher checks private, class-scoped, higher limits; fixtures rolled back' as result;
+select 'PASS: teacher checks private, class-scoped, 12 checks running at once; fixtures rolled back' as result;
 rollback;

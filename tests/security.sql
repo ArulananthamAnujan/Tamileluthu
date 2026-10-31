@@ -73,6 +73,14 @@ do $$ declare r jsonb; begin
  update public.submissions set status='checked' where id='aaaaaaaa-1111-4111-8111-111111111111';
  r:=public.claim_writing_check('aaaaaaaa-1111-4111-8111-111111111111','11111111-1111-4111-8111-111111111111');
  if r->>'status'<>'checked' then raise exception 'Completed work repeated'; end if;
+ -- No limits by default: many attempts are still allowed.
+ insert into private.check_attempts(student_id,submission_id) select '22222222-2222-4222-8222-222222222222','aaaaaaaa-2222-4222-8222-222222222222' from generate_series(1,50);
+ r:=public.claim_writing_check('aaaaaaaa-2222-4222-8222-222222222222','22222222-2222-4222-8222-222222222222');
+ if r->>'status'<>'claimed' then raise exception 'Default should be unlimited: %',r; end if;
+ update public.submissions set status='error',check_token=null where id='aaaaaaaa-2222-4222-8222-222222222222';
+ delete from private.check_attempts where student_id='22222222-2222-4222-8222-222222222222';
+ -- Optional limits set by the admin are enforced.
+ update public.school_settings set check_limit_hour=10, check_limit_day=40, check_limit_per_writing=3 where id=1;
  -- Test retry ceiling independently of hourly ceiling.
  insert into private.check_attempts(student_id,submission_id,started_at) select '22222222-2222-4222-8222-222222222222','aaaaaaaa-2222-4222-8222-222222222222',now()-interval '2 days' from generate_series(1,3);
  r:=public.claim_writing_check('aaaaaaaa-2222-4222-8222-222222222222','22222222-2222-4222-8222-222222222222');

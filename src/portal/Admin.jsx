@@ -202,6 +202,10 @@ function School({ onSaved }) {
         address: (f.address || '').trim() || null, whatsapp_url: (f.whatsapp_url || '').trim() || null,
         logo_path: f.logo_path || null, hero_path: f.hero_path || null, updated_at: new Date().toISOString(),
       };
+      // Optional writing-check limits (0 = no limit); only once that migration has been applied.
+      if (f.check_limit_hour !== undefined) {
+        for (const k of ['check_limit_hour', 'check_limit_day', 'check_limit_per_writing']) row[k] = Math.max(0, Math.floor(Number(f[k]) || 0));
+      }
       if (!row.school_name) throw new Error(t('Enter the school’s name.'));
       if (row.whatsapp_url && !/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\//i.test(row.whatsapp_url)) throw new Error(t('The WhatsApp link should start with https://chat.whatsapp.com/'));
       if (files.logo) row.logo_path = await upload(files.logo);
@@ -231,6 +235,17 @@ function School({ onSaved }) {
         </div>
         <label className="field">{t('Address (where classes are held)')}<input value={f.address || ''} onChange={set('address')} maxLength={300} /></label>
         <label className="field">{t('WhatsApp group invite link')}<input value={f.whatsapp_url || ''} onChange={set('whatsapp_url')} placeholder="https://chat.whatsapp.com/…" /></label>
+        {f.check_limit_hour !== undefined && (
+          <fieldset className="limits">
+            <legend>{t('Writing check limits per person (0 = no limit)')}</legend>
+            <div className="row wrap">
+              <label className="field">{t('Per hour')}<input type="number" min="0" value={f.check_limit_hour ?? 0} onChange={set('check_limit_hour')} /></label>
+              <label className="field">{t('Per day')}<input type="number" min="0" value={f.check_limit_day ?? 0} onChange={set('check_limit_day')} /></label>
+              <label className="field">{t('Retries per piece of writing')}<input type="number" min="0" value={f.check_limit_per_writing ?? 0} onChange={set('check_limit_per_writing')} /></label>
+            </div>
+            <p className="small muted">{t('Every check is paid for on your Anthropic account. Leave these at 0 for no limit; set them only if checks are being wasted. You can also set a monthly spending cap in the Anthropic Console.')}</p>
+          </fieldset>
+        )}
       </section>
       <aside className="stack">
         <section className="card form">

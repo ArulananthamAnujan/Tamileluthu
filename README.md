@@ -57,6 +57,7 @@ Teachers can open **திருத்தி → Check writing myself**, type an
    - `supabase/migrations/20261101000000_school_portal.sql`: diary, attendance, listening, marks, reports, shop
    - `supabase/migrations/20261102000000_admin_settings_notifications.sql`: admin, school settings, parent phones, notifications
    - `supabase/migrations/20261103000000_teacher_checks_invites.sql`: teachers' own writing checks
+   - `supabase/migrations/20261104000000_unlimited_checks.sql`: no check limits, many checks at once (optional limits under Admin → School details)
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

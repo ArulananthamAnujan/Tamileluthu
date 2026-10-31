@@ -688,4 +688,10 @@ export default {
   "This writing is too long. Check up to 20,000 characters at a time.": "இந்த எழுத்து மிக நீளமானது. ஒரே நேரத்தில் 20,000 எழுத்துகள் வரை சரிபாருங்கள்.",
   "The check could not finish. Please retry.": "சரிபார்ப்பு முடியவில்லை. மீண்டும் முயலுங்கள்.",
   "A photo could not be opened. Please upload it again.": "ஒரு புகைப்படத்தைத் திறக்க முடியவில்லை. மீண்டும் பதிவேற்றுங்கள்.",
+  "The school has set a limit on how many checks each person can do. Please try again later, or ask the school admin.": "ஒவ்வொருவரும் செய்யக்கூடிய சரிபார்ப்புகளுக்குப் பள்ளி வரம்பு வைத்துள்ளது. பின்னர் முயலுங்கள், அல்லது பள்ளி நிர்வாகியிடம் கேளுங்கள்.",
+  "Writing check limits per person (0 = no limit)": "ஒருவருக்கான சரிபார்ப்பு வரம்புகள் (0 = வரம்பு இல்லை)",
+  "Per hour": "மணிக்கு",
+  "Per day": "நாளுக்கு",
+  "Retries per piece of writing": "ஒரு எழுத்துக்கு மீள் முயற்சிகள்",
+  "Every check is paid for on your Anthropic account. Leave these at 0 for no limit; set them only if checks are being wasted. You can also set a monthly spending cap in the Anthropic Console.": "ஒவ்வொரு சரிபார்ப்புக்கும் உங்கள் Anthropic கணக்கில் கட்டணம் உண்டு. வரம்பு வேண்டாமெனில் 0 ஆக விடுங்கள்; வீணாகும்போது மட்டும் அமையுங்கள். Anthropic Console இல் மாதாந்திரச் செலவு வரம்பையும் அமைக்கலாம்.",
 };
