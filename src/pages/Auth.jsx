@@ -28,10 +28,6 @@ export default function Auth() {
       } else if (mode === 'signup') {
         if (!name.trim()) throw new Error('Please enter your full name.');
         if (password.length < 8) throw new Error('Use a password of at least 8 characters.');
-        if (role === 'teacher') {
-          const { data: ok } = await supabase.rpc('is_teacher_email', { e: email });
-          if (!ok) throw new Error('This email is not registered as a teacher. Ask the school to add it.');
-        }
         const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { data: { full_name: name.trim(), role }, emailRedirectTo: window.location.origin },
@@ -87,3 +83,4 @@ export default function Auth() {
     </div>
   );
 }
+

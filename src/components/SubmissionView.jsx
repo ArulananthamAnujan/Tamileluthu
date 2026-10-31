@@ -36,14 +36,16 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
   const [showPhotos, setShowPhotos] = useState(false);
   const [comment, setComment] = useState(initial.teacher_comment || '');
   const [saving, setSaving] = useState('');
+  const [now, setNow] = useState(Date.now());
   const listRef = useRef(null);
 
   // Keep the result fresh while it is being checked.
   useEffect(() => {
     if (sub.status !== 'pending' && sub.status !== 'checking') return;
     const t = setInterval(async () => {
+      setNow(Date.now());
       const { data } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
-      if (data && data.status !== sub.status) { setSub(data); onChanged?.(data); }
+      if (data) { setSub(data); onChanged?.(data); }
     }, 4000);
     return () => clearInterval(t);
   }, [sub.id, sub.status]);
@@ -72,9 +74,10 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
 
   async function retry() {
     setSaving('Starting the check again…');
-    const { error } = await supabase.functions.invoke('check-writing', { body: { submission_id: sub.id } });
+    const { data: result, error } = await supabase.functions.invoke('check-writing', { body: { submission_id: sub.id } });
     if (error) { setSaving(errText(error)); return; }
-    setSub({ ...sub, status: 'checking', error: null }); setSaving('');
+    const { data: fresh } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
+    setSub(fresh || { ...sub, status: result?.status || 'checking', check_started_at: new Date().toISOString(), error: null }); setSaving('');
   }
   async function saveComment() {
     setSaving('Saving…');
@@ -86,6 +89,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
 
   const checking = sub.status === 'pending' || sub.status === 'checking';
   const text = sub.original_text || '';
+  const stale = sub.status === 'checking' && now - new Date(sub.check_started_at || sub.created_at).getTime() > 300000;
 
   return (
     <div className="stack">
@@ -96,7 +100,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
       <h2 className="title">{sub.title || 'Untitled writing'}</h2>
 
       {checking && (
-        <div className="card notice"><p><b>Checking…</b> {sub.input_mode === 'photo' ? 'Reading the handwriting, then marking it. ' : ''}This usually takes under a minute. This page updates by itself.</p></div>
+        <div className="card notice">{viewer === 'student' && (sub.status === 'pending' || stale) ? <><p>{stale ? 'The check timed out. You can retry safely.' : sub.error || 'Your writing is saved and ready to check.'}</p><button className="btn" disabled={saving === 'Starting the check again…'} onClick={retry}>Start / retry check</button></> : <p><b>Checking…</b> {sub.input_mode === 'photo' ? 'Reading the handwriting, then marking it. ' : ''}This usually takes under a minute. This page updates by itself.</p>}</div>
       )}
       {sub.status === 'error' && (
         <div className="card notice bad">
@@ -176,3 +180,4 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
     </div>
   );
 }
+

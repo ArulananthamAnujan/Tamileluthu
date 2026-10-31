@@ -34,6 +34,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
   async function submit() {
     setErr('');
     if (mode === 'photo' && !pages.length) { setErr('Add at least one photo of your writing.'); return; }
+    if (text.length > 20000) { setErr('Up to 20,000 characters per submission.'); return; }
     if (mode === 'text' && !text.trim()) { setErr('Type or paste your writing first.'); return; }
     try {
       let paths = [];
@@ -58,10 +59,11 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
         original_text: mode === 'text' ? text.trim() : null,
       }).select().single();
       if (error) throw error;
-      const { error: fErr } = await supabase.functions.invoke('check-writing', { body: { submission_id: data.id } });
-      if (fErr) throw fErr;
+      const { data: result, error: fErr } = await supabase.functions.invoke('check-writing', { body: { submission_id: data.id } });
+      // Keep the saved submission so retrying does not create duplicate uploads.
+      if (fErr) { onDone({ ...data, error: 'The check could not start. Please try again.' }); return; }
       pages.forEach((p) => URL.revokeObjectURL(p.url));
-      onDone({ ...data, status: 'checking' });
+      onDone({ ...data, status: result?.status || 'checking', check_started_at: new Date().toISOString() });
     } catch (e) {
       setErr(errText(e)); setBusy('');
     }
@@ -72,7 +74,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
       <div className="row between"><button className="btn small" onClick={onCancel}>← Back</button></div>
       <h2 className="title">New writing</h2>
       <div className="card form">
-        <label className="field">Title<input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Letter to my cousin" /></label>
+        <label className="field">Title<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Letter to my cousin" /></label>
         <label className="field">Text type
           <select id="ttype" value={type} onChange={(e) => setType(e.target.value)}>
             {TEXT_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
@@ -111,7 +113,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
             </div>
           </div>
         ) : (
-          <textarea id="wtext" className="write" rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder="உங்கள் தமிழ் எழுத்தை இங்கே ஒட்டவும்" />
+          <textarea id="wtext" maxLength={20000} className="write" rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder="உங்கள் தமிழ் எழுத்தை இங்கே ஒட்டவும்" />
         )}
 
         {err && <p className="error">{err}</p>}
@@ -122,3 +124,4 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
     </div>
   );
 }
+

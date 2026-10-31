@@ -142,3 +142,17 @@ If you build without the Supabase secrets, the app opens on a one-time **Connect
 **Keep `thiruthi-release.jks` and its password safe.** Without them you cannot release updates to installed apps or publish the same app on Google Play.
 
 Alternative: open the `android/` folder in Android Studio after copying `dist/` into `android/app/src/main/assets/www/`, then **Build → Build APK(s)**.
+
+
+## Security hardening (31 October 2026)
+
+Apply `supabase/migrations/20261031050145_harden_student_access.sql` after the initial schema and deploy **both** `index.ts` and `security.mjs` in `check-writing`. Deploy the updated frontend too: teacher allow-list checking now happens only in the signup trigger, and the interface supports retrying saved or expired checks.
+
+- Photo paths must belong to the submitting student, both at insertion and before checking. Downloads use the student's session and Storage RLS, never the service-role key.
+- Server limits: 10 pages, 20,000 characters, 10 MB per image and 20 MB combined images.
+- Work claims are serialized per student. One active check, 10 attempts/hour, 40/day and three attempts/submission. Usage survives submission deletion. Completed work is not charged again.
+- A five-minute lease permits recovery after interruption. Attempt tokens prevent old workers from overwriting newer work. Provider calls time out after 60 seconds; errors shown to students omit provider details.
+- Privileged database implementations live in the unexposed `private` schema. Public RPC wrappers use invoker permissions. Anonymous access and unused table privileges are revoked. Teacher allow-list and attempt-log tables deliberately have no client RLS policies.
+- Student text is explicitly treated as untrusted input to the AI. This reduces prompt manipulation risk but does not establish marking accuracy.
+
+Validation: `node --test tests/security.test.mjs`, `npm run build`, and `tests/security.sql` against a test database (the script rolls back all fixtures). Do not put service-role or Anthropic keys in frontend variables. The AI key and a valid provider model are still required for live marking tests.
