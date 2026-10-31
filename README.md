@@ -103,6 +103,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261104000000_unlimited_checks.sql`: no check limits, many checks at once (optional limits under Admin → School details)
    - `supabase/migrations/20261105000000_subscriptions.sql`: paid monthly access to the writing checker
    - `supabase/migrations/20261106000000_essay_marking.sql`: examiner-style essay marking (question, sections, practice mark)
+   - `supabase/migrations/20261107000000_report_files.sql`: private storage for report PDFs, shared as 30-day links when a phone blocks file sharing
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

@@ -5,7 +5,7 @@ import { callFn } from '../lib/scope.js';
 import { waLink } from '../lib/wa.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 import Icon from './Icon.jsx';
-import { createReportPdf, sharePdfFile, savePdfFile } from '../lib/reportPdf.js';
+import PdfShare from './PdfShare.jsx';
 import EssayFeedback, { SECTIONS, grade } from './EssayFeedback.jsx';
 
 function correctedText(text, issues) {
@@ -57,48 +57,6 @@ export default function WritingReport({ sub, studentName, onBack }) {
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
   const reportRef = useRef(null);
-  const [pdf, setPdf] = useState(null);
-  const [pdfBusy, setPdfBusy] = useState(false);
-  const [pdfMsg, setPdfMsg] = useState('');
-
-  // Prepare the PDF as soon as the report is on screen, so one tap shares it instantly.
-  async function makePdf() {
-    if (pdf) return pdf;
-    setPdfBusy(true);
-    try {
-      await new Promise((r) => setTimeout(r, 150));
-      const safe = (name || 'student').replace(/[^\w\u0B80-\u0BFF -]+/g, '').trim().replace(/\s+/g, '-').slice(0, 40) || 'student';
-      const file = await createReportPdf(reportRef.current, `writing-feedback-${safe}.pdf`);
-      setPdf(file);
-      return file;
-    } catch (err) {
-      console.error('PDF failed:', err);
-      setPdfMsg(t('Could not prepare the PDF. Please use Print / Save as PDF instead.'));
-      return null;
-    } finally { setPdfBusy(false); }
-  }
-  useEffect(() => { makePdf(); }, []);
-
-  async function share(whatsapp) {
-    setPdfMsg('');
-    const file = pdf || await makePdf();
-    if (!file) return;
-    const res = await sharePdfFile(file, { title: subject, text: whatsapp ? `${subject}` : '', whatsapp });
-    if (res === 'update_app') setPdfMsg(t('This copy of the app is too old to share files. Install the latest app (GitHub → Actions → Build Android app → TamilThiruthi-APK), or open the website in Chrome.'));
-    else if (String(res).startsWith('app_error')) setPdfMsg(t('The app could not share the PDF ({code}). Please try again.', { code: String(res).slice(10) }));
-    else if (res === 'shared') setPdfMsg(t('Choose WhatsApp, email or another app to send the PDF.'));
-    else if (res === 'retry') setPdfMsg(t('The PDF is ready. Tap the button again to send it.'));
-    else if (res === 'downloaded') setPdfMsg(whatsapp
-      ? t('PDF saved to your Downloads. In WhatsApp, tap the paperclip (📎) → Document and choose it.')
-      : t('PDF saved to your Downloads. Attach it in WhatsApp or email.'));
-  }
-  async function save() {
-    setPdfMsg('');
-    const file = pdf || await makePdf();
-    if (!file) return;
-    const res = await savePdfFile(file);
-    setPdfMsg(res === 'ok' ? t('Saved to Downloads.') : res === 'downloaded' ? t('PDF downloaded.') : res === 'update_app' ? t('This copy of the app is too old to save files. Install the latest app, or open the website in Chrome.') : res === 'shared' ? '' : t('Could not save the PDF. Please try Share PDF instead.'));
-  }
 
   const subject = `${t('Writing feedback')} · எழுத்துத் திருத்தம்: ${name}${sub.title ? ` – ${sub.title}` : ''}`;
   const mailBody = `${note ? `${note}\n\n` : ''}${reportText(sub, name, 1600)}`;
@@ -117,16 +75,10 @@ export default function WritingReport({ sub, studentName, onBack }) {
       <div className="row between wrap noprint">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <div className="row wrap">
-          <button className="btn primary sharepdf" disabled={false} onClick={() => share(false)}>
-            <Icon name="share" size={17} />{pdf ? t('Share PDF') : t('Preparing PDF…')}
-          </button>
-          <button className="btn wa" disabled={false} onClick={() => share(true)}><Icon name="whatsapp" size={17} />{t('WhatsApp PDF')}</button>
-          <button className="btn small" disabled={false} onClick={save}>{t('Save to phone')}</button>
-          <button className="btn small ghost" onClick={() => window.print()}>{t('Print')}</button>
+          <PdfShare targetRef={reportRef} title={subject} filename={`writing-feedback-${(name || 'student').replace(/\s+/g, '-')}.pdf`} />
         </div>
       </div>
 
-      {pdfMsg && <p className="small noprint" role="status">{pdfMsg}</p>}
       <form className="card form noprint send-report" onSubmit={send}>
         <h3>{t('Send this report by email')}</h3>
         <div className="row wrap">

@@ -809,4 +809,8 @@ export default {
   "Word choice": "சொல் தேர்வு",
   "Word spacing": "சொல் இடைவெளி",
   "Sentence structure": "வாக்கிய அமைப்பு",
+  "This phone’s browser does not allow sharing files, so here is a private link to the PDF (valid 30 days).": "இந்தக் கைபேசி உலாவி கோப்புகளைப் பகிர அனுமதிப்பதில்லை; எனவே PDF க்கான தனிப்பட்ட இணைப்பு இதோ (30 நாள் செல்லுபடியாகும்).",
+  "Send link on WhatsApp": "WhatsApp இல் இணைப்பை அனுப்பு",
+  "Copy link": "இணைப்பை நகலெடு",
+  "Open PDF": "PDF ஐத் திற",
 };

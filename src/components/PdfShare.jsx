@@ -8,6 +8,8 @@ export default function PdfShare({ targetRef, filename, title }) {
   const [pdf, setPdf] = useState(null);
   const [busy, setBusy] = useState(true);
   const [msg, setMsg] = useState('');
+  const [link, setLink] = useState(null);
+  const [copied, setCopied] = useState(false);
   async function make() {
     if (pdf) return pdf;
     setBusy(true);
@@ -20,14 +22,14 @@ export default function PdfShare({ targetRef, filename, title }) {
   }
   useEffect(() => { make(); }, []);
   async function share(whatsapp) {
-    setMsg('');
+    setMsg(''); setLink(null);
     const f = pdf || await make(); if (!f) return;
-    const res = await sharePdfFile(f, { title, text: whatsapp ? title : '', whatsapp });
-    if (res === 'update_app') setMsg(t('This copy of the app is too old to share files. Install the latest app (GitHub → Actions → Build Android app → TamilThiruthi-APK), or open the website in Chrome.'));
-    else if (String(res).startsWith('app_error')) setMsg(t('The app could not share the PDF ({code}). Please try again.', { code: String(res).slice(10) }));
-    else if (res === 'shared') setMsg(t('Choose WhatsApp, email or another app to send the PDF.'));
-    else if (res === 'retry') setMsg(t('The PDF is ready. Tap the button again to send it.'));
-    else if (res === 'downloaded') setMsg(whatsapp ? t('PDF saved to your Downloads. In WhatsApp, tap the paperclip (📎) → Document and choose it.') : t('PDF saved to your Downloads. Attach it in WhatsApp or email.'));
+    const r = await sharePdfFile(f, { title, text: title, whatsapp });
+    if (r.status === 'shared') setMsg(t('Choose WhatsApp, email or another app to send the PDF.'));
+    else if (r.status === 'link') { setLink(r.url); if (!whatsapp) setMsg(t('This phone’s browser does not allow sharing files, so here is a private link to the PDF (valid 30 days).')); }
+    else if (r.status === 'update_app') setMsg(t('This copy of the app is too old to share files. Install the latest app (GitHub → Actions → Build Android app → TamilThiruthi-APK), or open the website in Chrome.'));
+    else if (r.status === 'app_error') setMsg(t('The app could not share the PDF ({code}). Please try again.', { code: r.error }));
+    else if (r.status === 'downloaded') setMsg((whatsapp ? t('PDF saved to your Downloads. In WhatsApp, tap the paperclip (📎) → Document and choose it.') : t('PDF saved to your Downloads. Attach it in WhatsApp or email.')) + (r.error ? ` (${r.error})` : ''));
   }
   async function save() {
     setMsg('');
@@ -42,6 +44,13 @@ export default function PdfShare({ targetRef, filename, title }) {
       <button className="btn small" disabled={false} onClick={save}>{t('Save to phone')}</button>
       <button className="btn small ghost" onClick={() => window.print()}>{t('Print')}</button>
       {msg && <p className="small pdfmsg" role="status">{msg}</p>}
+      {link && (
+        <div className="pdflink">
+          <a className="btn wa" href={`https://wa.me/?text=${encodeURIComponent(`${title}\n${link}`)}`} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={17} />{t('Send link on WhatsApp')}</a>
+          <button className="btn small" onClick={async () => { try { await navigator.clipboard.writeText(link); setCopied(true); } catch { window.prompt(t('Copy this link:'), link); } }}>{copied ? t('Copied!') : t('Copy link')}</button>
+          <a className="btn small" href={link} target="_blank" rel="noopener noreferrer">{t('Open PDF')}</a>
+        </div>
+      )}
     </>
   );
 }

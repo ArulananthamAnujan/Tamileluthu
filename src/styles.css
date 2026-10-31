@@ -663,3 +663,4 @@ html[lang="ta"] .essay h4{font-family:var(--f-ta)}
 .essay-mark span{white-space:nowrap}
 .rewrite{background:color-mix(in srgb,var(--gold-soft) 55%,var(--paper));border-radius:14px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent)}
 .rewrite-text{white-space:pre-wrap;font-family:var(--f-ta);font-size:17px;line-height:1.9;background:var(--paper);border-radius:10px;padding:14px;margin:8px 0}
+.pdflink{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
