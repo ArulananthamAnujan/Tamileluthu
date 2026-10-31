@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n.js';
-import { supabase, errText } from '../supabase.js';
+import { supabase, errText, fnErrText } from '../supabase.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 import WritingReport from './WritingReport.jsx';
 import Icon from './Icon.jsx';
@@ -92,7 +92,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
   async function retry() {
     setSaving(t('Starting the check again…'));
     const { data: result, error } = await supabase.functions.invoke('check-writing', { body: { submission_id: sub.id } });
-    if (error) { setSaving(errText(error)); return; }
+    if (error) { setSaving(t(await fnErrText(error, 'check-writing'))); return; }
     const { data: fresh } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
     setSub(fresh || { ...sub, status: result?.status || 'checking', check_started_at: new Date().toISOString(), error: null }); setSaving('');
   }

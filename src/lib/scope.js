@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../supabase.js';
+import { supabase, fnErrText } from '../supabase.js';
 
 // Who and what the signed-in person can look at.
 //   teacher → their classes (one selected at a time)
@@ -54,11 +54,7 @@ export function useRoster(classId) {
 
 export async function callFn(name, body) {
   const { data, error } = await supabase.functions.invoke(name, { body });
-  if (error) {
-    let msg = error.message;
-    try { const j = await error.context?.json(); if (j?.error) msg = j.error; } catch { /* keep message */ }
-    throw new Error(msg);
-  }
+  if (error) throw new Error(await fnErrText(error, name));
   return data;
 }
 

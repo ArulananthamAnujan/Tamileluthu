@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { t } from '../i18n.js';
-import { supabase, errText } from '../supabase.js';
+import { supabase, errText, fnErrText } from '../supabase.js';
 import { TEXT_TYPES } from '../categories.js';
 import { shrinkPhoto } from '../image.js';
 
@@ -67,7 +67,7 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
       if (error) throw error;
       const { data: result, error: fErr } = await supabase.functions.invoke('check-writing', { body: { submission_id: data.id } });
       // Keep the saved submission so retrying does not create duplicate uploads.
-      if (fErr) { onDone({ ...data, error: 'The check could not start. Please try again.' }); return; }
+      if (fErr) { onDone({ ...data, error: await fnErrText(fErr, 'check-writing') }); return; }
       pages.forEach((p) => URL.revokeObjectURL(p.url));
       onDone({ ...data, status: result?.status || 'checking', check_started_at: new Date().toISOString() });
     } catch (e) {

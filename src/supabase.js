@@ -32,3 +32,20 @@ export function errText(e) {
   return m;
 }
 
+
+// Turn a failed Edge Function call into the function's own message (or a clear explanation).
+export async function fnErrText(error, name = 'server') {
+  if (!error) return '';
+  const res = error.context;
+  let body = null;
+  try { body = res && typeof res.clone === 'function' ? await res.clone().json() : null; } catch { /* not JSON */ }
+  if (body?.error) return body.error;
+  const status = res?.status;
+  if (status === 404) return `The ${name} function is not deployed yet. Ask the school admin to run: supabase functions deploy ${name}`;
+  if (status === 401) return 'Please sign out and sign in again.';
+  if (status === 546 || status === 500 || status === 502 || status === 503) {
+    return `The ${name} function could not start or crashed (error ${status}). Ask the school admin to redeploy it and check Supabase → Edge Functions → ${name} → Logs.`;
+  }
+  if (/Failed to send a request|Failed to fetch|NetworkError/i.test(error.message || '')) return 'Cannot reach the server. Check your internet connection.';
+  return status ? `${error.message} (error ${status})` : errText(error);
+}
