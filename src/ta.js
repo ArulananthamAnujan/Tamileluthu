@@ -796,4 +796,9 @@ export default {
   "PDF downloaded.": "PDF பதிவிறக்கப்பட்டது.",
   "Could not prepare the PDF. Please use Print / Save as PDF instead.": "PDF தயாரிக்க முடியவில்லை. அச்சிடு / PDF ஆகச் சேமி பயன்படுத்துங்கள்.",
   "“Share PDF” sends the report as a PDF file to WhatsApp, email, Drive or any app. “Send from school email” emails the report as a message.": "“PDF பகிர்” அறிக்கையை PDF கோப்பாக WhatsApp, மின்னஞ்சல், Drive அல்லது எந்தச் செயலிக்கும் அனுப்பும். “பள்ளி மின்னஞ்சலில் அனுப்பு” அறிக்கையைச் செய்தியாக அனுப்பும்.",
+  "This copy of the app is too old to share files. Install the latest app (GitHub → Actions → Build Android app → TamilThiruthi-APK), or open the website in Chrome.": "இந்தச் செயலி பழையது; கோப்புகளைப் பகிர முடியாது. புதிய செயலியை நிறுவுங்கள், அல்லது Chrome இல் இணையதளத்தைத் திறவுங்கள்.",
+  "The app could not share the PDF ({code}). Please try again.": "செயலியால் PDF ஐப் பகிர முடியவில்லை ({code}). மீண்டும் முயலுங்கள்.",
+  "Choose WhatsApp, email or another app to send the PDF.": "PDF அனுப்ப WhatsApp, மின்னஞ்சல் அல்லது வேறு செயலியைத் தேர்ந்தெடுங்கள்.",
+  "This copy of the app is too old to save files. Install the latest app, or open the website in Chrome.": "இந்தச் செயலி பழையது; கோப்புகளைச் சேமிக்க முடியாது. புதிய செயலியை நிறுவுங்கள், அல்லது Chrome இல் இணையதளத்தைத் திறவுங்கள்.",
+  "Could not save the PDF. Please try Share PDF instead.": "PDF ஐச் சேமிக்க முடியவில்லை. “PDF பகிர்” முயலுங்கள்.",
 };

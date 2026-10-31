@@ -83,7 +83,10 @@ export default function WritingReport({ sub, studentName, onBack }) {
     const file = pdf || await makePdf();
     if (!file) return;
     const res = await sharePdfFile(file, { title: subject, text: whatsapp ? `${subject}` : '', whatsapp });
-    if (res === 'retry') setPdfMsg(t('The PDF is ready. Tap the button again to send it.'));
+    if (res === 'update_app') setPdfMsg(t('This copy of the app is too old to share files. Install the latest app (GitHub → Actions → Build Android app → TamilThiruthi-APK), or open the website in Chrome.'));
+    else if (String(res).startsWith('app_error')) setPdfMsg(t('The app could not share the PDF ({code}). Please try again.', { code: String(res).slice(10) }));
+    else if (res === 'shared') setPdfMsg(t('Choose WhatsApp, email or another app to send the PDF.'));
+    else if (res === 'retry') setPdfMsg(t('The PDF is ready. Tap the button again to send it.'));
     else if (res === 'downloaded') setPdfMsg(whatsapp
       ? t('PDF saved to your Downloads. In WhatsApp, tap the paperclip (📎) → Document and choose it.')
       : t('PDF saved to your Downloads. Attach it in WhatsApp or email.'));
@@ -93,7 +96,7 @@ export default function WritingReport({ sub, studentName, onBack }) {
     const file = pdf || await makePdf();
     if (!file) return;
     const res = await savePdfFile(file);
-    setPdfMsg(res === 'ok' ? t('Saved to Downloads.') : res === 'downloaded' ? t('PDF downloaded.') : '');
+    setPdfMsg(res === 'ok' ? t('Saved to Downloads.') : res === 'downloaded' ? t('PDF downloaded.') : res === 'update_app' ? t('This copy of the app is too old to save files. Install the latest app, or open the website in Chrome.') : res === 'shared' ? '' : t('Could not save the PDF. Please try Share PDF instead.'));
   }
 
   const subject = `${t('Writing feedback')} · எழுத்துத் திருத்தம்: ${name}${sub.title ? ` – ${sub.title}` : ''}`;
@@ -113,11 +116,11 @@ export default function WritingReport({ sub, studentName, onBack }) {
       <div className="row between wrap noprint">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <div className="row wrap">
-          <button className="btn primary sharepdf" disabled={pdfBusy && !pdf} onClick={() => share(false)}>
+          <button className="btn primary sharepdf" disabled={false} onClick={() => share(false)}>
             <Icon name="share" size={17} />{pdf ? t('Share PDF') : t('Preparing PDF…')}
           </button>
-          <button className="btn wa" disabled={pdfBusy && !pdf} onClick={() => share(true)}><Icon name="whatsapp" size={17} />{t('WhatsApp PDF')}</button>
-          <button className="btn small" disabled={pdfBusy && !pdf} onClick={save}>{t('Save to phone')}</button>
+          <button className="btn wa" disabled={false} onClick={() => share(true)}><Icon name="whatsapp" size={17} />{t('WhatsApp PDF')}</button>
+          <button className="btn small" disabled={false} onClick={save}>{t('Save to phone')}</button>
           <button className="btn small ghost" onClick={() => window.print()}>{t('Print')}</button>
         </div>
       </div>

@@ -132,7 +132,7 @@ export default function Portal({ profile, setProfile, onSettings }) {
       <main id="main">{body}</main>
       <footer className="appfoot small muted noprint">
         {profile.role !== 'teacher' && <a href="#/subscription">{t('Subscription')}</a>}
-        <a href="#/contact">{t('About & contact')}</a><a href="#/privacy">{t('Privacy')}</a><a href="#/terms">{t('Terms & refunds')}</a>
+        <a href="#/contact">{t('About & contact')}</a><a href="#/privacy">{t('Privacy')}</a><a href="#/terms">{t('Terms & refunds')}</a><span className="ver">v{__BUILD__}</span>
       </footer>
     </>
   );

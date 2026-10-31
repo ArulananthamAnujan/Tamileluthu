@@ -65,13 +65,14 @@ const native = () => (typeof window !== 'undefined' ? window.ThiruthiNative : nu
  *  - Android app: the phone's share sheet, or WhatsApp directly when whatsapp is true.
  *  - Phones/tablets in a browser: the system share sheet (WhatsApp, email, Drive, Files…).
  *  - Computers: downloads the PDF (and opens WhatsApp Web for WhatsApp) so it can be attached.
- * Returns 'shared' | 'cancelled' | 'downloaded' | 'retry'.
+ * Returns 'shared' | 'cancelled' | 'downloaded' | 'retry' | 'update_app' | 'app_error:…'.
  */
 export async function sharePdfFile(file, { title = '', text = '', whatsapp = false } = {}) {
   const nb = native();
   if (nb?.sharePdf) {
     const res = nb.sharePdf(await fileToBase64(file), file.name, whatsapp ? 'whatsapp' : '');
     if (res === 'ok') return 'shared';
+    return `app_error:${res}`;
   }
   if (navigator.canShare?.({ files: [file] }) && navigator.share) {
     try {
@@ -82,6 +83,8 @@ export async function sharePdfFile(file, { title = '', text = '', whatsapp = fal
       if (e?.name === 'NotAllowedError') return 'retry'; // the browser wants a fresh tap
     }
   }
+  // An old copy of the Android app has no native sharing, and its web view ignores downloads.
+  if (/ThiruthiApp/.test(navigator.userAgent)) return 'update_app';
   downloadPdf(file);
   if (whatsapp) window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   return 'downloaded';
@@ -93,7 +96,9 @@ export async function savePdfFile(file) {
   if (nb?.savePdf) {
     const res = nb.savePdf(await fileToBase64(file), file.name);
     if (res === 'ok' || res === 'shared') return res;
+    return `app_error:${res}`;
   }
+  if (/ThiruthiApp/.test(navigator.userAgent)) return 'update_app';
   downloadPdf(file);
   return 'downloaded';
 }

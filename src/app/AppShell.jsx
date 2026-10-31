@@ -141,6 +141,7 @@ export default function AppShell({ profile, setProfile, onSettings }) {
               ))}
               <li><button onClick={() => { supabase.auth.signOut(); go(''); }}><Icon name="x" size={18} />{t('Sign out')}</button></li>
             </ul>
+            <p className="small muted ver">v{__BUILD__}{window.ThiruthiNative ? ' · app' : ''}</p>
           </div>
         </div>
       )}
