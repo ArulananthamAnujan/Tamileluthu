@@ -13,6 +13,10 @@ import Shop from './portal/Shop.jsx';
 import InstallButton from './components/InstallButton.jsx';
 import LangToggle from './components/LangToggle.jsx';
 import Bell from './components/Bell.jsx';
+import { isApp } from './app/isApp.js';
+import AppShell from './app/AppShell.jsx';
+import Welcome from './app/Welcome.jsx';
+import './app/prefs.js';
 
 const ROLE_LABEL = { student: 'Student', parent: 'Parent', teacher: 'Teacher' };
 const initials = (n) => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
@@ -68,6 +72,9 @@ export default function App() {
   if (session === undefined) return <div className="shell"><p className="muted">{t('Loading…')}</p></div>;
 
   if (!session) {
+    // The installed app gets its own welcome screens instead of the marketing website.
+    if (isApp && !['privacy', 'terms', 'contact'].includes(route.path)) return <Welcome />;
+    if (isApp) return <div className="ax-info"><button className="btn small" onClick={() => go('')}>← {t('Back')}</button><Info page={route.path} /></div>;
     if (!PUBLIC.includes(route.path)) return <Landing />;
     const page = route.path === 'shop' ? <Shop ctx={null} query={route.query} />
       : ['privacy', 'terms', 'contact'].includes(route.path) ? <Info page={route.path} />
@@ -94,6 +101,11 @@ export default function App() {
         }}>{t('Save new password')}</button>
       </div></div>
     );
+  }
+
+  if (isApp) {
+    if (!profile) return <div className="ax-loading"><span className="logo-mark">அ</span><p className="muted">{profileErr ? t('Your account has no profile. Sign out and create the account again, or contact your teacher.') : t('Loading your account…')}</p>{profileErr && <button className="btn" onClick={() => supabase.auth.signOut()}>{t('Sign out')}</button>}</div>;
+    return <AppShell profile={profile} setProfile={setProfile} onSettings={refreshSettings} />;
   }
 
   return (

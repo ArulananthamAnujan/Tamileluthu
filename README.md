@@ -17,6 +17,20 @@ The public home page and the paper catalogue can be browsed without an account.
 
 Everything is available in **English and Tamil** (globe button in the header; each person's choice is remembered). Teachers can **WhatsApp** parents directly (absences, results, reports) and share the diary with a class group. Everyone gets **in-app notifications** (bell) for new homework, listening exams, results, reports and teacher comments. A **principal/admin** area shows every class, manages teachers, and edits the school's name, logo, photo, contacts and WhatsApp group link without touching code.
 
+### The phone app is different from the website
+Inside the Android app, or when the site is added to a phone's home screen, people get an app layout instead of the website:
+- **Welcome screens** you swipe through (no marketing page), then sign in or create an account.
+- **Bottom tab bar** with a raised centre button for each role's main job: *Writing* for students, *Attendance* for teachers. A **More** sheet holds everything else.
+- **A personal home screen:**
+  - Students: "Next up" homework with a countdown and a *Mark as done* button, progress rings, and quick actions.
+  - Parents: their child's attendance, average mark and homework, with a switch between children.
+  - Teachers: today's checklist (roll call, homework posted, marks to send), quick actions and the class code to share.
+- **Tamil word of the day** with a 3-choice quiz, pronunciation (🔊) and a daily 🔥 streak, plus a **Thirukkural of the week**.
+- **Personalize:** colour theme (Peacock, Lotus, Mango, Ocean, Night), text size, language, a nickname for the greeting, and which home cards to show.
+- Pull down to refresh, a short vibration on taps, and phone safe-area support.
+
+To preview the app layout on a computer, open the site with `?app=1` (for example `https://yourdomain.com/?app=1`). Use `?app=0` to go back to the website.
+
 ### Launch checklist
 1. **Database.** In Supabase → SQL Editor, run these files in order. The first two are already applied on the current project.
    - `supabase/migrations/20261101000000_school_portal.sql`: diary, attendance, listening, marks, reports, shop

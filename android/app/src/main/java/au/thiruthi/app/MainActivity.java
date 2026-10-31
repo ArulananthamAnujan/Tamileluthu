@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(0xFF0E5E63);
+        getWindow().setStatusBarColor(0xFF0B3536);
 
         String startUrl = "https://" + LOCAL_HOST + "/index.html";
         String siteUrl = getString(R.string.app_url).trim();

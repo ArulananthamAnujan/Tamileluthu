@@ -17,7 +17,7 @@ import Parent from '../pages/Parent.jsx';
 import Teacher from '../pages/Teacher.jsx';
 import Icon from '../components/Icon.jsx';
 
-const NAV = [
+export const NAV = [
   ['today', 'Today', 'இன்று'],
   ['diary', 'Diary', 'நாட்குறிப்பு'],
   ['attendance', 'Attendance', 'வருகை'],
@@ -33,19 +33,15 @@ const NO_PICKER = ['writing', 'shop', 'account', 'admin', 'privacy', 'terms', 'c
 const remember = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* private mode */ } };
 const recall = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
 
-export default function Portal({ profile, setProfile, onSettings }) {
+// Shared by the website layout (Portal) and the phone app layout (AppShell).
+export function usePortal(profile) {
   const scope = useScope(profile);
-  const { path, query } = useHash();
-  const nav = profile.is_admin ? [...NAV, ['admin', 'Admin', 'நிர்வாகம்']] : NAV;
-  const section = nav.some(([k]) => k === path) || OTHER.includes(path) ? path : 'today';
   const [clsId, setClsId] = useState(() => recall('tt-class'));
   const [childId, setChildId] = useState(() => recall('tt-child'));
-
   const cls = profile.role === 'teacher' ? (scope.classes.find((c) => c.id === clsId) || scope.classes[0] || null) : null;
   const child = profile.role === 'parent' ? (scope.children.find((c) => c.id === childId) || scope.children[0] || null) : null;
   useEffect(() => { if (cls) remember('tt-class', cls.id); }, [cls?.id]);
   useEffect(() => { if (child) remember('tt-child', child.id); }, [child?.id]);
-  useEffect(() => { window.scrollTo(0, 0); }, [section]);
 
   // What the screens should show: one class (teacher) or one student and their classes.
   const ctx = useMemo(() => {
@@ -55,19 +51,34 @@ export default function Portal({ profile, setProfile, onSettings }) {
     const ids = scope.memberships.filter((m) => m.student_id === child?.id).map((m) => m.class_id);
     return { ...base, child, classIds: ids, studentId: child?.id || null, studentName: child?.full_name };
   }, [profile, scope, cls?.id, child?.id]);
+  return { scope, ctx, cls, child, setClsId, setChildId };
+}
 
-  let body;
-  if (scope.loading) body = <p className="muted">{t('Loading…')}</p>;
-  else if (section === 'writing') {
-    body = profile.role === 'student' ? <Student profile={profile} setProfile={setProfile} />
+export const SECTIONS = { today: Home, diary: Diary, attendance: Attendance, listening: Resources, marks: Marks, reports: Reports, shop: Shop };
+export function isSection(path, profile) {
+  return NAV.some(([k]) => k === path) || OTHER.includes(path) || (path === 'admin' && profile.is_admin);
+}
+
+export function SectionView({ section, ctx, query, profile, setProfile, onSettings, home }) {
+  if (ctx.scope.loading) return <p className="muted">{t('Loading…')}</p>;
+  if (section === 'writing') {
+    return profile.role === 'student' ? <Student profile={profile} setProfile={setProfile} />
       : profile.role === 'parent' ? <Parent profile={profile} /> : <Teacher profile={profile} />;
-  } else if (section === 'account') body = <Account ctx={ctx} setProfile={setProfile} />;
-  else if (section === 'admin') body = <Admin ctx={ctx} onSettings={onSettings} />;
-  else if (['privacy', 'terms', 'contact'].includes(section)) body = <Info page={section} />;
-  else {
-    const S = { today: Home, diary: Diary, attendance: Attendance, listening: Resources, marks: Marks, reports: Reports, shop: Shop }[section];
-    body = <S ctx={ctx} query={query} key={`${section}-${ctx.classIds.join()}-${ctx.studentId}`} />;
   }
+  if (section === 'account') return <Account ctx={ctx} setProfile={setProfile} />;
+  if (section === 'admin') return <Admin ctx={ctx} onSettings={onSettings} />;
+  if (['privacy', 'terms', 'contact'].includes(section)) return <Info page={section} />;
+  const S = section === 'today' && home ? home : SECTIONS[section] || Home;
+  return <S ctx={ctx} query={query} key={`${section}-${ctx.classIds.join()}-${ctx.studentId}`} />;
+}
+
+export default function Portal({ profile, setProfile, onSettings }) {
+  const { scope, ctx, cls, child, setClsId, setChildId } = usePortal(profile);
+  const { path, query } = useHash();
+  const nav = profile.is_admin ? [...NAV, ['admin', 'Admin', 'நிர்வாகம்']] : NAV;
+  const section = isSection(path, profile) ? path : 'today';
+  useEffect(() => { window.scrollTo(0, 0); }, [section]);
+  const body = <SectionView section={section} ctx={ctx} query={query} profile={profile} setProfile={setProfile} onSettings={onSettings} />;
   const ta = getLang() === 'ta';
 
   return (
