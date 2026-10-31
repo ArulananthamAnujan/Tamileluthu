@@ -54,6 +54,36 @@ ${note ? `<p style="border-left:3px solid #0E5E63;padding-left:10px;white-space:
   };
 }
 
+const SECTION_NAMES = [['introduction', 'Introduction · முன்னுரை'], ['body', 'Body · பொருளுரை'], ['conclusion', 'Conclusion · முடிவுரை']];
+const CRITERIA_NAMES = { relevance: 'Answering the question', structure: 'Structure', accuracy: 'Language accuracy', vocabulary: 'Vocabulary & expression', conventions: 'Text type & register' };
+const QSTATUS = { answered: 'Answers the question ✓', partly_answered: 'Partly answers the question', not_answered: 'Does not answer the question', no_question: 'Question not given' };
+
+// The examiner's assessment (question check, sections, practice mark) for emails.
+export function essayHtml(sub) {
+  const e = sub.essay;
+  if (!e) return '';
+  const pct = e.max ? Math.round((e.total / e.max) * 100) : null;
+  const sec = SECTION_NAMES.map(([k, label]) => {
+    const x = e.sections?.[k];
+    if (!x) return '';
+    return `<p style="margin:12px 0 4px"><b>${esc(label)}</b>${x.present ? '' : ' (missing)'}</p>
+${x.what_you_wrote ? `<p style="margin:0;color:#5B6B70;font-size:14px">${esc(x.what_you_wrote)}</p>` : ''}
+${(x.improvements || []).length ? `<ul style="margin:4px 0">${x.improvements.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}
+${x.example ? `<p style="margin:4px 0;background:#F2F8F3;padding:8px;border-radius:6px">${esc(x.example)}</p>` : ''}`;
+  }).join('');
+  const rub = (e.rubric || []).map((r) => `<tr><td style="padding:4px 8px 4px 0">${esc(CRITERIA_NAMES[r.criterion] || r.criterion)}</td><td style="padding:4px 0"><b>${Number(r.score)}/5</b></td></tr>`).join('');
+  return `<div style="border:1px solid #E7E0D2;border-radius:10px;padding:14px;margin:12px 0">
+${pct != null ? `<p style="font-size:20px;margin:0 0 6px"><b>${Number(e.total)}/${Number(e.max)}</b> (${pct}%) <span style="font-size:13px;color:#5B6B70">practice mark</span></p>` : ''}
+<p style="margin:0 0 6px"><b>${esc(QSTATUS[e.question_status] || '')}</b></p>
+${sub.question ? `<p style="margin:0 0 6px;font-size:14px">Question: ${esc(sub.question)}</p>` : ''}
+${e.question_feedback ? `<p style="margin:0 0 6px">${esc(e.question_feedback)}</p>` : ''}
+${e.inferred_question ? `<p style="margin:0 0 6px"><b>${esc(e.inferred_question)}</b></p>` : ''}
+${rub ? `<table style="border-collapse:collapse;font-size:14px;margin:6px 0">${rub}</table>` : ''}
+${sec}
+${e.overall ? `<p style="margin-top:12px">${esc(e.overall)}</p>` : ''}
+</div>`;
+}
+
 function corrected(text, issues) {
   let t = text || '';
   [...(issues || [])].filter((i) => i.start != null && i.correct).sort((a, b) => b.start - a.start)
@@ -71,6 +101,7 @@ export function writingReportEmail(ctx, sub, note) {
     subject: `Writing feedback · எழுத்துத் திருத்தம்: ${name}${sub.title ? ` – ${sub.title}` : ''}`,
     html: wrap({ ...ctx, site: '', footer: 'Sent by your Tamil teacher.' }, `<p><b>${esc(name)}</b>${sub.title ? ` · ${esc(sub.title)}` : ''}</p>
 ${note ? `<p style="border-left:3px solid #0E5E63;padding-left:10px;white-space:pre-wrap">${esc(note)}</p>` : ''}
+${essayHtml(sub)}
 ${sub.summary ? `<p>${esc(sub.summary)}</p>` : ''}
 <p><b>${issues.length} suggested correction${issues.length === 1 ? '' : 's'} · திருத்தங்கள்</b></p>
 ${issues.length ? `<table style="border-collapse:collapse;width:100%;font-size:15px">${rows}</table>` : '<p>No definite errors were found. நன்று!</p>'}

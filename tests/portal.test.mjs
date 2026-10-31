@@ -42,3 +42,13 @@ test('invite and writing-report emails are escaped and complete', () => {
   const r = writingReportEmail({ school: 'S', teacher: 'T' }, sub, '');
   assert.ok(r.subject.includes('Arun') && r.html.includes('நான் பள்ளிக்குப் போனேன்'));
 });
+
+import { essayHtml } from '../supabase/functions/_shared/emails.mjs';
+test('essay assessment appears in emails, escaped', () => {
+  const h = essayHtml({ question: '<q>', essay: { question_status: 'partly_answered', question_feedback: 'Covers <b>one</b> part', inferred_question: '',
+    total: 18, max: 25, rubric: [{ criterion: 'structure', score: 4 }],
+    sections: { introduction: { present: true, what_you_wrote: 'x', improvements: ['Add a hook'], example: 'அன்புள்ள நண்பா' }, body: { present: false, improvements: [] }, conclusion: null }, overall: 'Good' } });
+  assert.ok(h.includes('18/25') && h.includes('72%') && h.includes('Partly answers') && h.includes('Add a hook') && h.includes('(missing)'));
+  assert.ok(!h.includes('<q>') && !h.includes('<b>one</b>'));
+  assert.equal(essayHtml({ essay: null }), '');
+});

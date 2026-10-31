@@ -143,8 +143,103 @@ Reply with only one JSON object:
 {"text":"the exact transcription","unclear":["word (what it might be)"],"handwriting":["note"]}`;
 }
 
-function checkPrompt(text: string, type: string): string {
-  return `You are an experienced VCE Tamil teacher in Melbourne marking a student's writing. The student grew up speaking English, so many mistakes come from thinking in English. Identify definite errors in the Tamil text below. Do not invent an error or force a correction. Do not present optional stylistic preferences as mistakes.
+const STANDARDS: Record<string, string> = {
+  sri_lankan: "formal written Tamil (செந்தமிழ் / எழுத்துத் தமிழ்) as taught and examined in Sri Lankan schools (G.C.E. O/L and A/L Tamil). Sri Lankan written vocabulary, spelling and usage are CORRECT and must never be marked as errors (e.g. பாடசாலை, பரீட்சை, வைத்தியசாலை, வைத்தியர், கதைத்தல், பாவித்தல், அலுவலகம், கொழும்பு place names). Prefer Sri Lankan forms in suggestions and model sentences",
+  indian: "formal written Tamil as taught in Tamil Nadu schools. Sri Lankan written forms are also correct and must not be marked as errors",
+  international: "formal written Tamil. Both Sri Lankan and Indian written forms are correct",
+};
+const standardText = (k: string) => STANDARDS[k] || STANDARDS.sri_lankan;
+const langRule = (lang: string) => lang === "ta"
+  ? "Write every comment, rule, explanation and suggestion in clear, formal Sri Lankan written Tamil that a secondary student understands."
+  : "Write every comment, rule, explanation and suggestion in simple English that a 15–17-year-old understands. Quote the student's Tamil and give suggested Tamil wording in Tamil script.";
+
+const RUBRIC = ["relevance", "structure", "accuracy", "vocabulary", "conventions"];
+const SECTION_SCHEMA = {
+  type: "object", additionalProperties: false,
+  required: ["present", "what_you_wrote", "strengths", "improvements", "example"],
+  properties: {
+    present: { type: "boolean" },
+    what_you_wrote: { type: "string" },
+    strengths: { type: "array", items: { type: "string" } },
+    improvements: { type: "array", items: { type: "string" } },
+    example: { type: "string" },
+  },
+};
+const ESSAY_SCHEMA = {
+  type: "object", additionalProperties: false,
+  required: ["question_status", "question_feedback", "inferred_question", "text_type_feedback", "sections", "rubric", "overall", "next_steps", "useful_phrases"],
+  properties: {
+    question_status: { type: "string", enum: ["answered", "partly_answered", "not_answered", "no_question"] },
+    question_feedback: { type: "string" },
+    inferred_question: { type: "string" },
+    text_type_feedback: { type: "string" },
+    sections: {
+      type: "object", additionalProperties: false, required: ["introduction", "body", "conclusion"],
+      properties: { introduction: SECTION_SCHEMA, body: SECTION_SCHEMA, conclusion: SECTION_SCHEMA },
+    },
+    rubric: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false, required: ["criterion", "score", "comment"],
+        properties: { criterion: { type: "string", enum: RUBRIC }, score: { type: "integer" }, comment: { type: "string" } },
+      },
+    },
+    overall: { type: "string" },
+    next_steps: { type: "array", items: { type: "string" } },
+    useful_phrases: {
+      type: "array",
+      items: { type: "object", additionalProperties: false, required: ["tamil", "meaning"], properties: { tamil: { type: "string" }, meaning: { type: "string" } } },
+    },
+  },
+};
+
+// Examiner-style assessment of the whole piece: question, structure, rubric.
+function assessPrompt(text: string, type: string, question: string | null, standard: string, lang: string): string {
+  return `You are a senior Tamil examiner with many years of experience marking essays for Sri Lankan public examinations and for diaspora Tamil students (for example VCE Tamil in Australia). Mark the student's writing below like a fair, encouraging but honest examiner, to the standard of ${standardText(standard)}.
+
+Text type: ${type}.
+${question ? `The question / task the student says they were answering:
+"""
+${question}
+"""` : "The student did NOT give the question."}
+
+Do all of the following:
+1. Question check.
+${question
+  ? `- Decide whether the writing answers this question: "answered" (fully addresses every part), "partly_answered" (relevant but misses parts or drifts), or "not_answered" (off topic or a different question).
+- "question_feedback": say clearly whether the answer satisfies the question, which parts are covered and which are missing, quoting short phrases from the student's writing.
+- "inferred_question": if the writing does not match the question, state the question it actually seems to answer; otherwise an empty string.`
+  : `- Set "question_status" to "no_question".
+- "inferred_question": state, in Tamil and then in English, the type of question this writing seems to answer (for example "என் பாடசாலை பற்றி ஒரு கட்டுரை எழுதுக / Write an essay about your school").
+- "question_feedback": tell the student their answer reflects this type of question and ask them to confirm the real question so the marking can check it properly.`}
+2. "text_type_feedback": does it follow the conventions of the text type (for example a letter's address, date, greeting and sign-off; an article's headline; a speech's audience address)? Be specific.
+3. "sections": look at what the student ACTUALLY wrote in the introduction, the body and the conclusion. (For letters or speeches, treat the opening/greeting and first paragraph as the introduction and the closing/sign-off as the conclusion.) For each:
+   - "present": whether the section exists.
+   - "what_you_wrote": one or two sentences describing what this section actually says, quoting the student's own Tamil words.
+   - "strengths": 1–3 specific things done well.
+   - "improvements": 1–4 specific, actionable suggestions (ideas to add, better order, linking words, paragraphing, formality, missing points).
+   - "example": one improved model sentence or opening/closing in formal Tamil the student could use (in Tamil script), built from their own ideas. If the section is missing, write what it should contain and a model sentence.
+4. "rubric": exactly five entries, one for each criterion, each "score" an integer from 0 to 5, with a one-sentence "comment":
+   - "relevance": answers the question and task; ideas relevant and developed.
+   - "structure": clear introduction, logically ordered body paragraphs, conclusion; linking.
+   - "accuracy": spelling, புணர்ச்சி / வல்லினம், grammar, agreement, tense.
+   - "vocabulary": range and precision of vocabulary, idiom, avoidance of spoken Tamil and English words.
+   - "conventions": text type, register, audience and formality.
+5. "overall": three to four sentences of honest overall feedback: the strongest feature and the most important thing to fix next.
+6. "next_steps": 3–5 short, concrete actions for the next piece of writing.
+7. "useful_phrases": 4–6 formal Tamil phrases or linking expressions (Sri Lankan written style) that would lift this type of writing, each with its meaning.
+
+${langRule(lang)}
+Be specific to THIS student's writing: no generic advice. Do not invent content the student did not write.
+
+Student's writing:
+"""
+${text}
+"""`;
+}
+
+function checkPrompt(text: string, type: string, standard = "sri_lankan", lang = "en"): string {
+  return `You are a senior Tamil teacher and examiner marking a diaspora student's writing against ${standardText(standard)}. The student grew up speaking English, so many mistakes come from thinking in English. Identify definite errors in the Tamil text below. Do not invent an error or force a correction. Do not present optional stylistic preferences as mistakes.
 
 Text type the student was asked to write: ${type}.
 
@@ -163,10 +258,11 @@ Rules for each issue:
 - "wrong": copied EXACTLY, character for character, from the student's text: the smallest span that contains the error (usually one or two words; a whole clause only for word order or sentence-pattern errors). Never include line breaks.
 - "correct": the exact replacement for that span.
 - "category": one of: ${CATEGORIES.join(", ")}.
-- "rule": the general rule in one short sentence of simple English that a 17-year-old can remember.
-- "explain": at most 20 words of simple English on why this case breaks the rule.
+- "rule": the general rule in one short sentence a 15–17-year-old can remember.
+- "explain": at most 20 words on why this case breaks the rule.
+${langRule(lang)}
 - List issues in the order they appear. At most 40 issues.
-"summary": two short sentences of encouraging feedback in English: what the student did well and the one pattern to work on. Avoid technical claims about specific Tamil letters in this summary; put explanations only beside verified corrections.
+"summary": two short sentences of encouraging feedback: what the student did well and the one pattern to work on. Avoid technical claims about specific Tamil letters in this summary; put explanations only beside verified corrections.
 "focus": the category id the student should practise most.
 If there are no errors, return an empty issues array.
 
@@ -200,6 +296,30 @@ function locate(text: string, raw: any[]) {
   return out;
 }
 
+// Keep the assessment tidy: scores 0–5, known criteria, short lists.
+function cleanEssay(e: any) {
+  const str = (v: unknown, n = 2000) => (typeof v === "string" ? v.slice(0, n) : "");
+  const list = (v: unknown, n = 6) => (Array.isArray(v) ? v.map((x) => str(x, 600)).filter(Boolean).slice(0, n) : []);
+  const section = (x: any) => ({
+    present: Boolean(x?.present), what_you_wrote: str(x?.what_you_wrote, 1200),
+    strengths: list(x?.strengths, 4), improvements: list(x?.improvements, 5), example: str(x?.example, 800),
+  });
+  const seen = new Set<string>();
+  const rubric = (Array.isArray(e?.rubric) ? e.rubric : [])
+    .filter((r: any) => RUBRIC.includes(r?.criterion) && !seen.has(r.criterion) && seen.add(r.criterion))
+    .map((r: any) => ({ criterion: r.criterion, score: Math.max(0, Math.min(5, Math.round(Number(r.score) || 0))), comment: str(r.comment, 600) }));
+  return {
+    question_status: ["answered", "partly_answered", "not_answered", "no_question"].includes(e?.question_status) ? e.question_status : "no_question",
+    question_feedback: str(e?.question_feedback), inferred_question: str(e?.inferred_question, 600),
+    text_type_feedback: str(e?.text_type_feedback),
+    sections: { introduction: section(e?.sections?.introduction), body: section(e?.sections?.body), conclusion: section(e?.sections?.conclusion) },
+    rubric, total: rubric.reduce((a: number, r: any) => a + r.score, 0), max: rubric.length * 5,
+    overall: str(e?.overall), next_steps: list(e?.next_steps, 6),
+    useful_phrases: (Array.isArray(e?.useful_phrases) ? e.useful_phrases : []).slice(0, 8)
+      .map((p: any) => ({ tamil: str(p?.tamil, 200), meaning: str(p?.meaning, 300) })).filter((p: any) => p.tamil),
+  };
+}
+
 async function runCheck(sub: any, userClient: any, admin: any, token: string) {
   try {
     // Defense in depth before any privileged write or external AI call.
@@ -225,7 +345,16 @@ async function runCheck(sub: any, userClient: any, admin: any, token: string) {
     }
     if (!text.trim()) throw new CheckError(sub.input_mode === "photo" ? "No writing could be read in the photo. Take it closer, in good light, with the page flat." : "The writing is empty.");
     if (text.length > MAX_TEXT) throw new CheckError("This writing is too long. Check up to 20,000 characters at a time.");
-    const c = await askClaude([{ type: "text", text: checkPrompt(text, sub.text_type || "general writing") }], CHECK_SCHEMA);
+    const { data: settings } = await admin.from("school_settings").select("tamil_standard").eq("id", 1).maybeSingle();
+    const standard = settings?.tamil_standard || "sri_lankan";
+    const lang = sub.feedback_lang === "ta" ? "ta" : "en";
+    const type = sub.text_type || "general writing";
+    // The corrections and the examiner's assessment run at the same time.
+    const [c, essayRaw] = await Promise.all([
+      askClaude([{ type: "text", text: checkPrompt(text, type, standard, lang) }], CHECK_SCHEMA),
+      askClaude([{ type: "text", text: assessPrompt(text, type, sub.question || null, standard, lang) }], ESSAY_SCHEMA)
+        .catch((e) => { console.error("Essay assessment failed:", (e as Error).message); return null; }),
+    ]);
     if (!c || !Array.isArray(c.issues)) throw new CheckError("The checker's reply could not be read. Please retry.");
     const issues = locate(text, c.issues.slice(0, 40)).filter(i => i.start != null);
     const { data, error } = await admin.from("submissions").update({
@@ -233,6 +362,7 @@ async function runCheck(sub: any, userClient: any, admin: any, token: string) {
       summary: typeof c.summary === "string" ? c.summary.slice(0, 4000) : null,
       focus: CATEGORIES.includes(c.focus) ? c.focus : null,
       handwriting, unclear, status: "checked", error: null,
+      essay: essayRaw ? cleanEssay(essayRaw) : null,
       checked_at: new Date().toISOString(), check_token: null,
     }).eq("id", sub.id).eq("check_token", token).select("id");
     if (error) throw new Error("Could not save checking results.");

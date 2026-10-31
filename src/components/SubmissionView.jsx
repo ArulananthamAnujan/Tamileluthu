@@ -3,6 +3,7 @@ import { t } from '../i18n.js';
 import { supabase, errText, fnErrText } from '../supabase.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 import WritingReport from './WritingReport.jsx';
+import EssayFeedback from './EssayFeedback.jsx';
 import Icon from './Icon.jsx';
 
 // Apply every located fix to show a corrected version.
@@ -131,6 +132,13 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
         </div>
       )}
 
+      {sub.status === 'checked' && sub.essay && (
+        <EssayFeedback sub={sub} canEdit={owner} onRechecked={async () => {
+          const { data: fresh } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
+          if (fresh) { setSub(fresh); onChanged?.(fresh); }
+        }} />
+      )}
+      {sub.status === 'checked' && sub.essay && <h3 className="corr-head">{t('Line-by-line corrections')} · திருத்தங்கள்</h3>}
       {sub.status === 'checked' && (
         <div className="grid2">
           <section className="card flush">

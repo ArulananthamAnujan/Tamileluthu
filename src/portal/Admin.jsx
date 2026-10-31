@@ -206,6 +206,7 @@ function School({ onSaved }) {
         logo_path: f.logo_path || null, hero_path: f.hero_path || null, updated_at: new Date().toISOString(),
       };
       // Optional writing-check limits (0 = no limit); only once that migration has been applied.
+      if (f.tamil_standard !== undefined) row.tamil_standard = f.tamil_standard;
       if (f.check_limit_hour !== undefined) {
         for (const k of ['check_limit_hour', 'check_limit_day', 'check_limit_per_writing']) row[k] = Math.max(0, Math.floor(Number(f[k]) || 0));
       }
@@ -238,6 +239,15 @@ function School({ onSaved }) {
         </div>
         <label className="field">{t('Address (where classes are held)')}<input value={f.address || ''} onChange={set('address')} maxLength={300} /></label>
         <label className="field">{t('WhatsApp group invite link')}<input value={f.whatsapp_url || ''} onChange={set('whatsapp_url')} placeholder="https://chat.whatsapp.com/…" /></label>
+        {f.tamil_standard !== undefined && (
+          <label className="field">{t('Marking standard for written Tamil')}
+            <select value={f.tamil_standard} onChange={set('tamil_standard')}>
+              <option value="sri_lankan">{t('Sri Lankan written Tamil (default)')}</option>
+              <option value="indian">{t('Tamil Nadu (Indian) written Tamil')}</option>
+              <option value="international">{t('Both accepted equally')}</option>
+            </select>
+          </label>
+        )}
         {f.check_limit_hour !== undefined && (
           <fieldset className="limits">
             <legend>{t('Writing check limits per person (0 = no limit)')}</legend>

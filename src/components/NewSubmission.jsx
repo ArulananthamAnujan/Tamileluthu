@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { t } from '../i18n.js';
+import { t, getLang } from '../i18n.js';
 import { supabase, errText, fnErrText } from '../supabase.js';
 import { TEXT_TYPES } from '../categories.js';
 import { shrinkPhoto } from '../image.js';
@@ -10,6 +10,8 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
   const forTeacher = Array.isArray(roster);
   const [who, setWho] = useState('');
   const [title, setTitle] = useState('');
+  const [question, setQuestion] = useState('');
+  const [fbLang, setFbLang] = useState(getLang() === 'ta' ? 'ta' : 'en');
   const [type, setType] = useState(TEXT_TYPES[0][0]);
   const [mode, setMode] = useState('photo');
   const [pages, setPages] = useState([]);
@@ -63,6 +65,8 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
         input_mode: mode,
         photo_paths: paths,
         original_text: mode === 'text' ? text.trim() : null,
+        question: question.trim() || null,
+        feedback_lang: fbLang,
       }).select().single();
       if (error) throw error;
       const { data: result, error: fErr } = await supabase.functions.invoke('check-writing', { body: { submission_id: data.id } });
@@ -89,6 +93,17 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
           </label>
         )}
         <label className="field">{t('Title')}<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('e.g. Letter to my cousin')} /></label>
+        <label className="field">{t('Question or task (recommended)')}
+          <textarea rows={2} value={question} maxLength={2000} onChange={(e) => setQuestion(e.target.value)} lang="ta"
+            placeholder={t('e.g. “உங்கள் பாடசாலையில் நடைபெற்ற விளையாட்டுப் போட்டி பற்றி ஒரு கட்டுரை எழுதுக”')} />
+          <span className="small muted">{t('With the question, the examiner checks whether your answer really answers it.')}</span>
+        </label>
+        <div className="field">{t('Feedback language')}
+          <div className="tabs">
+            <button type="button" className={fbLang === 'en' ? 'on' : ''} onClick={() => setFbLang('en')}>English</button>
+            <button type="button" className={fbLang === 'ta' ? 'on' : ''} onClick={() => setFbLang('ta')}>தமிழ்</button>
+          </div>
+        </div>
         <label className="field">{t('Text type')}
           <select id="ttype" value={type} onChange={(e) => setType(e.target.value)}>
             {TEXT_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}

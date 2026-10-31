@@ -6,6 +6,7 @@ import { waLink } from '../lib/wa.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 import Icon from './Icon.jsx';
 import { createReportPdf, downloadPdf } from '../lib/reportPdf.js';
+import EssayFeedback, { SECTIONS, grade } from './EssayFeedback.jsx';
 
 function correctedText(text, issues) {
   let out = text || '';
@@ -17,9 +18,23 @@ function correctedText(text, issues) {
 // Plain-text version for WhatsApp and the person's own email app.
 export function reportText(sub, name, limit = 3500) {
   const issues = sub.issues || [];
+  const e = sub.essay;
+  const essayLines = !e ? [] : [
+    e.max ? `${t('Practice mark')}: ${e.total}/${e.max} (${Math.round((e.total / e.max) * 100)}%, ${grade(Math.round((e.total / e.max) * 100))})` : '',
+    sub.question ? `${t('Question')}: ${sub.question}` : '',
+    e.question_feedback || '',
+    e.inferred_question ? `→ ${e.inferred_question}` : '',
+    ...SECTIONS.flatMap(([k, en, ta]) => {
+      const x = e.sections?.[k];
+      return x ? [`*${en} · ${ta}*`, ...(x.improvements || []).map((i) => `- ${i}`)] : [];
+    }),
+    e.overall || '',
+  ].filter(Boolean);
   const lines = [
     `${SITE.school} · தமிழ் திருத்தி`,
     `${name || ''}${sub.title ? ` — ${sub.title}` : ''}`,
+    ...essayLines,
+    '',
     sub.summary || '',
     '',
     `${t('Suggested corrections')} (${issues.length}):`,
@@ -126,6 +141,7 @@ export default function WritingReport({ sub, studentName, onBack }) {
         </section>
         {sub.summary && <section><h3>{t('Feedback')} · கருத்து</h3><p>{sub.summary}</p>
           {issues.length > 0 && sub.focus && CATS[sub.focus] && <p><b>{t('Practise next:')}</b> {CATS[sub.focus].label}</p>}</section>}
+        {sub.essay && <EssayFeedback sub={sub} canEdit={false} />}
         <section>
           <h3>{t('Suggested corrections')} · திருத்தங்கள் ({issues.length})</h3>
           {!issues.length ? <p>{t('No definite errors were identified in this check.')} நன்று!</p> : (

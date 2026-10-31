@@ -49,6 +49,17 @@ Even without any setup, teachers can use **“Open in my email app”** (invites
 ### Teachers checking writing themselves
 Teachers can open **திருத்தி → Check writing myself**, type any student's name (with or without an account), and photograph or paste the work. The result is private to the teacher. **Report · PDF · Share** gives a printable report to download as a PDF, send on WhatsApp, open in your own email app, or send from the school mailbox.
 
+### Examiner-style essay marking
+Every check now gives two kinds of feedback:
+1. **An examiner's assessment**, marked against **Sri Lankan written Tamil** by default (change it under Admin → School details → *Marking standard*):
+   - **Question check.** If the student typed the question, it says whether the essay *answers*, *partly answers* or *does not answer* it, and why. If not, it says what kind of question the essay seems to answer and asks the student to confirm it (**Yes, that is my question**) or type the real one. The essay is then marked again.
+   - **Introduction, body and conclusion**: what the student actually wrote, what works, what to improve, and a model sentence in Tamil. A missing section is flagged.
+   - **Practice mark out of 25**: five criteria marked out of 5 (answering the question, structure, language accuracy, vocabulary, text type and register), with a percentage and grade. It is clearly labelled as a practice mark, not an official one.
+   - Text-type feedback, overall comment, next steps and useful Tamil phrases.
+2. **Line-by-line corrections** as before, judged by the same standard, so correct Sri Lankan forms (பாடசாலை, பரீட்சை, வைத்தியசாலை, கதைத்தல்…) are never marked wrong.
+
+Students choose **English or Tamil** for the feedback when they upload. The assessment also appears in the downloadable PDF report, the WhatsApp text and the emailed report.
+
 ### Monthly subscriptions for the writing checker
 Each student needs a monthly subscription to use தமிழ் திருத்தி. Teachers never pay, and homework, attendance, marks and reports stay free. Set it up under **Admin → Subscriptions**:
 - **Price per month** and currency.
@@ -90,6 +101,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261103000000_teacher_checks_invites.sql`: teachers' own writing checks
    - `supabase/migrations/20261104000000_unlimited_checks.sql`: no check limits, many checks at once (optional limits under Admin → School details)
    - `supabase/migrations/20261105000000_subscriptions.sql`: paid monthly access to the writing checker
+   - `supabase/migrations/20261106000000_essay_marking.sql`: examiner-style essay marking (question, sections, practice mark)
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)
