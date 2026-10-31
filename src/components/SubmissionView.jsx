@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n.js';
 import { supabase, errText } from '../supabase.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
+import WritingReport from './WritingReport.jsx';
+import Icon from './Icon.jsx';
 
 // Apply every located fix to show a corrected version.
 function correctedText(text, issues) {
@@ -29,7 +31,9 @@ function Highlighted({ text, issues, active, onPick }) {
   return <div className="doc">{parts}</div>;
 }
 
-export default function SubmissionView({ sub: initial, viewer, onBack, onChanged }) {
+export default function SubmissionView({ sub: initial, viewer, onBack, onChanged, studentName }) {
+  const owner = viewer === 'student' || viewer === 'checker';
+  const [report, setReport] = useState(false);
   const [sub, setSub] = useState(initial);
   const [active, setActive] = useState(null);
   const [showFixed, setShowFixed] = useState(false);
@@ -106,21 +110,24 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
 
   if (accessError) return <div className="card"><p>{accessError}</p><button className="btn" onClick={onBack}>{t('Back')}</button></div>;
 
+  if (report) return <WritingReport sub={sub} studentName={studentName || sub.checked_for} onBack={() => setReport(false)} />;
+
   return (
     <div className="stack">
-      <div className="row between">
+      <div className="row between wrap">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
+        {sub.status === 'checked' && <button className="btn small primary" onClick={() => setReport(true)}><Icon name="reports" size={15} />{t('Report · PDF · Share')}</button>}
         <span className="muted small">{typeLabel(sub.text_type)} · {fmtDate(sub.created_at)}</span>
       </div>
-      <h2 className="title">{sub.title || t('Untitled writing')}</h2>
+      <h2 className="title">{sub.checked_for ? <span className="for-name">{sub.checked_for} · </span> : null}{sub.title || t('Untitled writing')}</h2>
 
       {checking && (
-        <div className="card notice">{viewer === 'student' && (sub.status === 'pending' || stale) ? <><p>{stale ? t('The check timed out. You can retry safely.') : sub.error ? t(sub.error) : t('Your writing is saved and ready to check.')}</p><button className="btn" disabled={saving === t('Starting the check again…')} onClick={retry}>{t('Start / retry check')}</button></> : <p><b>{t('Checking…')}</b> {sub.input_mode === 'photo' ? t('Reading the handwriting, then marking it.') + ' ' : ''}{t('This usually takes under a minute. This page updates by itself.')}</p>}</div>
+        <div className="card notice">{owner && (sub.status === 'pending' || stale) ? <><p>{stale ? t('The check timed out. You can retry safely.') : sub.error ? t(sub.error) : t('Your writing is saved and ready to check.')}</p><button className="btn" disabled={saving === t('Starting the check again…')} onClick={retry}>{t('Start / retry check')}</button></> : <p><b>{t('Checking…')}</b> {sub.input_mode === 'photo' ? t('Reading the handwriting, then marking it.') + ' ' : ''}{t('This usually takes under a minute. This page updates by itself.')}</p>}</div>
       )}
       {sub.status === 'error' && (
         <div className="card notice bad">
           <p><b>{t('The check did not finish.')}</b> {sub.error ? t(sub.error) : ''}</p>
-          {viewer === 'student' && <button className="btn" onClick={retry}>{t('Check again')}</button>}
+          {owner && <button className="btn" onClick={retry}>{t('Check again')}</button>}
         </div>
       )}
 
@@ -160,7 +167,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
               {sub.unclear?.length > 0 && (<><p className="label">{t('Hard to read')}</p><ul>{sub.unclear.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
             </section>
 
-            <section className="card">
+            {viewer !== 'checker' && <section className="card">
               <h3>{t('Teacher’s comment')}</h3>
               {viewer === 'teacher' ? (
                 <>
@@ -170,7 +177,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
               ) : sub.teacher_comment
                 ? <p className="tcomment">{sub.teacher_comment}<span className="muted small"> · {fmtDate(sub.teacher_comment_at)}</span></p>
                 : <p className="muted">{t('No comment yet.')}</p>}
-            </section>
+            </section>}
 
             <section className="card" ref={listRef}>
               <h3>{t('Suggested corrections')} ({issues.length})</h3>
@@ -192,7 +199,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
           </aside>
         </div>
       )}
-      {saving && viewer === 'student' && <p className="muted small">{saving}</p>}
+      {saving && owner && <p className="muted small">{saving}</p>}
     </div>
   );
 }

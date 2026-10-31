@@ -217,7 +217,7 @@ function TeacherHome({ ctx }) {
     { done: d.drafts === 0, icon: 'marks', title: t('Marks to send'), sub: d.drafts ? t('{n} waiting', { n: d.drafts }) : t('All sent'), href: '#/marks' },
   ] : [];
   const doneCount = rows.filter((r) => r.done).length;
-  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.nameEn, url: siteLink('signup'), code: cls.join_code });
+  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.nameEn, url: `${window.location.origin}/#/join?code=${cls.join_code}`, code: cls.join_code });
 
   return (
     <div className="ax-stack">
@@ -246,7 +246,8 @@ function TeacherHome({ ctx }) {
       <section className="ax-card share-card">
         <div><span className="ax-kicker">{t('Class code')}</span><b className="ax-code">{cls.join_code}</b></div>
         <div className="row wrap">
-          <WaButton text={invite} label={t('Invite')} />
+          <a className="btn small primary" href="#/invite"><Icon name="invite" size={15} />{t('Invite')}</a>
+          <WaButton text={invite} />
           {d?.posts.length > 0 && <WaButton text={d.posts.map((a) => activityText(a, cls.name)).join('\n\n')} label={t('Share today')} />}
         </div>
       </section>

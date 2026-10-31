@@ -13,7 +13,7 @@ export default function SubmissionList({ subs, onOpen, empty }) {
         (s.issues || []).forEach((i) => c[catOf(i).g]++);
         return (
           <button key={s.id} className="subrow" onClick={() => onOpen(s)}>
-            <span className="subtitle">{s.title || t('Untitled writing')}</span>
+            <span className="subtitle">{s.checked_for ? <><b className="for-name">{s.checked_for}</b> · </> : null}{s.title || t('Untitled writing')}</span>
             <span className="muted small">{typeLabel(s.text_type)} · {fmtDate(s.created_at)}{s.teacher_comment ? ` · ${t('Teacher commented')}` : ''}</span>
             <span className="subcounts">
               <span className={`status s-${s.status}`}>{t(STATUS[s.status])}</span>

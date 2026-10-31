@@ -1,12 +1,11 @@
 // Emails parents when a teacher sends a report, marks or a class notice.
 // The teacher's own login decides what they may send (row level security);
 // the email addresses are looked up with the service role and never returned.
-// Secrets: RESEND_API_KEY, NOTIFY_FROM (e.g. "Tamil School <noreply@yourdomain.com>"), SITE_URL.
+// Email goes out from the school's own mailbox: see _shared/mail.ts for the SMTP secrets. Also SITE_URL.
 import { admin, caller, cors, json, siteUrl, UUID } from "../_shared/http.ts";
-import { reportEmail, marksEmail, noticeEmail } from "./emails.mjs";
+import { reportEmail, marksEmail, noticeEmail } from "../_shared/emails.mjs";
+import { mailReady, sendMails } from "../_shared/mail.ts";
 
-const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
-const FROM = Deno.env.get("NOTIFY_FROM") ?? "";
 const SCHOOL = Deno.env.get("SCHOOL_NAME") || "Tamil School";
 
 Deno.serve(async (req) => {
@@ -78,21 +77,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!RESEND || !FROM) {
+    if (!mailReady()) {
       await db.from(table).update({ notified_at: new Date().toISOString() }).eq("id", id);
       return json({ sent: 0, parents: messages.length, note: "Published in the portal. Email is not set up yet, so parents will see it when they sign in." });
     }
-    let sent = 0;
-    for (let i = 0; i < messages.length; i += 100) {
-      const batch = messages.slice(i, i + 100).map((m) => ({ from: FROM, to: [m.to], subject: m.subject, html: m.html }));
-      const res = await fetch("https://api.resend.com/emails/batch", {
-        method: "POST",
-        signal: AbortSignal.timeout(20000),
-        headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
-        body: JSON.stringify(batch),
-      });
-      if (res.ok) sent += batch.length;
-    }
+    const sent = await sendMails(messages, ctx.school);
     await db.from(table).update({ notified_at: new Date().toISOString() }).eq("id", id);
     return json({ sent, parents: messages.length, note: sent < messages.length ? "Some emails could not be sent." : undefined });
   } catch (_e) {

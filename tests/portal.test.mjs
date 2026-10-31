@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { verifyStripe } from '../supabase/functions/stripe-webhook/sign.mjs';
-import { esc, reportEmail, marksEmail, noticeEmail } from '../supabase/functions/notify-parents/emails.mjs';
+import { esc, reportEmail, marksEmail, noticeEmail } from '../supabase/functions/_shared/emails.mjs';
 
 const secret = 'whsec_test';
 const sign = (payload, t) => `t=${t},v1=${createHmac('sha256', secret).update(`${t}.${payload}`).digest('hex')}`;
@@ -29,4 +29,16 @@ test('parent emails escape teacher and student text', () => {
   assert.ok(marksEmail(ctx, 'Arun', { title: 'T', max_mark: 20 }, { mark: null, absent: true }).html.includes('Absent'));
   const n = noticeEmail(ctx, { title: 'Hi', body: 'a<b', link_url: 'https://e.org/?a="b"' });
   assert.ok(n.html.includes('a&lt;b') && !n.html.includes('"b"'));
+});
+
+import { inviteEmail, writingReportEmail } from '../supabase/functions/_shared/emails.mjs';
+test('invite and writing-report emails are escaped and complete', () => {
+  const inv = inviteEmail({ school: 'S', site: 'https://x.org', className: '<b>Y6</b>', teacher: 'T', code: 'AB12CD' }, '<script>');
+  assert.ok(inv.html.includes('https://x.org/#/join?code=AB12CD') && inv.html.includes('AB12CD'));
+  assert.ok(!inv.html.includes('<script>') && !inv.html.includes('<b>Y6</b>'));
+  const text = 'நான் பள்ளிக்கு போனேன்'; const w = 'பள்ளிக்கு'; const start = text.indexOf(w);
+  const sub = { checked_for: 'Arun', title: 'Letter', summary: 'Good', original_text: text,
+    issues: [{ wrong: w, correct: 'பள்ளிக்குப்', start, end: start + w.length, rule: 'Double after -க்கு' }] };
+  const r = writingReportEmail({ school: 'S', teacher: 'T' }, sub, '');
+  assert.ok(r.subject.includes('Arun') && r.html.includes('நான் பள்ளிக்குப் போனேன்'));
 });

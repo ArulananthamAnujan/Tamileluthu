@@ -12,10 +12,10 @@ const SLIDES = [
 ];
 
 // First screen of the app for people who are not signed in yet.
-export default function Welcome() {
+export default function Welcome({ joining = false }) {
   const lang = useLang();
   const [i, setI] = useState(0);
-  const [auth, setAuth] = useState(null);
+  const [auth, setAuth] = useState(joining ? 'signup' : null);
   const track = useRef(null);
   const goTo = (n) => { buzz(); setI(n); track.current?.children[n]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' }); };
   const onScroll = (e) => { const n = Math.round(e.target.scrollLeft / e.target.clientWidth); if (n !== i) setI(n); };
@@ -28,7 +28,7 @@ export default function Welcome() {
           <span className="spacer" />
           <button className="btn small" onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}><Icon name="globe" size={15} />{lang === 'ta' ? 'English' : 'தமிழ்'}</button>
         </div>
-        <Auth initial={auth} key={auth} />
+        <Auth initial={auth} joining={joining} key={auth} />
       </div>
     );
   }

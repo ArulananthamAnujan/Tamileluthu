@@ -12,6 +12,8 @@ import Shop from './Shop.jsx';
 import Account from './Account.jsx';
 import Admin from './Admin.jsx';
 import Info from '../pages/Info.jsx';
+import Invite from './Invite.jsx';
+import { supabase, errText } from '../supabase.js';
 import Student from '../pages/Student.jsx';
 import Parent from '../pages/Parent.jsx';
 import Teacher from '../pages/Teacher.jsx';
@@ -27,7 +29,7 @@ export const NAV = [
   ['writing', 'திருத்தி', 'Writing'],
   ['shop', 'Papers', 'வினாத்தாள்'],
 ];
-const OTHER = ['account', 'admin', 'privacy', 'terms', 'contact'];
+const OTHER = ['account', 'admin', 'privacy', 'terms', 'contact', 'invite'];
 const NO_PICKER = ['writing', 'shop', 'account', 'admin', 'privacy', 'terms', 'contact'];
 
 const remember = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* private mode */ } };
@@ -51,7 +53,20 @@ export function usePortal(profile) {
     const ids = scope.memberships.filter((m) => m.student_id === child?.id).map((m) => m.class_id);
     return { ...base, child, classIds: ids, studentId: child?.id || null, studentName: child?.full_name };
   }, [profile, scope, cls?.id, child?.id]);
-  return { scope, ctx, cls, child, setClsId, setChildId };
+  // Opened an invite link (#/join?code=…) before or after signing in: join that class.
+  const [joinMsg, setJoinMsg] = useState('');
+  useEffect(() => {
+    let code = null;
+    try { code = localStorage.getItem('tt-join'); } catch { /* private mode */ }
+    if (!code) return;
+    try { localStorage.removeItem('tt-join'); } catch { /* private mode */ }
+    if (profile.role !== 'student') { setJoinMsg(t('Invite links are for student accounts. Parents link with their child’s parent code.')); return; }
+    supabase.rpc('join_class', { code }).then(({ data, error }) => {
+      setJoinMsg(error ? errText(error) : t('You joined {name}.', { name: data }));
+      if (!error) scope.reload();
+    });
+  }, [profile.id]);
+  return { scope, ctx, cls, child, setClsId, setChildId, joinMsg, clearJoinMsg: () => setJoinMsg('') };
 }
 
 export const SECTIONS = { today: Home, diary: Diary, attendance: Attendance, listening: Resources, marks: Marks, reports: Reports, shop: Shop };
@@ -66,6 +81,7 @@ export function SectionView({ section, ctx, query, profile, setProfile, onSettin
       : profile.role === 'parent' ? <Parent profile={profile} /> : <Teacher profile={profile} />;
   }
   if (section === 'account') return <Account ctx={ctx} setProfile={setProfile} />;
+  if (section === 'invite') return <Invite ctx={ctx} />;
   if (section === 'admin') return <Admin ctx={ctx} onSettings={onSettings} />;
   if (['privacy', 'terms', 'contact'].includes(section)) return <Info page={section} />;
   const S = section === 'today' && home ? home : SECTIONS[section] || Home;
@@ -73,7 +89,7 @@ export function SectionView({ section, ctx, query, profile, setProfile, onSettin
 }
 
 export default function Portal({ profile, setProfile, onSettings }) {
-  const { scope, ctx, cls, child, setClsId, setChildId } = usePortal(profile);
+  const { scope, ctx, cls, child, setClsId, setChildId, joinMsg, clearJoinMsg } = usePortal(profile);
   const { path, query } = useHash();
   const nav = profile.is_admin ? [...NAV, ['admin', 'Admin', 'நிர்வாகம்']] : NAV;
   const section = isSection(path, profile) ? path : 'today';
@@ -110,6 +126,7 @@ export default function Portal({ profile, setProfile, onSettings }) {
           )}
         </div>
       )}
+      {joinMsg && <div className="card notice row between wrap" role="status"><span>{joinMsg}</span><button className="btn small" onClick={clearJoinMsg}>OK</button></div>}
       <main id="main">{body}</main>
       <footer className="appfoot small muted noprint">
         <a href="#/contact">{t('About & contact')}</a><a href="#/privacy">{t('Privacy')}</a><a href="#/terms">{t('Terms & refunds')}</a>

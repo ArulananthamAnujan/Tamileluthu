@@ -20,7 +20,7 @@ import './app/prefs.js';
 
 const ROLE_LABEL = { student: 'Student', parent: 'Parent', teacher: 'Teacher' };
 const initials = (n) => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
-const PUBLIC = ['signin', 'signup', 'shop', 'privacy', 'terms', 'contact'];
+const PUBLIC = ['signin', 'signup', 'join', 'shop', 'privacy', 'terms', 'contact'];
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -63,6 +63,14 @@ export default function App() {
     return () => { cancelled = true; };
   }, [session?.user.id]);
 
+  // Invite links: remember the class code until the person is signed in as a student.
+  useEffect(() => {
+    if (route.path !== 'join') return;
+    const code = (route.query.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (code) { try { localStorage.setItem('tt-join', code); } catch { /* private mode */ } }
+    if (session) go('today');
+  }, [route.path, session]);
+
   // After signing in from the sign-in page, continue where the visitor was going.
   useEffect(() => {
     if (session && (route.path === 'signin' || route.path === 'signup' || route.path === '')) go(route.query.get('next') || 'today');
@@ -73,16 +81,17 @@ export default function App() {
 
   if (!session) {
     // The installed app gets its own welcome screens instead of the marketing website.
-    if (isApp && !['privacy', 'terms', 'contact'].includes(route.path)) return <Welcome />;
+    const joining = route.path === 'join';
+    if (isApp && !['privacy', 'terms', 'contact'].includes(route.path)) return <Welcome joining={joining} key={route.path} />;
     if (isApp) return <div className="ax-info"><button className="btn small" onClick={() => go('')}>← {t('Back')}</button><Info page={route.path} /></div>;
     if (!PUBLIC.includes(route.path)) return <Landing />;
     const page = route.path === 'shop' ? <Shop ctx={null} query={route.query} />
       : ['privacy', 'terms', 'contact'].includes(route.path) ? <Info page={route.path} />
-      : <Auth initial={route.path} key={route.path} />;
+      : <Auth initial={joining ? 'signup' : route.path} joining={joining} key={route.path} />;
     return (
       <div className="site">
         <SiteHeader />
-        <div className={route.path === 'signin' || route.path === 'signup' ? 'auth-wrap' : 'shell page-pad'}>{page}</div>
+        <div className={['signin', 'signup', 'join'].includes(route.path) ? 'auth-wrap' : 'shell page-pad'}>{page}</div>
         <SiteFooter />
       </div>
     );

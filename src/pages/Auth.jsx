@@ -9,7 +9,7 @@ const ROLES = [
   ['teacher', 'Teacher', 'For school staff. Your email must be registered by the school admin.'],
 ];
 
-export default function Auth({ initial = 'signin' }) {
+export default function Auth({ initial = 'signin', joining = false }) {
   const [mode, setMode] = useState(initial);
   const [role, setRole] = useState('student');
   const [name, setName] = useState('');
@@ -52,6 +52,11 @@ export default function Auth({ initial = 'signin' }) {
           <button role="tab" aria-selected={mode === 'signin'} className={mode === 'signin' ? 'on' : ''} onClick={() => setMode('signin')}>{t('Sign in')}</button>
           <button role="tab" aria-selected={mode === 'signup'} className={mode === 'signup' ? 'on' : ''} onClick={() => setMode('signup')}>{t('Create account')}</button>
         </div>
+        {joining && (
+          <p className="card notice small" role="status">
+            {t('You have been invited to join a class. Create a Student account (or sign in), and you will be added to the class automatically.')}
+          </p>
+        )}
         <form onSubmit={submit} className="form">
           {mode === 'signup' && (
             <>

@@ -31,10 +31,32 @@ Inside the Android app, or when the site is added to a phone's home screen, peop
 
 To preview the app layout on a computer, open the site with `?app=1` (for example `https://yourdomain.com/?app=1`). Use `?app=0` to go back to the website.
 
+### Email from your own mailbox (free, no Resend needed)
+The site sends reports, results, notices, class invitations and writing feedback from **your school's own email account**. Set these once in Supabase → **Edge Functions → Secrets** (or with `supabase secrets set …`):
+
+| Secret | Hostinger Email | Gmail |
+|---|---|---|
+| `SMTP_HOST` | `smtp.hostinger.com` | `smtp.gmail.com` |
+| `SMTP_PORT` | `465` | `465` |
+| `SMTP_USER` | `office@yourschool.org` | `yourname@gmail.com` |
+| `SMTP_PASS` | the mailbox password | a Gmail **App Password** (Google Account → Security → 2-Step Verification → App passwords) |
+| `NOTIFY_FROM` (optional) | `Your School <office@yourschool.org>` | leave empty |
+
+Use port **465**: Supabase blocks 25 and 587. Gmail allows about 500 emails a day; a Hostinger mailbox has its own daily limit. The same mailbox can also send sign-up and password emails: see step 1b below (Supabase → Authentication → SMTP).
+
+Even without any setup, teachers can use **“Open in my email app”** (invites and writing reports), which opens their own Gmail/Outlook with everything written in.
+
+### Teachers checking writing themselves
+Teachers can open **திருத்தி → Check writing myself**, type any student's name (with or without an account), and photograph or paste the work. The result is private to the teacher. **Report · PDF · Share** gives a printable report to download as a PDF, send on WhatsApp, open in your own email app, or send from the school mailbox.
+
+### Inviting students
+**Invite students** is on the teacher's home screen. It shows the class code and a link (`…/#/join?code=ABC123`). Students who open the link and create a Student account join the class automatically. Share it by copying the link, on WhatsApp, from your own email app (BCC), or from the school mailbox.
+
 ### Launch checklist
 1. **Database.** In Supabase → SQL Editor, run these files in order. The first two are already applied on the current project.
    - `supabase/migrations/20261101000000_school_portal.sql`: diary, attendance, listening, marks, reports, shop
    - `supabase/migrations/20261102000000_admin_settings_notifications.sql`: admin, school settings, parent phones, notifications
+   - `supabase/migrations/20261103000000_teacher_checks_invites.sql`: teachers' own writing checks
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)
@@ -47,14 +69,13 @@ To preview the app layout on a computer, open the site with `?app=1` (for exampl
 4. **Server functions.**
    ```bash
    supabase functions deploy notify-parents
+   supabase functions deploy send-invites
+   supabase functions deploy email-report
+   supabase functions deploy check-writing
    supabase functions deploy shop-checkout
    supabase functions deploy stripe-webhook --no-verify-jwt
    ```
-5. **Parent emails** (reports, results and notices; written in English and Tamil) use [Resend](https://resend.com). Verify your domain there, then:
-   ```bash
-   supabase secrets set RESEND_API_KEY=re_... NOTIFY_FROM="Your School <noreply@yourdomain.com>" SITE_URL=https://yourdomain.com
-   ```
-   Without these, sending still publishes in the portal and creates notifications.
+5. **Email.** Add the SMTP secrets from *Email from your own mailbox* above. Without them, sending still publishes in the portal and creates notifications.
 6. **Paid papers (Stripe).** In Stripe → Developers → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/stripe-webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`, then:
    ```bash
    supabase secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_...

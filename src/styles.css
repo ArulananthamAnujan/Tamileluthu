@@ -571,3 +571,26 @@ html[lang="ta"] .title>.ta{display:none}
 }
 @media (max-width:420px){.tiles{grid-template-columns:1fr 1fr;gap:10px}.tile{padding:12px 14px}.tile-n{font-size:26px}}
 html[lang="ta"] .kicker,html[lang="ta"] .uname small,html[lang="ta"] .table th,html[lang="ta"] .label{letter-spacing:0;text-transform:none}
+
+/* ===== Invites, teacher checks, writing report ===== */
+.teacher-tabs{align-self:flex-start}
+.for-name{color:var(--accent);font-weight:700}
+.invite-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.invite-hero .kicker{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.invite-hero .bigcode{font-size:40px;margin:0!important}
+.invite-ways{display:flex;flex-direction:column;gap:10px}
+.invite-link{grid-column:1/-1;word-break:break-all;margin:0!important;padding:8px 12px;background:var(--bg);border-radius:10px}
+@media (max-width:560px){.invite-hero{grid-template-columns:1fr}}
+a.btn.disabled{opacity:.55}
+.send-report textarea{width:100%}
+.wr-table td{vertical-align:top}
+.wr-table .fix{font-size:17px}
+.wr-doc{border-radius:12px;padding:14px;font-size:17px;line-height:2}
+.ax-toast{position:sticky;top:calc(64px + env(safe-area-inset-top));z-index:14;margin:10px 14px 0;display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--ink);color:var(--paper);border-radius:14px;padding:10px 14px;font-size:14px;box-shadow:var(--shadow-lg)}
+.ax-toast button{border:0;background:none;color:inherit;cursor:pointer;display:grid;place-items:center}
+@media print{
+  .tabbar,.ax-top,.ax-toast,.teacher-tabs,.ptr,.appfoot,.send-report,.sheet-wrap{display:none!important}
+  .ax,.ax-main{padding:0!important;max-width:none}
+  .wreport{box-shadow:none;border:0}
+  .wr-doc{background:#f3f8f4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

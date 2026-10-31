@@ -6,7 +6,9 @@ import { shrinkPhoto } from '../image.js';
 
 const MAX_PAGES = 10;
 
-export default function NewSubmission({ profile, onDone, onCancel }) {
+export default function NewSubmission({ profile, onDone, onCancel, roster }) {
+  const forTeacher = Array.isArray(roster);
+  const [who, setWho] = useState('');
   const [title, setTitle] = useState('');
   const [type, setType] = useState(TEXT_TYPES[0][0]);
   const [mode, setMode] = useState('photo');
@@ -14,6 +16,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
+  const match = forTeacher ? roster.find((r) => r.full_name.trim().toLowerCase() === who.trim().toLowerCase()) : null;
 
   function addFiles(files) {
     const next = [...pages];
@@ -34,6 +37,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
 
   async function submit() {
     setErr('');
+    if (forTeacher && !who.trim()) { setErr(t('Type the student’s name.')); return; }
     if (mode === 'photo' && !pages.length) { setErr(t('Add at least one photo of your writing.')); return; }
     if (text.length > 20000) { setErr(t('Up to 20,000 characters per submission.')); return; }
     if (mode === 'text' && !text.trim()) { setErr(t('Type or paste your writing first.')); return; }
@@ -53,7 +57,8 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
       setBusy(t('Sending for checking…'));
       const { data, error } = await supabase.from('submissions').insert({
         student_id: profile.id,
-        title: title.trim() || 'Untitled writing',
+        title: title.trim() || (forTeacher ? '' : 'Untitled writing'),
+        ...(forTeacher ? { checked_for: who.trim().slice(0, 120), for_student: match?.id || null } : {}),
         text_type: type,
         input_mode: mode,
         photo_paths: paths,
@@ -73,9 +78,16 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
   return (
     <div className="stack">
       <div className="row between"><button className="btn small" onClick={onCancel}>← {t('Back')}</button></div>
-      <h2 className="title">{t('New writing')}</h2>
-      <p className="muted small">{t('Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.')}</p>
+      <h2 className="title">{forTeacher ? t('Check a student’s writing') : t('New writing')}</h2>
+      <p className="muted small">{forTeacher ? t('The writing and photos are sent to Anthropic for AI feedback. The result is private to you until you send the report.') : t('Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.')}</p>
       <div className="card form">
+        {forTeacher && (
+          <label className="field">{t('Student’s name')}
+            <input value={who} onChange={(e) => setWho(e.target.value)} list="tt-roster" maxLength={120} autoComplete="off" placeholder={t('e.g. Arun Kumar')} />
+            <datalist id="tt-roster">{roster.map((r) => <option key={r.id} value={r.full_name} />)}</datalist>
+            {match && <span className="small okc">✓ {t('In your class')}</span>}
+          </label>
+        )}
         <label className="field">{t('Title')}<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('e.g. Letter to my cousin')} /></label>
         <label className="field">{t('Text type')}
           <select id="ttype" value={type} onChange={(e) => setType(e.target.value)}>

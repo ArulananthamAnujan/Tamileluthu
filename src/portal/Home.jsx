@@ -62,7 +62,7 @@ function TeacherHome({ ctx }) {
   }, [cls.id]);
   const todays = (items || []).filter((a) => a.on_date === isoDay());
   const shareToday = todays.length ? todays.map((a) => activityText(a, cls.name)).join('\n\n') : '';
-  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.nameEn, url: siteLink('signup'), code: cls.join_code });
+  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.school, url: `${window.location.origin}/#/join?code=${cls.join_code}`, code: cls.join_code });
 
   return (
     <div className="stack">
@@ -88,7 +88,7 @@ function TeacherHome({ ctx }) {
           <section className="card">
             <h3>{cls.name}</h3>
             <p className="small">{t('Class code')}: <b className="code-inline">{cls.join_code}</b></p>
-            <div className="row wrap"><WaButton text={invite} label={t('Invite students')} /></div>
+            <div className="row wrap"><a className="btn small primary" href="#/invite"><Icon name="invite" size={15} />{t('Invite students')}</a><WaButton text={invite} /></div>
             <p className="label">{t('{n} students', { n: roster.length })}</p>
             {roster.length > 0 && (
               <ul className="plain roster">{roster.map((s) => (

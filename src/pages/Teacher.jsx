@@ -5,8 +5,75 @@ import { CATS, tally, fmtDate } from '../categories.js';
 import SubmissionList from '../components/SubmissionList.jsx';
 import SubmissionView from '../components/SubmissionView.jsx';
 import Progress from '../components/Progress.jsx';
+import NewSubmission from '../components/NewSubmission.jsx';
+import Icon from '../components/Icon.jsx';
 
+const remembered = () => { try { return localStorage.getItem('tt-teacher-tab') || 'class'; } catch { return 'class'; } };
+
+// Teachers see their class's writing, or check any student's writing themselves.
 export default function Teacher({ profile }) {
+  const [tab, setTab] = useState(remembered);
+  const pick = (k) => { setTab(k); try { localStorage.setItem('tt-teacher-tab', k); } catch { /* private mode */ } };
+  return (
+    <div className="stack">
+      <div className="tabs teacher-tabs" role="tablist">
+        <button role="tab" aria-selected={tab === 'class'} className={tab === 'class' ? 'on' : ''} onClick={() => pick('class')}>{t('Class writing')}</button>
+        <button role="tab" aria-selected={tab === 'mine'} className={tab === 'mine' ? 'on' : ''} onClick={() => pick('mine')}>{t('Check writing myself')}</button>
+      </div>
+      {tab === 'mine' ? <MyChecks profile={profile} /> : <ClassWriting profile={profile} />}
+    </div>
+  );
+}
+
+function MyChecks({ profile }) {
+  const [subs, setSubs] = useState(null);
+  const [roster, setRoster] = useState([]);
+  const [view, setView] = useState({ name: 'list' });
+  const [q, setQ] = useState('');
+
+  async function load() {
+    const { data } = await supabase.from('submissions').select('*').eq('student_id', profile.id).order('created_at', { ascending: false });
+    setSubs(data || []);
+  }
+  useEffect(() => {
+    load();
+    supabase.from('classes').select('id, class_members(student:profiles(id, full_name))').eq('teacher_id', profile.id).then(({ data }) => {
+      const seen = new Map();
+      (data || []).forEach((c) => (c.class_members || []).forEach((m) => m.student && seen.set(m.student.id, m.student)));
+      setRoster([...seen.values()].sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    });
+  }, []);
+  const upsert = (sub) => setSubs((list) => [sub, ...(list || []).filter((x) => x.id !== sub.id)]);
+
+  if (view.name === 'new') return <NewSubmission profile={profile} roster={roster} onCancel={() => setView({ name: 'list' })} onDone={(sub) => { upsert(sub); setView({ name: 'sub', sub }); }} />;
+  if (view.name === 'sub') return <SubmissionView sub={view.sub} viewer="checker" studentName={view.sub.checked_for} onBack={() => { setView({ name: 'list' }); load(); }} onChanged={upsert} />;
+
+  const shown = (subs || []).filter((x) => !q || `${x.checked_for || ''} ${x.title}`.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="grid2">
+      <section className="card">
+        <div className="row between wrap">
+          <h3>{t('My checks')}</h3>
+          <button className="btn primary" onClick={() => setView({ name: 'new' })}>+ {t('Check new writing')}</button>
+        </div>
+        {(subs || []).length > 4 && <input type="search" className="grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Search by student name')} aria-label={t('Search by student name')} style={{ width: '100%', margin: '8px 0' }} />}
+        {!subs ? <p className="muted">{t('Loading…')}</p>
+          : <SubmissionList subs={shown} onOpen={(sub) => setView({ name: 'sub', sub })} empty={t('Nothing checked yet. Press “Check new writing”, type the student’s name and take a photo of their page.')} />}
+      </section>
+      <aside className="card notice">
+        <h3><Icon name="writing" size={18} /> {t('How it works')}</h3>
+        <ol className="small steps">
+          <li>{t('Type the student’s name (any student, even if they have no account).')}</li>
+          <li>{t('Photograph their pages or paste the text, then check.')}</li>
+          <li>{t('Open the result and press “Report” to download a PDF, WhatsApp it or email it to the student or parent.')}</li>
+        </ol>
+        <p className="small muted">{t('These checks are private to you. Students and parents only see what you send them.')}</p>
+      </aside>
+    </div>
+  );
+}
+
+function ClassWriting({ profile }) {
   const [classes, setClasses] = useState([]);
   const [cls, setCls] = useState(null);
   const [members, setMembers] = useState([]);
@@ -56,7 +123,7 @@ export default function Teacher({ profile }) {
   }), [members, subs]);
 
   const update = (s) => setSubs((list) => list.map((x) => (x.id === s.id ? s : x)));
-  if (open) return <SubmissionView sub={open} viewer="teacher" onBack={() => setOpen(null)} onChanged={update} />;
+  if (open) return <SubmissionView sub={open} viewer="teacher" studentName={members.find((m) => m.student_id === open.student_id)?.student.full_name} onBack={() => setOpen(null)} onChanged={update} />;
 
   if (student) {
     const own = subs.filter((s) => s.student_id === student.id);

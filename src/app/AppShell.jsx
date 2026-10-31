@@ -21,7 +21,7 @@ const EXTRA = [['account', 'My account', 'என் கணக்கு'], ['pers
 const ICON = { personalize: 'star', contact: 'school', privacy: 'lock', terms: 'reports' };
 
 const label = (k) => {
-  const n = [...NAV, ['admin', 'Admin', 'நிர்வாகம்'], ...EXTRA].find(([key]) => key === k);
+  const n = [...NAV, ['admin', 'Admin', 'நிர்வாகம்'], ['invite', 'Invite students', 'மாணவர்களை அழை'], ...EXTRA].find(([key]) => key === k);
   if (!n) return k;
   if (k === 'writing') return getLang() === 'ta' ? 'திருத்தி' : t('Writing');
   return getLang() === 'ta' ? n[2] : n[1];
@@ -29,7 +29,7 @@ const label = (k) => {
 const initials = (n) => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 export default function AppShell({ profile, setProfile, onSettings }) {
-  const { scope, ctx, cls, child, setClsId, setChildId } = usePortal(profile);
+  const { scope, ctx, cls, child, setClsId, setChildId, joinMsg, clearJoinMsg } = usePortal(profile);
   const { path, query } = useHash();
   const section = path === 'personalize' ? 'personalize' : isSection(path, profile) ? path : 'today';
   const tabs = TABS[profile.role] || TABS.student;
@@ -60,9 +60,10 @@ export default function AppShell({ profile, setProfile, onSettings }) {
 
   const moreItems = [
     ...NAV.map(([k]) => k).filter((k) => !tabs.includes(k)),
+    ...(profile.role === 'teacher' ? ['invite'] : []),
     ...(profile.is_admin ? ['admin'] : []),
   ];
-  const switcher = section !== 'personalize' && !['account', 'admin', 'privacy', 'terms', 'contact', 'shop', 'writing'].includes(section);
+  const switcher = section !== 'personalize' && !['invite', 'account', 'admin', 'privacy', 'terms', 'contact', 'shop', 'writing'].includes(section);
 
   return (
     <div className="ax" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
@@ -94,6 +95,7 @@ export default function AppShell({ profile, setProfile, onSettings }) {
         <span style={{ transform: `rotate(${pull * 4}deg)`, opacity: pull / 60 }}>↻</span>
       </div>
 
+      {joinMsg && <div className="ax-toast" role="status"><span>{joinMsg}</span><button onClick={clearJoinMsg} aria-label="OK"><Icon name="x" size={16} /></button></div>}
       <main className={'ax-main sec-' + section} key={refresh}>
         {section === 'personalize'
           ? <Personalize profile={profile} />
