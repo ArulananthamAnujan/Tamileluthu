@@ -15,7 +15,7 @@ export default function PdfShare({ targetRef, filename, title }) {
       await new Promise((r) => setTimeout(r, 300));
       const f = await createReportPdf(targetRef.current, filename);
       setPdf(f); return f;
-    } catch { setMsg(t('Could not prepare the PDF. Please use Print / Save as PDF instead.')); return null; }
+    } catch (err) { console.error('PDF failed:', err); setMsg(t('Could not prepare the PDF. Please use Print / Save as PDF instead.')); return null; }
     finally { setBusy(false); }
   }
   useEffect(() => { make(); }, []);

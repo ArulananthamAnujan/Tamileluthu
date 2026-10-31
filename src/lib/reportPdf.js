@@ -1,25 +1,21 @@
-// Render with browser fonts so Tamil glyphs retain their shaping in the PDF.
+// The browser draws the report itself (via SVG), so Tamil shaping, fonts and modern CSS
+// colours come out exactly as on screen. (html2canvas cannot read colour-mix() and failed.)
 export async function createReportPdf(element, filename) {
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-    import('html2canvas'), import('jspdf'),
-  ]);
+  if (!element) throw new Error('Nothing to print');
+  const [{ domToCanvas }, { jsPDF }] = await Promise.all([import('modern-screenshot'), import('jspdf')]);
   await document.fonts.ready;
-  const canvas = await html2canvas(element, {
-    scale: 1.5, backgroundColor: '#ffffff', useCORS: true,
-    windowWidth: 1000,
-    onclone(doc) {
-      const report = doc.querySelector('[data-pdf-root]') || doc.querySelector('.wreport');
-      if (!report) return;
-      report.style.width = '760px';
-      report.style.maxWidth = 'none';
-      report.style.margin = '0';
-      report.style.boxShadow = 'none';
-    },
+  const canvas = await domToCanvas(element, {
+    // Captured at its on-screen width (sizes are copied as laid out), then scaled to fit A4.
+    scale: Math.max(1.5, Math.min(3, 1400 / Math.max(element.offsetWidth, 300))),
+    backgroundColor: '#ffffff',
+    style: { margin: '0', boxShadow: 'none' },
+    // Hide on-screen-only controls (buttons) in the PDF.
+    filter: (node) => !(node instanceof HTMLElement && (node.tagName === 'BUTTON' || node.classList.contains('noprint'))),
   });
   const pdf = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
   const width = 190, height = 277;
   const pagePixels = Math.floor(height * canvas.width / width);
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   let top = 0;
   while (top < canvas.height) {
     let end = Math.min(top + pagePixels, canvas.height);

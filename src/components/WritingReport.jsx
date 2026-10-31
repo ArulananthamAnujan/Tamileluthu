@@ -70,7 +70,8 @@ export default function WritingReport({ sub, studentName, onBack }) {
       const file = await createReportPdf(reportRef.current, `writing-feedback-${safe}.pdf`);
       setPdf(file);
       return file;
-    } catch {
+    } catch (err) {
+      console.error('PDF failed:', err);
       setPdfMsg(t('Could not prepare the PDF. Please use Print / Save as PDF instead.'));
       return null;
     } finally { setPdfBusy(false); }

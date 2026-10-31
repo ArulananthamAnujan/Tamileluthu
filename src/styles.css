@@ -660,3 +660,4 @@ html[lang="ta"] .essay h4{font-family:var(--f-ta)}
 .btn.sharepdf{padding:10px 18px;font-size:15px}
 .btn.wa:disabled,.btn.sharepdf:disabled{opacity:.7}
 .pdfmsg{flex-basis:100%;margin:4px 0 0!important}
+.essay-mark span{white-space:nowrap}
