@@ -1,15 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Server settings come from the build (.env), or — in the Android app before the
-// final build — from a one-time "Connect" screen saved on the phone.
-function stored() {
-  try { return JSON.parse(localStorage.getItem('tt-server') || 'null'); } catch { return null; }
-}
-const saved = stored();
-const url = import.meta.env.VITE_SUPABASE_URL || saved?.url;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY || saved?.key;
+import { DEFAULT_SERVER } from './project-config.js';
 
-export const builtIn = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+// Override both values together for another deployment; never mix projects.
+const envUrl = import.meta.env.VITE_SUPABASE_URL;
+const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const settings = envUrl && envKey ? { url: envUrl, key: envKey } : DEFAULT_SERVER;
+const { url, key } = settings;
+export const builtIn = true;
 export const configured = Boolean(url && key);
 export const supabase = configured ? createClient(url, key) : null;
 export const inApp = /ThiruthiApp/.test(navigator.userAgent);
@@ -33,3 +31,4 @@ export function errText(e) {
   if (/Failed to fetch|NetworkError/i.test(m)) return 'Cannot reach the server. Check your internet connection.';
   return m;
 }
+

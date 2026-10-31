@@ -1,0 +1,59 @@
+[
+  {
+    "test": "Teacher creates class",
+    "pass": true
+  },
+  {
+    "test": "Student joins with code",
+    "pass": true
+  },
+  {
+    "test": "Parent links child",
+    "pass": true
+  },
+  {
+    "test": "Teacher saves comment",
+    "pass": true,
+    "http_status": 204
+  },
+  {
+    "test": "Linked parent reads teacher comment",
+    "pass": true
+  },
+  {
+    "test": "Unrelated student cannot read submission",
+    "pass": true
+  },
+  {
+    "test": "Unrelated student cannot sign photo URL",
+    "pass": true
+  },
+  {
+    "test": "Linked parent can view photo",
+    "pass": true
+  },
+  {
+    "test": "Student revokes parent access",
+    "pass": true
+  },
+  {
+    "test": "Revoked parent cannot fetch work",
+    "pass": true
+  },
+  {
+    "test": "Revoked parent cannot obtain new photo URL",
+    "pass": true
+  },
+  {
+    "test": "Foreign submission checker request blocked",
+    "pass": true
+  },
+  {
+    "test": "Completed check is not repeated",
+    "pass": true
+  },
+  {
+    "test": "Anonymous checker request blocked",
+    "pass": true
+  }
+]

@@ -39,9 +39,9 @@ export default function Teacher({ profile }) {
   async function createClass(e) {
     e.preventDefault(); setMsg('');
     if (!newName.trim()) return;
-    const { error } = await supabase.from('classes').insert({ name: newName.trim(), teacher_id: profile.id });
+    const { data: created, error } = await supabase.from('classes').insert({ name: newName.trim(), teacher_id: profile.id }).select().single();
     if (error) { setMsg(errText(error)); return; }
-    setNewName(''); loadClasses();
+    setNewName(''); await loadClasses(); setCls(created);
   }
   async function removeStudent(sid) {
     await supabase.from('class_members').delete().eq('class_id', cls.id).eq('student_id', sid);
@@ -129,3 +129,4 @@ export default function Teacher({ profile }) {
     </div>
   );
 }
+

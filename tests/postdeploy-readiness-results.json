@@ -1,0 +1,28 @@
+[
+  {
+    "case": "correct_plural",
+    "pass": true,
+    "status": "checked",
+    "error": null,
+    "issues": [],
+    "summary": "Your sentence is accurate, with correct spelling and a well-formed verb that matches the plural subject. You also correctly doubled the consonant in 'புத்தகங்களைப் படித்தார்கள்', which shows good control."
+  },
+  {
+    "case": "agreement",
+    "pass": true,
+    "status": "checked",
+    "error": null,
+    "issues": [
+      {
+        "end": 32,
+        "rule": "The verb ending must match the subject of the sentence.",
+        "start": 24,
+        "wrong": "சென்றான்",
+        "correct": "சென்றேன்",
+        "explain": "The subject is நான் (I), so the verb needs the 'I' ending -ேன், not the 'he' ending -ான்.",
+        "category": "agreement"
+      }
+    ],
+    "summary": "You spelled பள்ளிக்குச் correctly, including the consonant doubling, and used நேற்று with a past tense verb. Work on making the verb ending match the subject."
+  }
+]

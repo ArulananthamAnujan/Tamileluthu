@@ -1,0 +1,13 @@
+{
+  "results": [
+    "Teacher class creation passed",
+    "Student joins class on mobile passed",
+    "Parent links student passed",
+    "Teacher feedback saved passed",
+    "Student sees teacher feedback passed",
+    "Parent sees feedback passed",
+    "Mobile no horizontal overflow passed",
+    "Sign out passed"
+  ],
+  "errors": []
+}

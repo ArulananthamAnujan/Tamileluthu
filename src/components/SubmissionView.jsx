@@ -39,20 +39,32 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
   const [now, setNow] = useState(Date.now());
   const listRef = useRef(null);
 
-  // Keep the result fresh while it is being checked.
+  const commentDirty = useRef(false);
+  const [accessError, setAccessError] = useState('');
+
+  // Refresh on opening even completed work, so teacher comments are never stale.
   useEffect(() => {
-    if (sub.status !== 'pending' && sub.status !== 'checking') return;
-    const t = setInterval(async () => {
+    let active = true;
+    async function refresh() {
       setNow(Date.now());
-      const { data } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
-      if (data) { setSub(data); onChanged?.(data); }
-    }, 4000);
-    return () => clearInterval(t);
+      const { data, error } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
+      if (!active) return;
+      if (error?.code === 'PGRST116') {
+        setAccessError('This writing is no longer available to your account.'); setPhotos([]); return;
+      }
+      if (data) {
+        setAccessError(''); setSub(data); onChanged?.(data);
+        if (!commentDirty.current) setComment(data.teacher_comment || '');
+      }
+    }
+    refresh();
+    const t = setInterval(refresh, sub.status === 'pending' || sub.status === 'checking' ? 4000 : 15000);
+    return () => { active = false; clearInterval(t); };
   }, [sub.id, sub.status]);
 
   useEffect(() => {
-    if (!showPhotos || photos.length || !sub.photo_paths?.length) return;
-    supabase.storage.from('writing').createSignedUrls(sub.photo_paths, 3600)
+    if (!showPhotos || !sub.photo_paths?.length) return;
+    supabase.storage.from('writing').createSignedUrls(sub.photo_paths, 300)
       .then(({ data }) => setPhotos((data || []).map((d) => d.signedUrl).filter(Boolean)));
   }, [showPhotos]);
 
@@ -84,12 +96,14 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
     const { error } = await supabase.rpc('set_teacher_comment', { sub: sub.id, comment });
     if (error) { setSaving(errText(error)); return; }
     const next = { ...sub, teacher_comment: comment.trim() || null, teacher_comment_at: new Date().toISOString() };
-    setSub(next); onChanged?.(next); setSaving('Saved.');
+    commentDirty.current = false; setSub(next); onChanged?.(next); setSaving('Saved.');
   }
 
   const checking = sub.status === 'pending' || sub.status === 'checking';
   const text = sub.original_text || '';
   const stale = sub.status === 'checking' && now - new Date(sub.check_started_at || sub.created_at).getTime() > 300000;
+
+  if (accessError) return <div className="card"><p>{accessError}</p><button className="btn" onClick={onBack}>Back</button></div>;
 
   return (
     <div className="stack">
@@ -140,7 +154,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
               <h3>AI feedback</h3>
               <p className="muted small">Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 40 corrections.</p>
               <p>{sub.summary || (issues.length ? 'Work through each mistake below.' : 'No definite errors were identified in this check.')}</p>
-              {sub.focus && CATS[sub.focus] && <p><b>Practise next:</b> {CATS[sub.focus].label}</p>}
+              {issues.length > 0 && sub.focus && CATS[sub.focus] && <p><b>Practise next:</b> {CATS[sub.focus].label}</p>}
               {sub.handwriting?.length > 0 && (<><p className="label">Handwriting notes</p><ul>{sub.handwriting.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
               {sub.unclear?.length > 0 && (<><p className="label">Hard to read</p><ul>{sub.unclear.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
             </section>
@@ -149,7 +163,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
               <h3>Teacher’s comment</h3>
               {viewer === 'teacher' ? (
                 <>
-                  <textarea id="tcomment" className="comment" rows={4} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Write a comment for the student and parents" />
+                  <textarea id="tcomment" className="comment" rows={4} value={comment} onChange={(e) => { commentDirty.current = true; setComment(e.target.value); }} placeholder="Write a comment for the student and parents" />
                   <div className="row"><button className="btn primary small" onClick={saveComment}>Save comment</button><span className="muted small">{saving}</span></div>
                 </>
               ) : sub.teacher_comment

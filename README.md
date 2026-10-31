@@ -31,7 +31,15 @@ Before using it with students, get the school's approval and parent consent for 
 
 ---
 
-## Set-up (about 30 minutes)
+## Current project
+
+This repository now defaults to the dedicated **Tamil Thiruthi** Supabase project in Sydney (`zqeagskgyykxdxccjxkh`). Its database and checking function are deployed, and the Anthropic connection has passed live synthetic tests. The browser configuration contains only a publishable key; keep privileged keys and the Anthropic key in Supabase Secrets.
+
+Run `npm ci` and `npm run build` to build against this project. Set both `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only when deliberately overriding it. Do not rerun the initial schema or security migration on the existing project: they have already been applied.
+
+See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for evidence and remaining launch gates. Real handwriting accuracy and hosted sign-up/email delivery are not yet certified.
+
+## Set-up for a separate project (optional)
 
 ### 1. Create the Supabase project
 1. Go to <https://supabase.com>, sign in and create a **New project**. Region: **Sydney (ap-southeast-2)**.
@@ -137,7 +145,7 @@ Every push to `main` builds a new version automatically; installing it updates t
 ### iPhone
 APK files are Android-only. iPhone users open your Hostinger address in **Safari → Share → Add to Home Screen**. It then opens like an app with its own icon, full screen, with the camera button working. (A native App Store app would need a Mac and an Apple Developer account, and Apple often rejects apps that only wrap a website.)
 
-If you build without the Supabase secrets, the app opens on a one-time **Connect** screen where the server address and anon key can be entered on the phone.
+If you build without Supabase overrides, the app uses the dedicated Tamil Thiruthi project configured in `src/project-config.js`. Set both environment variables together to use another project.
 
 **Keep `thiruthi-release.jks` and its password safe.** Without them you cannot release updates to installed apps or publish the same app on Google Play.
 
