@@ -21,7 +21,7 @@ const EXTRA = [['account', 'My account', 'என் கணக்கு'], ['pers
 const ICON = { personalize: 'star', contact: 'school', privacy: 'lock', terms: 'reports' };
 
 const label = (k) => {
-  const n = [...NAV, ['admin', 'Admin', 'நிர்வாகம்'], ['invite', 'Invite students', 'மாணவர்களை அழை'], ...EXTRA].find(([key]) => key === k);
+  const n = [...NAV, ['admin', 'Admin', 'நிர்வாகம்'], ['invite', 'Invite students', 'மாணவர்களை அழை'], ['subscription', 'Subscription', 'சந்தா'], ...EXTRA].find(([key]) => key === k);
   if (!n) return k;
   if (k === 'writing') return getLang() === 'ta' ? 'திருத்தி' : t('Writing');
   return getLang() === 'ta' ? n[2] : n[1];
@@ -60,10 +60,10 @@ export default function AppShell({ profile, setProfile, onSettings }) {
 
   const moreItems = [
     ...NAV.map(([k]) => k).filter((k) => !tabs.includes(k)),
-    ...(profile.role === 'teacher' ? ['invite'] : []),
+    ...(profile.role === 'teacher' ? ['invite'] : ['subscription']),
     ...(profile.is_admin ? ['admin'] : []),
   ];
-  const switcher = section !== 'personalize' && !['invite', 'account', 'admin', 'privacy', 'terms', 'contact', 'shop', 'writing'].includes(section);
+  const switcher = section !== 'personalize' && !['subscription', 'invite', 'account', 'admin', 'privacy', 'terms', 'contact', 'shop', 'writing'].includes(section);
 
   return (
     <div className="ax" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>

@@ -5,6 +5,7 @@ import { isoDay, addDays, fmtDay } from '../lib/util.js';
 import { downloadCsv } from '../lib/csv.js';
 import { loadSettings } from '../lib/settings.js';
 import { SITE } from '../site.js';
+import { money } from '../lib/util.js';
 
 // Principal / school admin: whole-school overview, teachers, and school details.
 export default function Admin({ ctx, onSettings }) {
@@ -17,11 +18,13 @@ export default function Admin({ ctx, onSettings }) {
         <div className="tabs">
           <button className={tab === 'overview' ? 'on' : ''} onClick={() => setTab('overview')}>{t('Overview')}</button>
           <button className={tab === 'staff' ? 'on' : ''} onClick={() => setTab('staff')}>{t('Teachers')}</button>
+          <button className={tab === 'subs' ? 'on' : ''} onClick={() => setTab('subs')}>{t('Subscriptions')}</button>
           <button className={tab === 'school' ? 'on' : ''} onClick={() => setTab('school')}>{t('School details')}</button>
         </div>
       </div>
       {tab === 'overview' && <Overview />}
       {tab === 'staff' && <Staff me={ctx.profile} />}
+      {tab === 'subs' && <Subs />}
       {tab === 'school' && <School onSaved={onSettings} />}
     </div>
   );
@@ -262,5 +265,114 @@ function School({ onSaved }) {
         <button className="btn primary big" disabled={busy}>{busy ? t('Saving…') : t('Save school details')}</button>
       </aside>
     </form>
+  );
+}
+
+function Subs() {
+  const [f, setF] = useState(null);
+  const [rows, setRows] = useState(null);
+  const [q, setQ] = useState('');
+  const [msg, setMsg] = useState('');
+  const [grant, setGrant] = useState({ id: null, months: 1, memo: '' });
+
+  async function load() {
+    const [st, students, subs, members] = await Promise.all([
+      supabase.from('school_settings').select('sub_required, sub_price_cents, sub_currency, sub_checks_per_month, sub_trial_checks').eq('id', 1).maybeSingle(),
+      supabase.from('profiles').select('id, full_name').eq('role', 'student').order('full_name'),
+      supabase.from('subscriptions').select('*'),
+      supabase.from('class_members').select('student_id, classes(name)'),
+    ]);
+    if (st.error) { setMsg(t('Run the subscriptions database update (20261105000000_subscriptions.sql) first.')); setF({}); setRows([]); return; }
+    setF({ ...st.data, price: (st.data.sub_price_cents / 100).toFixed(2) });
+    const bySub = Object.fromEntries((subs.data || []).map((x) => [x.student_id, x]));
+    const cls = {};
+    (members.data || []).forEach((m) => { if (m.classes) (cls[m.student_id] ||= []).push(m.classes.name); });
+    setRows((students.data || []).map((p) => ({ ...p, sub: bySub[p.id], classes: (cls[p.id] || []).join(', ') })));
+  }
+  useEffect(() => { load(); }, []);
+
+  async function saveSettings(e) {
+    e.preventDefault(); setMsg('');
+    const cents = Math.round(Number(f.price) * 100);
+    if (!(cents >= 50)) { setMsg(t('The monthly price must be at least 0.50.')); return; }
+    const { error } = await supabase.from('school_settings').update({
+      sub_required: Boolean(f.sub_required), sub_price_cents: cents, sub_currency: (f.sub_currency || 'aud').toLowerCase(),
+      sub_checks_per_month: Math.max(0, Math.floor(Number(f.sub_checks_per_month) || 0)),
+      sub_trial_checks: Math.max(0, Math.floor(Number(f.sub_trial_checks) || 0)), updated_at: new Date().toISOString(),
+    }).eq('id', 1);
+    setMsg(error ? errText(error) : t('Saved. New subscriptions use this price; existing ones keep the price they started with.'));
+  }
+  async function giveAccess(e) {
+    e.preventDefault(); setMsg('');
+    const { data, error } = await supabase.rpc('admin_grant_access', { sid: grant.id, months: Number(grant.months), memo: grant.memo });
+    if (error) { setMsg(errText(error)); return; }
+    setMsg(Number(grant.months) ? t('Access given until {date}.', { date: fmtDay(String(data).slice(0, 10)) }) : t('Access removed.'));
+    setGrant({ id: null, months: 1, memo: '' }); load();
+  }
+
+  if (!f || !rows) return <p className="muted">{t('Loading…')}</p>;
+  const now = new Date().toISOString();
+  const isActive = (s) => s && ['active', 'manual', 'past_due'].includes(s.status) && (!s.current_period_end || s.current_period_end > now);
+  const active = rows.filter((r) => isActive(r.sub));
+  const card = active.filter((r) => r.sub.status !== 'manual').length;
+  const shown = rows.filter((r) => !q || `${r.full_name} ${r.classes}`.toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <div className="stack">
+      <div className="tiles">
+        <div className="tile"><span className="tile-n">{active.length}/{rows.length}</span><span>{t('Students with access')}</span></div>
+        <div className="tile"><span className="tile-n">{card}</span><span>{t('Paying by card')}</span></div>
+        <div className="tile"><span className="tile-n">{active.length - card}</span><span>{t('Paid at school')}</span></div>
+        <div className="tile"><span className="tile-n">{card ? money(card * f.sub_price_cents, f.sub_currency) : '0'}</span><span>{t('Card income per month (approx.)')}</span></div>
+      </div>
+      {msg && <p className="card notice small" role="status">{msg}</p>}
+      <div className="grid2">
+        <section className="card">
+          <div className="row between wrap"><h3>{t('Students')}</h3>
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Search by student name')} aria-label={t('Search by student name')} /></div>
+          <div className="tablewrap"><table className="table">
+            <thead><tr><th>{t('Student')}</th><th>{t('Status')}</th><th>{t('Until')}</th><th></th></tr></thead>
+            <tbody>{shown.map((r) => {
+              const s = r.sub; const on = isActive(s);
+              return (
+                <React.Fragment key={r.id}>
+                  <tr>
+                    <td>{r.full_name}<div className="small muted">{r.classes}</div></td>
+                    <td>{!s ? <span className="status">{t('Not subscribed')}</span>
+                      : on ? <span className="status s-checked">{s.status === 'manual' ? t('Paid at school') : s.status === 'past_due' ? t('Payment problem') : t('Card')}</span>
+                      : <span className="status s-error">{t('Ended')}</span>}{s?.note ? <div className="small muted">{s.note}</div> : null}</td>
+                    <td>{s?.current_period_end ? fmtDay(s.current_period_end.slice(0, 10)) : '–'}</td>
+                    <td><button className="btn small" onClick={() => setGrant({ id: r.id, months: 1, memo: '' })}>{t('Give access')}</button></td>
+                  </tr>
+                  {grant.id === r.id && (
+                    <tr><td colSpan={4}>
+                      <form className="row wrap" onSubmit={giveAccess}>
+                        <label className="row small">{t('Months')}<input type="number" min="0" max="24" value={grant.months} onChange={(e) => setGrant({ ...grant, months: e.target.value })} style={{ width: '5em' }} /></label>
+                        <input value={grant.memo} maxLength={200} onChange={(e) => setGrant({ ...grant, memo: e.target.value })} placeholder={t('Note, e.g. Cash, receipt 104')} className="grow" />
+                        <button className="btn small primary">{Number(grant.months) ? t('Give access') : t('Remove access')}</button>
+                        <button type="button" className="btn small" onClick={() => setGrant({ id: null, months: 1, memo: '' })}>{t('Cancel')}</button>
+                      </form>
+                      <p className="small muted">{t('For families who pay the school directly. 0 months removes access given by hand (card subscriptions are cancelled by the family or in Stripe).')}</p>
+                    </td></tr>
+                  )}
+                </React.Fragment>
+              );
+            })}</tbody>
+          </table></div>
+        </section>
+        <form className="card form" onSubmit={saveSettings}>
+          <h3>{t('Plan')}</h3>
+          <label className="row small check"><input type="checkbox" checked={Boolean(f.sub_required)} onChange={(e) => setF({ ...f, sub_required: e.target.checked })} /> {t('Students need a subscription to use the writing checker')}</label>
+          <div className="row wrap">
+            <label className="field">{t('Price per month')}<input type="number" min="0.5" step="0.5" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} style={{ width: '7em' }} /></label>
+            <label className="field">{t('Currency')}<input value={f.sub_currency || 'aud'} maxLength={3} onChange={(e) => setF({ ...f, sub_currency: e.target.value })} style={{ width: '5em', textTransform: 'uppercase' }} /></label>
+          </div>
+          <label className="field">{t('Checks included per month (0 = unlimited)')}<input type="number" min="0" value={f.sub_checks_per_month ?? 0} onChange={(e) => setF({ ...f, sub_checks_per_month: e.target.value })} style={{ width: '7em' }} /></label>
+          <label className="field">{t('Free trial checks for new students')}<input type="number" min="0" value={f.sub_trial_checks ?? 0} onChange={(e) => setF({ ...f, sub_trial_checks: e.target.value })} style={{ width: '7em' }} /></label>
+          <button className="btn primary">{t('Save')}</button>
+          <p className="small muted">{t('Teachers never pay. Homework, attendance, marks and reports stay free for every family; only the AI writing checker needs a subscription.')}</p>
+        </form>
+      </div>
+    </div>
   );
 }

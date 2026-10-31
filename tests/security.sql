@@ -59,6 +59,8 @@ do $$ begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+-- This file tests claiming and limits; the paywall has its own tests (tests/subscriptions.sql).
+update public.school_settings set sub_required=false where id=1;
 set local role service_role;
 do $$ declare r jsonb; begin
  r:=public.claim_writing_check('aaaaaaaa-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222');

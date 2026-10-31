@@ -49,6 +49,37 @@ Even without any setup, teachers can use **“Open in my email app”** (invites
 ### Teachers checking writing themselves
 Teachers can open **திருத்தி → Check writing myself**, type any student's name (with or without an account), and photograph or paste the work. The result is private to the teacher. **Report · PDF · Share** gives a printable report to download as a PDF, send on WhatsApp, open in your own email app, or send from the school mailbox.
 
+### Monthly subscriptions for the writing checker
+Each student needs a monthly subscription to use தமிழ் திருத்தி. Teachers never pay, and homework, attendance, marks and reports stay free. Set it up under **Admin → Subscriptions**:
+- **Price per month** and currency.
+- **Checks included per month** (0 = unlimited).
+- **Free trial checks** for new students (default 3).
+- An on/off switch, if you ever want the checker to be free again.
+
+Families subscribe under **Subscription** (in My account, the footer, or More in the app): a student pays for themself, or a parent pays for each child. Payment is by card through Stripe and renews monthly. Families can cancel or change their card with **Manage**, which opens Stripe's customer portal.
+
+For **cash or bank transfer**, open **Admin → Subscriptions → Give access**, choose a number of months and add a note (for example a receipt number). Choose 0 months to remove access you gave by hand.
+
+The database enforces this: the checker refuses to start without access, whatever the website shows.
+
+**Stripe setup (one time):**
+1. Deploy the functions:
+   ```bash
+   supabase functions deploy subscribe-checkout
+   supabase functions deploy billing-portal
+   supabase functions deploy stripe-webhook --no-verify-jwt
+   ```
+2. In Stripe → Developers → Webhooks, the endpoint `https://<project-ref>.supabase.co/functions/v1/stripe-webhook` needs these events (on top of the paper-shop ones):
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.paid`
+   - `invoice.payment_failed`
+3. In Stripe → Settings → Billing → **Customer portal**, turn on cancelling subscriptions and updating payment methods.
+4. Set the secrets `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `SITE_URL`.
+
+Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
+
 ### Inviting students
 **Invite students** is on the teacher's home screen. It shows the class code and a link (`…/#/join?code=ABC123`). Students who open the link and create a Student account join the class automatically. Share it by copying the link, on WhatsApp, from your own email app (BCC), or from the school mailbox.
 
@@ -58,6 +89,7 @@ Teachers can open **திருத்தி → Check writing myself**, type an
    - `supabase/migrations/20261102000000_admin_settings_notifications.sql`: admin, school settings, parent phones, notifications
    - `supabase/migrations/20261103000000_teacher_checks_invites.sql`: teachers' own writing checks
    - `supabase/migrations/20261104000000_unlimited_checks.sql`: no check limits, many checks at once (optional limits under Admin → School details)
+   - `supabase/migrations/20261105000000_subscriptions.sql`: paid monthly access to the writing checker
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

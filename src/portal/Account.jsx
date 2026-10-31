@@ -78,6 +78,12 @@ export default function Account({ ctx, setProfile }) {
           </form>
         </section>
         <aside className="stack">
+          {role !== 'teacher' && (
+            <a className="card link-card row between" href="#/subscription">
+              <span><b>{t('Subscription')}</b><br /><span className="small muted">{t('Monthly access to the தமிழ் திருத்தி writing checker')}</span></span>
+              <span className="btn small gold">{t('Open')}</span>
+            </a>
+          )}
           {role === 'student' && (
             <section className="card">
               <h3>{t('Parent code')}</h3>

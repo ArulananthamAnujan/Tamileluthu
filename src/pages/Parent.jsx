@@ -4,6 +4,7 @@ import { supabase, errText } from '../supabase.js';
 import SubmissionList from '../components/SubmissionList.jsx';
 import SubmissionView from '../components/SubmissionView.jsx';
 import Progress from '../components/Progress.jsx';
+import { AccessBanner } from './Student.jsx';
 
 export default function Parent({ profile }) {
   const [children, setChildren] = useState([]);
@@ -40,6 +41,7 @@ export default function Parent({ profile }) {
 
   return (
     <div className="stack">
+      {child && <AccessBanner studentId={child.id} name={child.full_name} />}
       <div className="row between wrap">
         <h2 className="title">{child ? t('{name}’s writing', { name: child.full_name }) : t('Your child’s writing')}</h2>
         {children.length > 1 && (

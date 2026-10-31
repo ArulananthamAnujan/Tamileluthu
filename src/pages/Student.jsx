@@ -5,6 +5,8 @@ import SubmissionList from '../components/SubmissionList.jsx';
 import SubmissionView from '../components/SubmissionView.jsx';
 import NewSubmission from '../components/NewSubmission.jsx';
 import Progress from '../components/Progress.jsx';
+import { useAccess } from '../portal/Subscription.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Student({ profile, setProfile }) {
   const [subs, setSubs] = useState([]);
@@ -45,6 +47,7 @@ export default function Student({ profile, setProfile }) {
 
   return (
     <div className="stack">
+      <AccessBanner studentId={profile.id} />
       <div className="row between wrap">
         <h2 className="title">{t('My writing')} <span className="ta">· தமிழ் திருத்தி</span></h2>
         <button className="btn primary" onClick={() => setView({ name: 'new' })}>+ {t('New writing')}</button>
@@ -79,6 +82,24 @@ export default function Student({ profile, setProfile }) {
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+// Shows free trial checks left, or asks to subscribe, before the student uploads.
+export function AccessBanner({ studentId, name }) {
+  const [acc] = useAccess(studentId);
+  if (!acc || acc.error || !acc.required) return null;
+  if (acc.active) {
+    if (!(acc.quota > 0)) return null;
+    return <div className="card notice small row between wrap"><span>{t('{a} of {b} checks used this month', { a: acc.used, b: acc.quota })}</span><a href="#/subscription">{t('Subscription')}</a></div>;
+  }
+  return (
+    <div className={'card notice row between wrap paywall' + (acc.trial_left ? '' : ' bad')}>
+      <span><Icon name="subscription" size={18} /> {acc.trial_left
+        ? t('{name} has {n} free trial checks left. Subscribe to keep checking every month.', { name: name || t('You'), n: acc.trial_left })
+        : t('Free checks are used up. A monthly subscription switches the writing checker back on.')}</span>
+      <a className="btn small gold" href="#/subscription">{t('Subscribe')}</a>
     </div>
   );
 }

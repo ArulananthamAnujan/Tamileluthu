@@ -1,8 +1,11 @@
 // Paper shop — receives Stripe's signed payment events and marks purchases paid.
 // Deploy WITHOUT JWT checking (Stripe cannot sign in):
 //   supabase functions deploy stripe-webhook --no-verify-jwt
-// Secrets: STRIPE_WEBHOOK_SECRET (whsec_… from Stripe → Developers → Webhooks).
+// Secrets: STRIPE_WEBHOOK_SECRET (whsec_… from Stripe → Developers → Webhooks), STRIPE_SECRET_KEY.
+// Events: checkout.session.completed, checkout.session.async_payment_succeeded, charge.refunded,
+//         customer.subscription.created, customer.subscription.updated, customer.subscription.deleted, invoice.paid
 import { admin } from "../_shared/http.ts";
+import { syncSubscription } from "../_shared/stripe.ts";
 import { verifyStripe } from "./sign.mjs";
 
 const SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
@@ -16,6 +19,23 @@ Deno.serve(async (req) => {
   const event = JSON.parse(payload);
   const s = event?.data?.object;
   const db = admin();
+
+  // Monthly writing-checker subscriptions.
+  try {
+    let subId: string | null = null;
+    if (event.type?.startsWith("customer.subscription.")) subId = s?.id;
+    else if (event.type === "checkout.session.completed" && s?.mode === "subscription") subId = s?.subscription;
+    else if (event.type === "invoice.paid" || event.type === "invoice.payment_failed") {
+      subId = s?.subscription ?? s?.parent?.subscription_details?.subscription ?? null;
+    }
+    if (subId) {
+      await syncSubscription(db, typeof subId === "string" ? subId : (subId as { id: string }).id);
+      return new Response("ok");
+    }
+  } catch (e) {
+    console.error("Subscription sync failed:", (e as Error).message);
+    return new Response("Retry", { status: 500 }); // Stripe retries later
+  }
   if ((event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded")
       && s?.payment_status === "paid") {
     const { data: row } = await db.from("purchases").select("id, product_id, buyer_id, amount_cents, currency")
