@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Release signing comes from environment variables (set as GitHub secrets).
+// Without them the build is signed with a debug key, which still installs fine.
+def ksFile = System.getenv('THIRUTHI_KEYSTORE_FILE')
+
+android {
+    namespace 'au.thiruthi.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'au.thiruthi.app'
+        minSdk 24
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('THIRUTHI_VERSION_CODE') ?: '1')
+        versionName System.getenv('THIRUTHI_VERSION_NAME') ?: '1.0'
+        // Your website address, e.g. https://thiruthi.example.com
+        // When set, the app opens the live website (updates reach the app instantly).
+        // When empty, the app uses the copy of the website bundled inside it.
+        resValue 'string', 'app_url', (System.getenv('THIRUTHI_APP_URL') ?: '')
+    }
+
+    signingConfigs {
+        release {
+            if (ksFile && file(ksFile).exists()) {
+                storeFile file(ksFile)
+                storePassword System.getenv('THIRUTHI_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('THIRUTHI_KEY_ALIAS') ?: 'thiruthi'
+                keyPassword System.getenv('THIRUTHI_KEY_PASSWORD') ?: System.getenv('THIRUTHI_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig (ksFile && file(ksFile).exists()) ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The website files are copied into assets/www by the build workflow.
+    androidResources { noCompress += ['png', 'jpg'] }
+}

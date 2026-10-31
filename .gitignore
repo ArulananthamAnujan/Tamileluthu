@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+*.jks
+*.keystore
+*.jks.base64.txt
+SIGNING-KEY-README.txt
+android/app/src/main/assets/www/
