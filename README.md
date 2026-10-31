@@ -143,6 +143,13 @@ Optional: `supabase secrets set ANTHROPIC_MODEL=claude-opus-5-5` for the most ca
 
 To update the website later: run `npm run build` again and re-upload the `dist` contents.
 
+### 3a. Hostinger Node.js web app (deploy from GitLab/GitHub)
+In hPanel → **Websites → Add website → Node.js app**, connect the repository and use:
+- Framework: **Other** (or Vite) · Node version: **20 or 22**
+- Install command: `npm install` · Build command: `npm run build` · Start command: `npm start` · Output/entry: `server.mjs`
+
+`npm start` runs `server.mjs`, which serves the built site from `dist/` on the port Hostinger gives it (it builds automatically if `dist/` is missing). No environment variables are required: the site uses the Supabase project in `src/project-config.js`. After the first deploy, add the site address to Supabase → Authentication → URL Configuration.
+
 ### 3b. Other hosting (optional)
 1. Copy `.env.example` to `.env` and fill in **Project Settings → API**: the Project URL and the `anon` public key. (Never put the service-role key in the website.)
 2. Try it locally:

@@ -1,20 +1,22 @@
 {
-  "name": "tamil-thiruthi",
+  "name": "tamileluthu",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "start": "node server.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
-  },
-  "devDependencies": {
     "@vitejs/plugin-react": "6.1.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "vite": "8.3.5"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }
