@@ -73,6 +73,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
     <div className="stack">
       <div className="row between"><button className="btn small" onClick={onCancel}>← Back</button></div>
       <h2 className="title">New writing</h2>
+      <p className="muted small">Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.</p>
       <div className="card form">
         <label className="field">Title<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Letter to my cousin" /></label>
         <label className="field">Text type

@@ -25,6 +25,9 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
+      - name: Test security validation
+        run: node --test tests/security.test.mjs
+
       - name: Put the website inside the Android app
         run: |
           rm -rf android/app/src/main/assets/www
@@ -68,3 +71,4 @@ jobs:
         with:
           name: TamilThiruthi-APK
           path: TamilThiruthi-*.apk
+

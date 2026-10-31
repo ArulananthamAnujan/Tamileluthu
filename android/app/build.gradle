@@ -36,7 +36,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig (ksFile && file(ksFile).exists()) ? signingConfigs.release : signingConfigs.debug
+            signingConfig = (ksFile && file(ksFile).exists()) ? signingConfigs.release : signingConfigs.debug
         }
     }
 
@@ -48,3 +48,4 @@ android {
     // The website files are copied into assets/www by the build workflow.
     androidResources { noCompress += ['png', 'jpg'] }
 }
+

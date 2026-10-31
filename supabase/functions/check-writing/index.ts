@@ -9,7 +9,7 @@
 //   ANTHROPIC_MODEL     optional, defaults to claude-sonnet-5-5
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
 
-import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { createClient } from "npm:@supabase/supabase-js@2.118.0";
 import { UUID, MAX_TEXT, validateSubmission, validatePhoto } from "./security.mjs";
 
 const CATEGORIES = [
@@ -81,14 +81,14 @@ Reply with only one JSON object:
 }
 
 function checkPrompt(text: string, type: string): string {
-  return `You are an experienced VCE Tamil teacher in Melbourne marking a student's writing. The student grew up speaking English, so many mistakes come from thinking in English. Find every real error in the Tamil text below.
+  return `You are an experienced VCE Tamil teacher in Melbourne marking a student's writing. The student grew up speaking English, so many mistakes come from thinking in English. Identify definite errors in the Tamil text below. Do not invent an error or force a correction. Do not present optional stylistic preferences as mistakes.
 
 Text type the student was asked to write: ${type}.
 
 What to check:
 - Spelling: missing புள்ளி, wrong or missing vowel signs, short vs long vowels, ல/ள/ழ, ன/ண/ந, ர/ற, missing double consonants.
 - வல்லினம் மிகும் / புணர்ச்சி errors (e.g. அந்தப் பையன், பள்ளிக்குச் சென்றேன், கதையைக் கேட்டேன், படிக்கச் சென்றான்).
-- Grammar: English word order (verb must be last), verb ending not matching the subject, wrong pronoun base before endings (நீங்களை → உங்களை, நானுக்கு → எனக்கு), wrong case endings (with/from/by), English patterns such as "is/am/are" (நான் இருக்கிறேன் மகிழ்ச்சி) or "who/which" (பையன் யார் வந்தான்), tense mixing.
+- Grammar: English-influenced word order that is genuinely ungrammatical (do not flag valid Tamil emphasis or flexible word order), verb ending not matching the subject, wrong pronoun base before endings (நீங்களை → உங்களை, நானுக்கு → எனக்கு), wrong case endings (with/from/by), English patterns such as "is/am/are" (நான் இருக்கிறேன் மகிழ்ச்சி) or "who/which" (பையன் யார் வந்தான்), tense mixing.
 - Style: spoken/colloquial Tamil in writing, English words written in Tamil script, mixing நீ and நீங்கள் forms, punctuation, and anything that does not suit the text type.
 
 Do NOT flag: correct Sri Lankan or Indian Tamil variants (பாடசாலை/பள்ளி, பரீட்சை/தேர்வு, வைத்தியர்/மருத்துவர்), names, accepted loanwords with no common Tamil equivalent, or sentences that are correct but could be phrased differently.
@@ -103,7 +103,7 @@ Rules for each issue:
 - "rule": the general rule in one short sentence of simple English that a 17-year-old can remember.
 - "explain": at most 20 words of simple English on why this case breaks the rule.
 - List issues in the order they appear. At most 40 issues.
-"summary": two short sentences of encouraging feedback in English: what the student did well and the one pattern to work on.
+"summary": two short sentences of encouraging feedback in English: what the student did well and the one pattern to work on. Avoid technical claims about specific Tamil letters in this summary; put explanations only beside verified corrections.
 "focus": the category id the student should practise most.
 If there are no errors, return an empty issues array.
 

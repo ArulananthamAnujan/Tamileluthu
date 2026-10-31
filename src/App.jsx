@@ -28,10 +28,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) { setProfile(null); return; }
+    let cancelled = false;
+    setProfile(null); setProfileErr('');
+    if (!session) return;
     supabase.from('profiles').select('*').eq('id', session.user.id).single()
-      .then(({ data, error }) => { setProfile(data); setProfileErr(error ? error.message : ''); });
-  }, [session]);
+      .then(({ data, error }) => { if (!cancelled) { setProfile(data); setProfileErr(error ? 'Unable to load your account. Please sign out and try again.' : ''); } });
+    return () => { cancelled = true; };
+  }, [session?.user.id]);
 
   if (!configured) return <Connect />;
   if (session === undefined) return <div className="shell"><p className="muted">Loading…</p></div>;
@@ -71,3 +74,4 @@ export default function App() {
     </div>
   );
 }
+

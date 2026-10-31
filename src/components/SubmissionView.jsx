@@ -129,7 +129,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
             {sub.input_mode === 'photo' && (
               <div className="foot">
                 <button className="btn small" onClick={() => setShowPhotos(!showPhotos)}>{showPhotos ? 'Hide photos' : `Show photos (${sub.photo_paths.length})`}</button>
-                <span className="muted small">Typed from the photos exactly as written.</span>
+                <span className="muted small">AI transcription: compare unclear words with your original photos.</span>
               </div>
             )}
             {showPhotos && <div className="photos">{photos.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer"><img src={u} alt={`Page ${i + 1}`} /></a>)}</div>}
@@ -137,8 +137,9 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
 
           <aside className="stack">
             <section className="card">
-              <h3>Feedback</h3>
-              <p>{sub.summary || (issues.length ? 'Work through each mistake below.' : 'No mistakes found. Well done!')}</p>
+              <h3>AI feedback</h3>
+              <p className="muted small">Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 40 corrections.</p>
+              <p>{sub.summary || (issues.length ? 'Work through each mistake below.' : 'No definite errors were identified in this check.')}</p>
               {sub.focus && CATS[sub.focus] && <p><b>Practise next:</b> {CATS[sub.focus].label}</p>}
               {sub.handwriting?.length > 0 && (<><p className="label">Handwriting notes</p><ul>{sub.handwriting.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
               {sub.unclear?.length > 0 && (<><p className="label">Hard to read</p><ul>{sub.unclear.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
@@ -157,7 +158,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
             </section>
 
             <section className="card" ref={listRef}>
-              <h3>Mistakes ({issues.length})</h3>
+              <h3>Suggested corrections ({issues.length})</h3>
               {!issues.length && <p className="muted">None found.</p>}
               <div className="issues">
                 {issues.map((it, idx) => {
