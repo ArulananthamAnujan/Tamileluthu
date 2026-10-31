@@ -26,7 +26,7 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Test security validation
-        run: node --test tests/security.test.mjs
+        run: node --test tests/security.test.mjs tests/portal.test.mjs
 
       - name: Put the website inside the Android app
         run: |

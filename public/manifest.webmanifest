@@ -1,7 +1,7 @@
 {
-  "name": "Tamil Thiruthi — தமிழ் திருத்தி",
-  "short_name": "Thiruthi",
-  "description": "Tamil writing feedback for students, parents and teachers.",
+  "name": "Tamil Eluthu — தமிழ் எழுத்து",
+  "short_name": "Tamil Eluthu",
+  "description": "Tamil school portal: homework, attendance, listening exams, marks, reports and the தமிழ் திருத்தி writing checker.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,8 +9,21 @@
   "background_color": "#EEF2F0",
   "theme_color": "#0E5E63",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

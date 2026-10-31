@@ -1,6 +1,47 @@
-# தமிழ் திருத்தி · Tamil Thiruthi
+# தமிழ் எழுத்து · Tamil Eluthu — Tamil school portal
 
-Tamil writing feedback for VCE students, with accounts for students, parents and teachers.
+One website for a Tamil school's day-to-day work, with accounts for students, parents and teachers:
+
+| Section | Teachers | Students | Parents |
+|---|---|---|---|
+| **Today** | Class code, roll-call status, unsent marks | Homework due, latest mark, attendance | Same, for each linked child |
+| **Diary** (நாட்குறிப்பு) | Post homework, classwork, notices, events; email notices to parents | See posts, tick homework done | See posts and whether homework is done |
+| **Attendance** (வருகை) | One-tap roll call (present/late/absent/excused), summary, CSV | Own record | Child's record |
+| **Listening** (கேட்டல்) | Link listening exams/audio/past papers, release answers, enter marks | Open exams, see answers and marks | — |
+| **Marks** (மதிப்பெண்) | Markbook, mark sheets, publish, email results to parents, CSV | Own published marks | Child's published marks + email |
+| **Reports** (அறிக்கை) | Term reports with skills, comments, automatic attendance and marks; email to parents | Own published reports | Child's reports + email; print/PDF, WhatsApp share |
+| **திருத்தி** | The writing checker below | | |
+| **Papers** (shop) | Sell or give away papers (own or other authors', with permission); Stripe or manual cash sales | Buy / download | Buy / download |
+
+The public home page and the paper catalogue can be browsed without an account.
+
+### Turning on the portal (once)
+1. Supabase → **SQL Editor**: run `supabase/migrations/20261101000000_school_portal.sql` (after the two earlier migrations, which are already applied on the current project).
+2. Deploy the new functions:
+   ```bash
+   supabase functions deploy notify-parents
+   supabase functions deploy shop-checkout
+   supabase functions deploy stripe-webhook --no-verify-jwt
+   ```
+3. **Emails to parents** (reports, marks, notices) use [Resend](https://resend.com) (free tier: 3,000 emails/month). Verify your domain in Resend, then:
+   ```bash
+   supabase secrets set RESEND_API_KEY=re_... NOTIFY_FROM="Tamil School <noreply@yourdomain.com>" SCHOOL_NAME="Tamil School" SITE_URL=https://yourdomain.com
+   ```
+   Without these, “Send to parents” still publishes in the portal; parents just see it when they sign in.
+4. **Paid papers** use Stripe Checkout. In Stripe → Developers → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/stripe-webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`, then:
+   ```bash
+   supabase secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_...
+   ```
+   Free papers, external “buy from author” links and manual “Give access” (for cash or bank transfer) work without Stripe.
+5. Optional: set `VITE_SCHOOL_NAME`, `VITE_SITE_NAME`, `VITE_CONTACT_EMAIL` in `.env` before `npm run build` (see `.env.example`).
+
+Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Tests: `tests/portal.sql` (database rules, rolled back) and `node --test tests/*.test.mjs`.
+
+---
+
+## தமிழ் திருத்தி · the writing checker
+
+Tamil writing feedback for VCE students:
 
 - **Students** photograph the pages in their book (or type/paste), and get every mistake underlined with the correct form and the rule in simple English. They join their class with a class code and give their parent a parent code.
 - **Parents** enter their child's parent code and see only their own child's writing, mistakes and the teacher's comments.

@@ -3,13 +3,13 @@ import { supabase, errText } from '../supabase.js';
 import InstallButton from '../components/InstallButton.jsx';
 
 const ROLES = [
-  ['student', 'Student', 'Upload your writing and get feedback.'],
-  ['parent', 'Parent', 'See your child’s writing and mistakes.'],
+  ['student', 'Student', 'Homework, listening exams, marks and writing feedback.'],
+  ['parent', 'Parent', 'Your child’s homework, attendance, marks and reports.'],
   ['teacher', 'Teacher', 'For school staff. Your email must be registered.'],
 ];
 
-export default function Auth() {
-  const [mode, setMode] = useState('signin');
+export default function Auth({ initial = 'signin' }) {
+  const [mode, setMode] = useState(initial);
   const [role, setRole] = useState('student');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,10 +44,9 @@ export default function Auth() {
   }
 
   return (
-    <div className="shell">
+    <div className="stack">
       <div className="card narrow auth">
-        <h1 className="brand">தமிழ் <span>திருத்தி</span></h1>
-        <div className="row between"><p className="muted" style={{margin:0}}>Tamil writing feedback for students, parents and teachers.</p><InstallButton /></div>
+        <div className="row between"><h2 className="title">{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Welcome back · வணக்கம்'}</h2><InstallButton /></div>
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={mode === 'signin'} className={mode === 'signin' ? 'on' : ''} onClick={() => setMode('signin')}>Sign in</button>
           <button role="tab" aria-selected={mode === 'signup'} className={mode === 'signup' ? 'on' : ''} onClick={() => setMode('signup')}>Create account</button>
