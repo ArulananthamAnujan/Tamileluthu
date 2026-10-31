@@ -56,7 +56,8 @@ Every check now gives two kinds of feedback:
    - **Introduction, body and conclusion**: what the student actually wrote, what works, what to improve, and a model sentence in Tamil. A missing section is flagged.
    - **Practice mark out of 25**: five criteria marked out of 5 (answering the question, structure, language accuracy, vocabulary, text type and register), with a percentage and grade. It is clearly labelled as a practice mark, not an official one.
    - Text-type feedback, overall comment, next steps and useful Tamil phrases.
-2. **Line-by-line corrections** as before, judged by the same standard, so correct Sri Lankan forms (பாடசாலை, பரீட்சை, வைத்தியசாலை, கதைத்தல்…) are never marked wrong.
+   - **A model rewrite**: the student's own ideas rewritten as a top-grade answer in Sri Lankan written Tamil, with the key improvements explained.
+2. **Line-by-line corrections** from a professor-level proof-read: up to 120, covering every small error (spelling, ஒற்று/புணர்ச்சி, agreement, case endings, tense, punctuation, spacing, word choice, sentence structure, spoken Sri Lankan forms such as வாறன் → வருகிறேன்), judged by the same standard, so correct Sri Lankan forms (பாடசாலை, பரீட்சை, வைத்தியசாலை, கதைத்தல்…) are never marked wrong.
 
 Students choose **English or Tamil** for the feedback when they upload. The assessment also appears in the downloadable PDF report, the WhatsApp text and the emailed report.
 
@@ -210,6 +211,7 @@ supabase functions deploy check-writing
 Optional settings:
 - `supabase secrets set ANTHROPIC_MODEL=claude-opus-5-5`: the most careful checking, but slower and dearer. The default is `claude-sonnet-5-5`.
 - `supabase secrets set ANTHROPIC_EFFORT=high`: deeper checking (`low`/`medium`/`high`). The default is `medium`, which keeps photo checks well within the time limit.
+- `supabase secrets set ANTHROPIC_CHECK_EFFORT=xhigh`: how hard the line-by-line correction pass thinks (default `high`, so it catches the small mistakes). If checks of long multi-page essays time out on the Supabase free plan (150-second limit), set it to `medium` or upgrade to Pro (400 seconds).
 
 **If a check fails,** the student now sees the actual reason, for example "busy, retry", "AI key not working", "took too long" or "no writing could be read". For the details, open Supabase → Edge Functions → **check-writing → Logs**.
 

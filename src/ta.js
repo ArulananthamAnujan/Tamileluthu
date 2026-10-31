@@ -801,4 +801,12 @@ export default {
   "Choose WhatsApp, email or another app to send the PDF.": "PDF அனுப்ப WhatsApp, மின்னஞ்சல் அல்லது வேறு செயலியைத் தேர்ந்தெடுங்கள்.",
   "This copy of the app is too old to save files. Install the latest app, or open the website in Chrome.": "இந்தச் செயலி பழையது; கோப்புகளைச் சேமிக்க முடியாது. புதிய செயலியை நிறுவுங்கள், அல்லது Chrome இல் இணையதளத்தைத் திறவுங்கள்.",
   "Could not save the PDF. Please try Share PDF instead.": "PDF ஐச் சேமிக்க முடியவில்லை. “PDF பகிர்” முயலுங்கள்.",
+  "Model rewrite": "மாதிரி மீள்வரைவு",
+  "Copy": "நகலெடு",
+  "Your own ideas, rewritten the way a top-grade answer in Sri Lankan written Tamil would put them. Compare it with yours, then try rewriting your piece yourself.": "உங்கள் கருத்துகளையே, இலங்கை எழுத்துத் தமிழில் உயர் தர விடையாக மீண்டும் எழுதியது. உங்களுடையதுடன் ஒப்பிட்டு, நீங்களே மீண்டும் எழுதிப் பாருங்கள்.",
+  "What was improved": "மேம்படுத்தப்பட்டவை",
+  "Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 120 corrections.": "இது பயிற்சிக் கருத்து, தேர்வு மதிப்பெண் அல்ல. பரிந்துரைகளை ஆசிரியருடன் பாருங்கள்; ஒரு சரிபார்ப்பில் 120 திருத்தங்கள் வரை இருக்கலாம்.",
+  "Word choice": "சொல் தேர்வு",
+  "Word spacing": "சொல் இடைவெளி",
+  "Sentence structure": "வாக்கிய அமைப்பு",
 };

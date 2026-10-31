@@ -25,6 +25,9 @@ export const CATS = {
   formality: { g: 'style', label: 'நீ / நீங்கள் mix' },
   punctuation: { g: 'style', label: 'Punctuation' },
   text_type: { g: 'style', label: 'Text type' },
+  word_choice: { g: 'style', label: 'Word choice' },
+  spacing: { g: 'spell', label: 'Word spacing' },
+  sentence: { g: 'gram', label: 'Sentence structure' },
 };
 
 export const catOf = (i) => CATS[i?.category] || { g: 'gram', label: 'Grammar' };

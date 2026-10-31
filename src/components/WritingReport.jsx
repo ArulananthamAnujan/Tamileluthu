@@ -29,6 +29,7 @@ export function reportText(sub, name, limit = 3500) {
       return x ? [`*${en} · ${ta}*`, ...(x.improvements || []).map((i) => `- ${i}`)] : [];
     }),
     e.overall || '',
+    e.rewrite?.text ? `\n*${t('Model rewrite')} · மாதிரி மீள்வரைவு*\n${e.rewrite.text}` : '',
   ].filter(Boolean);
   const lines = [
     `${SITE.school} · தமிழ் திருத்தி`,

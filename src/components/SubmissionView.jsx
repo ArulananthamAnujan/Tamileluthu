@@ -168,7 +168,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
           <aside className="stack">
             <section className="card">
               <h3>{t('AI feedback')}</h3>
-              <p className="muted small">{t('Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 40 corrections.')}</p>
+              <p className="muted small">{t('Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 120 corrections.')}</p>
               <p>{sub.summary || (issues.length ? t('Work through each mistake below.') : t('No definite errors were identified in this check.'))}</p>
               {issues.length > 0 && sub.focus && CATS[sub.focus] && <p><b>{t('Practise next:')}</b> {CATS[sub.focus].label}</p>}
               {sub.handwriting?.length > 0 && (<><p className="label">{t('Handwriting notes')}</p><ul>{sub.handwriting.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}

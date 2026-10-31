@@ -81,6 +81,7 @@ ${e.inferred_question ? `<p style="margin:0 0 6px"><b>${esc(e.inferred_question)
 ${rub ? `<table style="border-collapse:collapse;font-size:14px;margin:6px 0">${rub}</table>` : ''}
 ${sec}
 ${e.overall ? `<p style="margin-top:12px">${esc(e.overall)}</p>` : ''}
+${e.rewrite?.text ? `<p style="margin:14px 0 4px"><b>Model rewrite · மாதிரி மீள்வரைவு</b></p><p style="white-space:pre-wrap;background:#F7ECD4;padding:12px;border-radius:8px;font-size:16px;line-height:1.8">${esc(e.rewrite.text)}</p>` : ''}
 </div>`;
 }
 

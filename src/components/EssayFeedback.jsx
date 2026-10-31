@@ -27,6 +27,7 @@ export const grade = (pct) => (pct >= 85 ? 'A+' : pct >= 75 ? 'A' : pct >= 65 ? 
 
 // Examiner-style feedback: question check, introduction/body/conclusion, practice mark.
 export default function EssayFeedback({ sub, canEdit, onRechecked }) {
+  const [copied, setCopied] = useState(false);
   const e = sub.essay;
   const [q, setQ] = useState(sub.question || e?.inferred_question || '');
   const [editing, setEditing] = useState(false);
@@ -130,6 +131,26 @@ export default function EssayFeedback({ sub, canEdit, onRechecked }) {
       {e.overall && <div className="essay-block"><h4>{t('Overall')} · ஒட்டுமொத்தம்</h4><p>{e.overall}</p></div>}
       {e.next_steps?.length > 0 && (
         <div className="essay-block"><h4>{t('Next steps')} · அடுத்த படிகள்</h4><ol>{e.next_steps.map((x, i) => <li key={i}>{x}</li>)}</ol></div>
+      )}
+      {e.rewrite?.text && (
+        <div className="essay-block rewrite">
+          <div className="row between wrap">
+            <h4>{t('Model rewrite')} · மாதிரி மீள்வரைவு</h4>
+            {canEdit !== false && (
+              <button className="btn small noprint" onClick={async () => {
+                try { await navigator.clipboard.writeText(e.rewrite.text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* not allowed */ }
+              }}>{copied ? t('Copied!') : t('Copy')}</button>
+            )}
+          </div>
+          <p className="small muted">{t('Your own ideas, rewritten the way a top-grade answer in Sri Lankan written Tamil would put them. Compare it with yours, then try rewriting your piece yourself.')}</p>
+          <div className="rewrite-text" lang="ta">{e.rewrite.text}</div>
+          {e.rewrite.key_changes?.length > 0 && (
+            <>
+              <p className="label">{t('What was improved')}</p>
+              <ol className="small">{e.rewrite.key_changes.map((x, i) => <li key={i}>{x}</li>)}</ol>
+            </>
+          )}
+        </div>
       )}
       {e.useful_phrases?.length > 0 && (
         <div className="essay-block"><h4>{t('Useful phrases')} · பயனுள்ள தொடர்கள்</h4>
