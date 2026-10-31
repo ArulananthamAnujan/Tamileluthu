@@ -657,3 +657,6 @@ html[lang="ta"] .essay h4{font-family:var(--f-ta)}
 .phrases b{font-family:var(--f-ta);font-size:16px;color:var(--accent)}
 .corr-head{margin:6px 0 -4px}
 @media print{.essay{break-inside:auto}.esec,.rrow{break-inside:avoid}.essay-mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.btn.sharepdf{padding:10px 18px;font-size:15px}
+.btn.wa:disabled,.btn.sharepdf:disabled{opacity:.7}
+.pdfmsg{flex-basis:100%;margin:4px 0 0!important}

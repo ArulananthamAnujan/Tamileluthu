@@ -8,7 +8,8 @@ export async function createReportPdf(element, filename) {
     scale: 1.5, backgroundColor: '#ffffff', useCORS: true,
     windowWidth: 1000,
     onclone(doc) {
-      const report = doc.querySelector('.wreport');
+      const report = doc.querySelector('[data-pdf-root]') || doc.querySelector('.wreport');
+      if (!report) return;
       report.style.width = '760px';
       report.style.maxWidth = 'none';
       report.style.margin = '0';
@@ -49,4 +50,54 @@ export function downloadPdf(file) {
   link.href = url; link.download = file.name;
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+
+// The Android app provides window.ThiruthiNative, because Android web views cannot share or download files.
+const native = () => (typeof window !== 'undefined' ? window.ThiruthiNative : null);
+
+/**
+ * Sends the PDF itself (not a link) to another app.
+ *  - Android app: the phone's share sheet, or WhatsApp directly when whatsapp is true.
+ *  - Phones/tablets in a browser: the system share sheet (WhatsApp, email, Drive, Files…).
+ *  - Computers: downloads the PDF (and opens WhatsApp Web for WhatsApp) so it can be attached.
+ * Returns 'shared' | 'cancelled' | 'downloaded' | 'retry'.
+ */
+export async function sharePdfFile(file, { title = '', text = '', whatsapp = false } = {}) {
+  const nb = native();
+  if (nb?.sharePdf) {
+    const res = nb.sharePdf(await fileToBase64(file), file.name, whatsapp ? 'whatsapp' : '');
+    if (res === 'ok') return 'shared';
+  }
+  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+    try {
+      await navigator.share({ files: [file], title, text });
+      return 'shared';
+    } catch (e) {
+      if (e?.name === 'AbortError') return 'cancelled';
+      if (e?.name === 'NotAllowedError') return 'retry'; // the browser wants a fresh tap
+    }
+  }
+  downloadPdf(file);
+  if (whatsapp) window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  return 'downloaded';
+}
+
+/** Saves the PDF on the device (Downloads in the Android app). */
+export async function savePdfFile(file) {
+  const nb = native();
+  if (nb?.savePdf) {
+    const res = nb.savePdf(await fileToBase64(file), file.name);
+    if (res === 'ok' || res === 'shared') return res;
+  }
+  downloadPdf(file);
+  return 'downloaded';
 }

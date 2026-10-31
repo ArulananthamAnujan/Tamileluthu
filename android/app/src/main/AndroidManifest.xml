@@ -8,6 +8,9 @@
     <queries>
         <intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent>
         <intent><action android:name="android.intent.action.GET_CONTENT" /><data android:mimeType="image/*" /></intent>
+        <intent><action android:name="android.intent.action.SEND" /><data android:mimeType="application/pdf" /></intent>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
     </queries>
 
     <application
@@ -27,5 +30,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Lets WhatsApp, email and Drive read PDFs the app shares (read-only, permission granted per share). -->
+        <provider
+            android:name=".PdfProvider"
+            android:authorities="${applicationId}.pdf"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 </manifest>

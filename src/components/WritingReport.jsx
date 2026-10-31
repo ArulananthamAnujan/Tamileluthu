@@ -1,11 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n.js';
 import { SITE } from '../site.js';
 import { callFn } from '../lib/scope.js';
 import { waLink } from '../lib/wa.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 import Icon from './Icon.jsx';
-import { createReportPdf, downloadPdf } from '../lib/reportPdf.js';
+import { createReportPdf, sharePdfFile, savePdfFile } from '../lib/reportPdf.js';
 import EssayFeedback, { SECTIONS, grade } from './EssayFeedback.jsx';
 
 function correctedText(text, issues) {
@@ -60,31 +60,39 @@ export default function WritingReport({ sub, studentName, onBack }) {
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfMsg, setPdfMsg] = useState('');
 
-  async function preparePdf() {
-    setPdfBusy(true); setPdfMsg('');
+  // Prepare the PDF as soon as the report is on screen, so one tap shares it instantly.
+  async function makePdf() {
+    if (pdf) return pdf;
+    setPdfBusy(true);
     try {
-      const filename = `writing-feedback-${sub.id}.pdf`;
-      const file = await createReportPdf(reportRef.current, filename);
+      await new Promise((r) => setTimeout(r, 150));
+      const safe = (name || 'student').replace(/[^\w\u0B80-\u0BFF -]+/g, '').trim().replace(/\s+/g, '-').slice(0, 40) || 'student';
+      const file = await createReportPdf(reportRef.current, `writing-feedback-${safe}.pdf`);
       setPdf(file);
-      setPdfMsg(t('PDF ready. Choose Download PDF or Share PDF below.'));
+      return file;
     } catch {
       setPdfMsg(t('Could not prepare the PDF. Please use Print / Save as PDF instead.'));
+      return null;
     } finally { setPdfBusy(false); }
   }
+  useEffect(() => { makePdf(); }, []);
 
-  async function sharePdf() {
-    // A separate tap after generation keeps the browser's user activation.
-    if (!navigator.canShare?.({ files: [pdf] }) || !navigator.share) {
-      downloadPdf(pdf);
-      setPdfMsg(t('PDF downloaded. Attach it from Downloads in WhatsApp or your email app.'));
-      return;
-    }
-    try { await navigator.share({ files: [pdf], title: subject }); }
-    catch (error) {
-      if (error.name !== 'AbortError') {
-        setPdfMsg(t('Sharing is unavailable here. Download the PDF and attach it in your chat or email.'));
-      }
-    }
+  async function share(whatsapp) {
+    setPdfMsg('');
+    const file = pdf || await makePdf();
+    if (!file) return;
+    const res = await sharePdfFile(file, { title: subject, text: whatsapp ? `${subject}` : '', whatsapp });
+    if (res === 'retry') setPdfMsg(t('The PDF is ready. Tap the button again to send it.'));
+    else if (res === 'downloaded') setPdfMsg(whatsapp
+      ? t('PDF saved to your Downloads. In WhatsApp, tap the paperclip (📎) → Document and choose it.')
+      : t('PDF saved to your Downloads. Attach it in WhatsApp or email.'));
+  }
+  async function save() {
+    setPdfMsg('');
+    const file = pdf || await makePdf();
+    if (!file) return;
+    const res = await savePdfFile(file);
+    setPdfMsg(res === 'ok' ? t('Saved to Downloads.') : res === 'downloaded' ? t('PDF downloaded.') : '');
   }
 
   const subject = `${t('Writing feedback')} · எழுத்துத் திருத்தம்: ${name}${sub.title ? ` – ${sub.title}` : ''}`;
@@ -104,11 +112,12 @@ export default function WritingReport({ sub, studentName, onBack }) {
       <div className="row between wrap noprint">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <div className="row wrap">
-          <button className="btn small primary" disabled={pdfBusy} onClick={preparePdf}><Icon name="reports" size={15} />{pdfBusy ? t('Preparing PDF…') : t('Prepare PDF')}</button>
-          {pdf && <><button className="btn small" onClick={() => downloadPdf(pdf)}>{t('Download PDF')}</button><button className="btn small primary" onClick={sharePdf}>{t('Share PDF')}</button></>}
-          <button className="btn small" onClick={() => window.print()}>{t('Print / Save as PDF')}</button>
-          <a className="btn small wa" href={waLink(reportText(sub, name))} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={15} />{t('WhatsApp text')}</a>
-          <a className="btn small" href={`mailto:${encodeURIComponent(to.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`}><Icon name="mail" size={15} />{t('My email app')}</a>
+          <button className="btn primary sharepdf" disabled={pdfBusy && !pdf} onClick={() => share(false)}>
+            <Icon name="share" size={17} />{pdf ? t('Share PDF') : t('Preparing PDF…')}
+          </button>
+          <button className="btn wa" disabled={pdfBusy && !pdf} onClick={() => share(true)}><Icon name="whatsapp" size={17} />{t('WhatsApp PDF')}</button>
+          <button className="btn small" disabled={pdfBusy && !pdf} onClick={save}>{t('Save to phone')}</button>
+          <button className="btn small ghost" onClick={() => window.print()}>{t('Print')}</button>
         </div>
       </div>
 
@@ -121,10 +130,10 @@ export default function WritingReport({ sub, studentName, onBack }) {
         </div>
         <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} maxLength={1000} placeholder={t('Add a note for the student (optional)')} aria-label={t('Note')} />
         {msg && <p className="small" role="status">{msg}</p>}
-        <p className="small muted">{t('Use Prepare PDF, then Share PDF to attach the report. WhatsApp text and My email app share text only.')}</p>
+        <p className="small muted">{t('“Share PDF” sends the report as a PDF file to WhatsApp, email, Drive or any app. “Send from school email” emails the report as a message.')}</p>
       </form>
 
-      <article ref={reportRef} className="card reportcard printable wreport">
+      <article ref={reportRef} data-pdf-root className="card reportcard printable wreport">
         <header className="rc-head">
           <div>
             <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</p>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase, errText } from '../supabase.js';
 import { useRoster, useParents, callFn } from '../lib/scope.js';
 import { t, tl, getLang } from '../i18n.js';
@@ -7,6 +7,7 @@ import { siteLink } from '../lib/wa.js';
 import { fmtDay, isoDay, pct } from '../lib/util.js';
 import { SKILLS, RATINGS, RATING_TA, ASSESSMENT_KINDS, ATTENDANCE, SITE } from '../site.js';
 import { NeedsSetup } from './Setup.jsx';
+import PdfShare from '../components/PdfShare.jsx';
 
 const rt = (r) => (getLang() === 'ta' ? `${RATING_TA[r]} · ${r}` : r);
 
@@ -221,17 +222,17 @@ export function ReportCard({ report, studentName, className, teacher, onBack }) 
   const d = usePeriod(report.student_id, report.class_id, report.period_start, report.period_end);
   const scored = d?.marks.filter((m) => !m.absent && m.mark != null) || [];
   const avg = scored.length ? Math.round(scored.reduce((s, m) => s + pct(m.mark, m.assessment.max_mark), 0) / scored.length) : null;
-  const shareText = t('{child}’s {term} report from {school} is ready. Sign in to view it: {url}', { child: studentName, term: report.term, school: SITE.school, url: siteLink('reports') });
+  const pdfRef = useRef(null);
   return (
     <div className="stack">
       <div className="row between wrap noprint">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <div className="row wrap">
-          <WaButton text={shareText} label={t('Share on WhatsApp')} />
-          <button className="btn small primary" onClick={() => window.print()}>{t('Print / save as PDF')}</button>
+          <PdfShare targetRef={pdfRef} title={`${studentName || ''} · ${report.term} · ${SITE.school}`}
+            filename={`report-${(studentName || 'student').replace(/[^\w\u0B80-\u0BFF -]+/g, '').trim().replace(/\s+/g, '-')}-${report.term.replace(/\s+/g, '-')}.pdf`} />
         </div>
       </div>
-      <article className="card reportcard printable">
+      <article ref={pdfRef} data-pdf-root className="card reportcard printable">
         <header className="rc-head">
           <div>
             <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</p>
