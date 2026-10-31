@@ -162,7 +162,11 @@ supabase link --project-ref YOUR-PROJECT-REF
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 supabase functions deploy check-writing
 ```
-Optional: `supabase secrets set ANTHROPIC_MODEL=claude-opus-5-5` for the most careful checking (slower and dearer). The default is `claude-sonnet-5-5`.
+Optional settings:
+- `supabase secrets set ANTHROPIC_MODEL=claude-opus-5-5`: the most careful checking, but slower and dearer. The default is `claude-sonnet-5-5`.
+- `supabase secrets set ANTHROPIC_EFFORT=high`: deeper checking (`low`/`medium`/`high`). The default is `medium`, which keeps photo checks well within the time limit.
+
+**If a check fails,** the student now sees the actual reason, for example "busy, retry", "AI key not working", "took too long" or "no writing could be read". For the details, open Supabase → Edge Functions → **check-writing → Logs**.
 
 ### 3. Put the website online — Hostinger
 1. On your computer, in this folder: copy `.env.example` to `.env` and fill in your Supabase Project URL and anon key, then run:

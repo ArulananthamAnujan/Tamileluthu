@@ -674,4 +674,18 @@ export default {
   "Send up to 60 invitations at a time.": "ஒரே நேரத்தில் 60 அழைப்புகள் வரை அனுப்பலாம்.",
   "Enter an email address.": "மின்னஞ்சல் முகவரியை உள்ளிடுங்கள்.",
   "Wait until the check has finished.": "சரிபார்ப்பு முடியும் வரை காத்திருங்கள்.",
+  // Checker error messages
+  "The checker's AI key is not working. Ask the school admin to check ANTHROPIC_API_KEY in Supabase.": "திருத்தியின் AI சாவி இயங்கவில்லை. Supabase இல் ANTHROPIC_API_KEY ஐச் சரிபார்க்கப் பள்ளி நிர்வாகியிடம் கேளுங்கள்.",
+  "The checker's AI settings need attention (model or request). Ask the school admin to look at the check-writing logs.": "திருத்தியின் AI அமைப்புகளைச் சரிசெய்ய வேண்டும். check-writing பதிவுகளைப் பார்க்கப் பள்ளி நிர்வாகியிடம் கேளுங்கள்.",
+  "The checking service is busy right now. Please retry in a minute.": "சரிபார்க்கும் சேவை இப்போது பரபரப்பாக உள்ளது. ஒரு நிமிடத்தில் மீண்டும் முயலுங்கள்.",
+  "The check took too long. Retry, or check fewer pages at a time.": "சரிபார்ப்புக்கு அதிக நேரம் ஆனது. மீண்டும் முயலுங்கள், அல்லது குறைவான பக்கங்களைச் சரிபாருங்கள்.",
+  "The checking service could not be reached. Please retry in a minute.": "சரிபார்க்கும் சேவையை அடைய முடியவில்லை. ஒரு நிமிடத்தில் மீண்டும் முயலுங்கள்.",
+  "The checker could not check this writing. Ask your teacher to look at it.": "இந்த எழுத்தைத் திருத்தியால் சரிபார்க்க முடியவில்லை. உங்கள் ஆசிரியரிடம் காட்டுங்கள்.",
+  "This writing is too long to check in one go. Split it into two shorter parts.": "இந்த எழுத்து ஒரே முறையில் சரிபார்க்க மிக நீளமானது. இரண்டு சிறிய பகுதிகளாகப் பிரியுங்கள்.",
+  "The checker's reply could not be read. Please retry.": "திருத்தியின் பதிலைப் படிக்க முடியவில்லை. மீண்டும் முயலுங்கள்.",
+  "No writing could be read in the photo. Take it closer, in good light, with the page flat.": "புகைப்படத்தில் எழுத்தைப் படிக்க முடியவில்லை. பக்கத்தைத் தட்டையாக வைத்து, நல்ல வெளிச்சத்தில், அருகிலிருந்து படம் எடுங்கள்.",
+  "The writing is empty.": "எழுத்து காலியாக உள்ளது.",
+  "This writing is too long. Check up to 20,000 characters at a time.": "இந்த எழுத்து மிக நீளமானது. ஒரே நேரத்தில் 20,000 எழுத்துகள் வரை சரிபாருங்கள்.",
+  "The check could not finish. Please retry.": "சரிபார்ப்பு முடியவில்லை. மீண்டும் முயலுங்கள்.",
+  "A photo could not be opened. Please upload it again.": "ஒரு புகைப்படத்தைத் திறக்க முடியவில்லை. மீண்டும் பதிவேற்றுங்கள்.",
 };
