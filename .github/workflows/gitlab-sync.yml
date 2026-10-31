@@ -1,0 +1,35 @@
+name: Copy main to GitLab (Hostinger deploys from there)
+
+# Every push to main on GitHub is copied to gitlab.com/tamileluthu1/tamileluthu.
+# One-time setup: GitHub repo → Settings → Secrets and variables → Actions →
+# New repository secret, name GITLAB_TOKEN, value = a GitLab token with write_repository.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: gitlab-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push main to GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          if [ -z "$GITLAB_TOKEN" ]; then
+            echo "::warning::GITLAB_TOKEN secret is not set, so nothing was copied to GitLab."
+            exit 0
+          fi
+          AUTH=$(printf 'oauth2:%s' "$GITLAB_TOKEN" | base64 -w0)
+          echo "::add-mask::$AUTH"
+          git -c http.extraHeader="Authorization: Basic $AUTH" \
+            push https://gitlab.com/tamileluthu1/tamileluthu.git HEAD:refs/heads/main
