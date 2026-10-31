@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Uri url = request.getUrl();
-            if (!useLocalFiles || !LOCAL_HOST.equals(url.getHost())) return null;
+            if (!LOCAL_HOST.equals(url.getHost())) return null;
             String path = url.getPath();
             if (path == null || path.isEmpty() || path.equals("/")) path = "/index.html";
             InputStream in = openAsset("www" + path);
@@ -126,10 +126,19 @@ public class MainActivity extends Activity {
             return new WebResourceResponse(mimeFor(path), "utf-8", in);
         }
 
+        /** Live website unreachable (offline, or site down): show the copy built into the app. */
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+            if (request.isForMainFrame() && !useLocalFiles && appHost.equals(request.getUrl().getHost())) {
+                String hash = request.getUrl().getFragment();
+                view.loadUrl("https://" + LOCAL_HOST + "/index.html" + (hash == null ? "" : "#" + hash));
+            }
+        }
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri url = request.getUrl();
-            if (appHost.equals(url.getHost())) return false;
+            if (appHost.equals(url.getHost()) || LOCAL_HOST.equals(url.getHost())) return false;
             // Links to other sites (e.g. photo links, email links) open outside the app.
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, url));
@@ -244,7 +253,7 @@ public class MainActivity extends Activity {
         private static final int MAX_BYTES = 30 * 1024 * 1024;
 
         private byte[] decode(String base64) {
-            if (!appHost.equals(pageHost) || base64 == null || base64.length() > MAX_BYTES * 4 / 3 + 8) return null;
+            if (!(appHost.equals(pageHost) || LOCAL_HOST.equals(pageHost)) || base64 == null || base64.length() > MAX_BYTES * 4 / 3 + 8) return null;
             try { return Base64.decode(base64, Base64.DEFAULT); } catch (IllegalArgumentException e) { return null; }
         }
 

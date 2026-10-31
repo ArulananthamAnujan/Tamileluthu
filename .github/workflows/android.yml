@@ -62,7 +62,7 @@ jobs:
           THIRUTHI_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           THIRUTHI_VERSION_CODE: ${{ github.run_number }}
           THIRUTHI_VERSION_NAME: 1.0.${{ github.run_number }}
-          THIRUTHI_APP_URL: ${{ secrets.APP_URL }}
+          THIRUTHI_APP_URL: ${{ secrets.APP_URL || vars.APP_URL }}
 
       - name: Name the APK
         run: cp android/app/build/outputs/apk/release/app-release.apk "TamilThiruthi-1.0.${{ github.run_number }}.apk"

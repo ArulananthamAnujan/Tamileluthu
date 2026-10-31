@@ -19,7 +19,10 @@ android {
         // Your website address, e.g. https://thiruthi.example.com
         // When set, the app opens the live website (updates reach the app instantly).
         // When empty, the app uses the copy of the website bundled inside it.
-        resValue 'string', 'app_url', (System.getenv('THIRUTHI_APP_URL') ?: '')
+        // Set by the APP_URL GitHub secret/variable, or in android/app-url.txt (one line, https://…).
+        def urlFile = rootProject.file('app-url.txt')
+        def fileUrl = urlFile.exists() ? urlFile.readLines().find { it.trim().startsWith('https://') }?.trim() : null
+        resValue 'string', 'app_url', (System.getenv('THIRUTHI_APP_URL') ?: fileUrl ?: '')
     }
 
     signingConfigs {

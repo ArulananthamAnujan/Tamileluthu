@@ -26,8 +26,8 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
           if [ -z "$GITLAB_TOKEN" ]; then
-            echo "::warning::GITLAB_TOKEN secret is not set, so nothing was copied to GitLab."
-            exit 0
+            echo "::error::GITLAB_TOKEN secret is not set, so nothing was copied to GitLab (Hostinger will not update). Add it in GitHub → Settings → Secrets and variables → Actions."
+            exit 1
           fi
           AUTH=$(printf 'oauth2:%s' "$GITLAB_TOKEN" | base64 -w0)
           echo "::add-mask::$AUTH"

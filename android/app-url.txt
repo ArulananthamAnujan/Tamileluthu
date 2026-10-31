@@ -1,0 +1,3 @@
+# Put your live website address on the next line (must start with https://).
+# The Android app then always opens the live site, so every website update
+# appears in the app without reinstalling it.
