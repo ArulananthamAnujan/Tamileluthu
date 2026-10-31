@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { t } from '../i18n.js';
 import { supabase, errText } from '../supabase.js';
 import { CATS, tally, fmtDate } from '../categories.js';
 import SubmissionList from '../components/SubmissionList.jsx';
@@ -64,7 +65,7 @@ export default function Teacher({ profile }) {
         <div className="row between"><button className="btn small" onClick={() => setStudent(null)}>← {cls?.name}</button></div>
         <h2 className="title">{student.full_name}</h2>
         <div className="grid2">
-          <section className="card"><SubmissionList subs={own} onOpen={setOpen} empty="No writing uploaded yet." /></section>
+          <section className="card"><SubmissionList subs={own} onOpen={setOpen} empty={t('No writing uploaded yet.')} /></section>
           <aside className="stack"><Progress subs={own} title="This student’s common mistakes" /></aside>
         </div>
       </div>
@@ -74,7 +75,7 @@ export default function Teacher({ profile }) {
   return (
     <div className="stack">
       <div className="row between wrap">
-        <h2 className="title">{cls ? cls.name : 'Your classes'}</h2>
+        <h2 className="title">{cls ? cls.name : t('Your classes')}</h2>
         {classes.length > 1 && <div className="tabs">{classes.map((c) => <button key={c.id} className={cls?.id === c.id ? 'on' : ''} onClick={() => setCls(c)}>{c.name}</button>)}</div>}
       </div>
       <div className="grid2">
@@ -82,14 +83,14 @@ export default function Teacher({ profile }) {
           {cls ? (
             <>
               <div className="row between wrap">
-                <h3>Students ({members.length})</h3>
-                <span className="small">Class code: <b className="code-inline">{cls.join_code}</b></span>
+                <h3>{t('Students')} ({members.length})</h3>
+                <span className="small">{t('Class code')}: <b className="code-inline">{cls.join_code}</b></span>
               </div>
-              {!members.length && <p className="muted">No students yet. Give students the class code; they enter it on their home page.</p>}
+              {!members.length && <p className="muted">{t('No students yet. Give students the class code; they enter it after signing up.')}</p>}
               {members.length > 0 && (
                 <div className="tablewrap">
                   <table className="table">
-                    <thead><tr><th>Student</th><th>Pieces</th><th>Last upload</th><th>Mistakes</th><th>Most common</th><th>To comment</th><th></th></tr></thead>
+                    <thead><tr><th>{t('Student')}</th><th>{t('Pieces')}</th><th>{t('Last upload')}</th><th>{t('Mistakes')}</th><th>{t('Most common')}</th><th>{t('To comment')}</th><th></th></tr></thead>
                     <tbody>
                       {rows.map((r) => (
                         <tr key={r.student_id}>
@@ -99,7 +100,7 @@ export default function Teacher({ profile }) {
                           <td className="num">{r.total}</td>
                           <td>{r.top ? CATS[r.top].label : '–'}</td>
                           <td className="num">{r.uncommented || ''}</td>
-                          <td><button className="btn small" onClick={() => removeStudent(r.student_id)}>Remove</button></td>
+                          <td><button className="btn small" onClick={() => removeStudent(r.student_id)}>{t('Remove')}</button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -107,20 +108,20 @@ export default function Teacher({ profile }) {
                 </div>
               )}
             </>
-          ) : <p className="muted">Create your first class. You will get a code to give your students.</p>}
+          ) : <p className="muted">{t('Create your first class. You will get a code to give your students.')}</p>}
         </section>
         <aside className="stack">
           <Progress subs={subs} title="Class’s most common mistakes" />
           <section className="card">
-            <h3>Latest uploads</h3>
+            <h3>{t('Latest uploads')}</h3>
             <SubmissionList subs={subs.slice(0, 8).map((s) => ({ ...s, title: `${members.find((m) => m.student_id === s.student_id)?.student.full_name || ''} · ${s.title}` }))}
-              onOpen={(s) => setOpen(subs.find((x) => x.id === s.id))} empty="Nothing uploaded yet." />
+              onOpen={(s) => setOpen(subs.find((x) => x.id === s.id))} empty={t('Nothing uploaded yet.')} />
           </section>
           <section className="card">
-            <h3>New class</h3>
+            <h3>{t('New class')}</h3>
             <form className="row" onSubmit={createClass}>
-              <input id="cname" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. VCE Tamil 2027" />
-              <button className="btn">Create</button>
+              <input id="cname" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('e.g. Year 5 Tamil')} />
+              <button className="btn">{t('Create')}</button>
             </form>
             {msg && <p className="error small">{msg}</p>}
           </section>

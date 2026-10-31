@@ -61,3 +61,22 @@ export async function callFn(name, body) {
   }
   return data;
 }
+
+// Parents (name + phone for WhatsApp) of the given students: { studentId: [parent…] }.
+export function useParents(studentIds) {
+  const [map, setMap] = useState({});
+  const key = studentIds.join();
+  useEffect(() => {
+    let off = false;
+    if (!studentIds.length) { setMap({}); return; }
+    supabase.from('parent_links').select('student_id, parent:profiles!parent_links_parent_id_fkey(id, full_name, phone)')
+      .in('student_id', studentIds).then(({ data }) => {
+        if (off) return;
+        const m = {};
+        (data || []).forEach((l) => { if (l.parent) (m[l.student_id] ||= []).push(l.parent); });
+        setMap(m);
+      });
+    return () => { off = true; };
+  }, [key]);
+  return map;
+}

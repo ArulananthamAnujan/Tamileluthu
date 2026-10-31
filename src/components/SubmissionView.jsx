@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { t } from '../i18n.js';
 import { supabase, errText } from '../supabase.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
 
@@ -50,7 +51,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
       const { data, error } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
       if (!active) return;
       if (error?.code === 'PGRST116') {
-        setAccessError('This writing is no longer available to your account.'); setPhotos([]); return;
+        setAccessError(t('This writing is no longer available to your account.')); setPhotos([]); return;
       }
       if (data) {
         setAccessError(''); setSub(data); onChanged?.(data);
@@ -58,8 +59,8 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
       }
     }
     refresh();
-    const t = setInterval(refresh, sub.status === 'pending' || sub.status === 'checking' ? 4000 : 15000);
-    return () => { active = false; clearInterval(t); };
+    const timer = setInterval(refresh, sub.status === 'pending' || sub.status === 'checking' ? 4000 : 15000);
+    return () => { active = false; clearInterval(timer); };
   }, [sub.id, sub.status]);
 
   useEffect(() => {
@@ -85,41 +86,41 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
   }
 
   async function retry() {
-    setSaving('Starting the check again…');
+    setSaving(t('Starting the check again…'));
     const { data: result, error } = await supabase.functions.invoke('check-writing', { body: { submission_id: sub.id } });
     if (error) { setSaving(errText(error)); return; }
     const { data: fresh } = await supabase.from('submissions').select('*').eq('id', sub.id).single();
     setSub(fresh || { ...sub, status: result?.status || 'checking', check_started_at: new Date().toISOString(), error: null }); setSaving('');
   }
   async function saveComment() {
-    setSaving('Saving…');
+    setSaving(t('Saving…'));
     const { error } = await supabase.rpc('set_teacher_comment', { sub: sub.id, comment });
     if (error) { setSaving(errText(error)); return; }
     const next = { ...sub, teacher_comment: comment.trim() || null, teacher_comment_at: new Date().toISOString() };
-    commentDirty.current = false; setSub(next); onChanged?.(next); setSaving('Saved.');
+    commentDirty.current = false; setSub(next); onChanged?.(next); setSaving(t('Saved.'));
   }
 
   const checking = sub.status === 'pending' || sub.status === 'checking';
   const text = sub.original_text || '';
   const stale = sub.status === 'checking' && now - new Date(sub.check_started_at || sub.created_at).getTime() > 300000;
 
-  if (accessError) return <div className="card"><p>{accessError}</p><button className="btn" onClick={onBack}>Back</button></div>;
+  if (accessError) return <div className="card"><p>{accessError}</p><button className="btn" onClick={onBack}>{t('Back')}</button></div>;
 
   return (
     <div className="stack">
       <div className="row between">
-        <button className="btn small" onClick={onBack}>← Back</button>
+        <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <span className="muted small">{typeLabel(sub.text_type)} · {fmtDate(sub.created_at)}</span>
       </div>
-      <h2 className="title">{sub.title || 'Untitled writing'}</h2>
+      <h2 className="title">{sub.title || t('Untitled writing')}</h2>
 
       {checking && (
-        <div className="card notice">{viewer === 'student' && (sub.status === 'pending' || stale) ? <><p>{stale ? 'The check timed out. You can retry safely.' : sub.error || 'Your writing is saved and ready to check.'}</p><button className="btn" disabled={saving === 'Starting the check again…'} onClick={retry}>Start / retry check</button></> : <p><b>Checking…</b> {sub.input_mode === 'photo' ? 'Reading the handwriting, then marking it. ' : ''}This usually takes under a minute. This page updates by itself.</p>}</div>
+        <div className="card notice">{viewer === 'student' && (sub.status === 'pending' || stale) ? <><p>{stale ? t('The check timed out. You can retry safely.') : sub.error ? t(sub.error) : t('Your writing is saved and ready to check.')}</p><button className="btn" disabled={saving === t('Starting the check again…')} onClick={retry}>{t('Start / retry check')}</button></> : <p><b>{t('Checking…')}</b> {sub.input_mode === 'photo' ? t('Reading the handwriting, then marking it.') + ' ' : ''}{t('This usually takes under a minute. This page updates by itself.')}</p>}</div>
       )}
       {sub.status === 'error' && (
         <div className="card notice bad">
-          <p><b>The check did not finish.</b> {sub.error}</p>
-          {viewer === 'student' && <button className="btn" onClick={retry}>Check again</button>}
+          <p><b>{t('The check did not finish.')}</b> {sub.error ? t(sub.error) : ''}</p>
+          {viewer === 'student' && <button className="btn" onClick={retry}>{t('Check again')}</button>}
         </div>
       )}
 
@@ -129,12 +130,12 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
             <div className="bar">
               <div className="chips">
                 {Object.entries(GROUPS).map(([g, v]) => (
-                  <span key={g} className="chip"><span className={`dot d-${g}`} />{v.label} <b>{counts[g]}</b></span>
+                  <span key={g} className="chip"><span className={`dot d-${g}`} />{t(v.label)} <b>{counts[g]}</b></span>
                 ))}
               </div>
               <span className="spacer" />
               {issues.some((i) => i.correct && i.start != null) && (
-                <button className="btn small" onClick={() => setShowFixed(!showFixed)}>{showFixed ? 'Show mistakes' : 'Show corrected version'}</button>
+                <button className="btn small" onClick={() => setShowFixed(!showFixed)}>{showFixed ? t('Show mistakes') : t('Show corrected version')}</button>
               )}
             </div>
             {showFixed
@@ -142,8 +143,8 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
               : <Highlighted text={text} issues={issues} active={active} onPick={pick} />}
             {sub.input_mode === 'photo' && (
               <div className="foot">
-                <button className="btn small" onClick={() => setShowPhotos(!showPhotos)}>{showPhotos ? 'Hide photos' : `Show photos (${sub.photo_paths.length})`}</button>
-                <span className="muted small">AI transcription: compare unclear words with your original photos.</span>
+                <button className="btn small" onClick={() => setShowPhotos(!showPhotos)}>{showPhotos ? t('Hide photos') : t('Show photos ({n})', { n: sub.photo_paths.length })}</button>
+                <span className="muted small">{t('AI transcription: compare unclear words with your original photos.')}</span>
               </div>
             )}
             {showPhotos && <div className="photos">{photos.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer"><img src={u} alt={`Page ${i + 1}`} /></a>)}</div>}
@@ -151,29 +152,29 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
 
           <aside className="stack">
             <section className="card">
-              <h3>AI feedback</h3>
-              <p className="muted small">Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 40 corrections.</p>
-              <p>{sub.summary || (issues.length ? 'Work through each mistake below.' : 'No definite errors were identified in this check.')}</p>
-              {issues.length > 0 && sub.focus && CATS[sub.focus] && <p><b>Practise next:</b> {CATS[sub.focus].label}</p>}
-              {sub.handwriting?.length > 0 && (<><p className="label">Handwriting notes</p><ul>{sub.handwriting.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
-              {sub.unclear?.length > 0 && (<><p className="label">Hard to read</p><ul>{sub.unclear.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
+              <h3>{t('AI feedback')}</h3>
+              <p className="muted small">{t('Practice feedback, not an exam grade. Review suggestions with your teacher; a check may list up to 40 corrections.')}</p>
+              <p>{sub.summary || (issues.length ? t('Work through each mistake below.') : t('No definite errors were identified in this check.'))}</p>
+              {issues.length > 0 && sub.focus && CATS[sub.focus] && <p><b>{t('Practise next:')}</b> {CATS[sub.focus].label}</p>}
+              {sub.handwriting?.length > 0 && (<><p className="label">{t('Handwriting notes')}</p><ul>{sub.handwriting.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
+              {sub.unclear?.length > 0 && (<><p className="label">{t('Hard to read')}</p><ul>{sub.unclear.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
             </section>
 
             <section className="card">
-              <h3>Teacher’s comment</h3>
+              <h3>{t('Teacher’s comment')}</h3>
               {viewer === 'teacher' ? (
                 <>
-                  <textarea id="tcomment" className="comment" rows={4} value={comment} onChange={(e) => { commentDirty.current = true; setComment(e.target.value); }} placeholder="Write a comment for the student and parents" />
-                  <div className="row"><button className="btn primary small" onClick={saveComment}>Save comment</button><span className="muted small">{saving}</span></div>
+                  <textarea id="tcomment" className="comment" rows={4} value={comment} onChange={(e) => { commentDirty.current = true; setComment(e.target.value); }} placeholder={t('Write a comment for the student and parents')} />
+                  <div className="row"><button className="btn primary small" onClick={saveComment}>{t('Save comment')}</button><span className="muted small">{saving}</span></div>
                 </>
               ) : sub.teacher_comment
                 ? <p className="tcomment">{sub.teacher_comment}<span className="muted small"> · {fmtDate(sub.teacher_comment_at)}</span></p>
-                : <p className="muted">No comment yet.</p>}
+                : <p className="muted">{t('No comment yet.')}</p>}
             </section>
 
             <section className="card" ref={listRef}>
-              <h3>Suggested corrections ({issues.length})</h3>
-              {!issues.length && <p className="muted">None found.</p>}
+              <h3>{t('Suggested corrections')} ({issues.length})</h3>
+              {!issues.length && <p className="muted">{t('None found.')}</p>}
               <div className="issues">
                 {issues.map((it, idx) => {
                   const c = catOf(it);
@@ -181,7 +182,7 @@ export default function SubmissionView({ sub: initial, viewer, onBack, onChanged
                     <div key={idx} data-idx={idx} className={`issue g-${c.g}${active === idx ? ' on' : ''}`} onClick={() => setActive(idx)}>
                       <span className="cat">{c.label}</span>
                       <div className="fix"><span className="w">{it.wrong}</span>{it.correct && <><span aria-hidden="true">→</span><span className="r">{it.correct}</span></>}</div>
-                      {it.rule && <p className="rule"><b>Rule:</b> {it.rule}</p>}
+                      {it.rule && <p className="rule"><b>{t('Rule:')}</b> {it.rule}</p>}
                       {it.explain && <p className="why">{it.explain}</p>}
                     </div>
                   );

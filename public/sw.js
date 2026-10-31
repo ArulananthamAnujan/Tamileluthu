@@ -1,6 +1,6 @@
 // Minimal service worker: makes the app installable and keeps the app shell
 // available offline. Never caches Supabase or checking requests.
-const CACHE = 'thiruthi-v1';
+const CACHE = 'eluthu-v2';
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));

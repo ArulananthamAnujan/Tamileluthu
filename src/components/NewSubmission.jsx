@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t } from '../i18n.js';
 import { supabase, errText } from '../supabase.js';
 import { TEXT_TYPES } from '../categories.js';
 import { shrinkPhoto } from '../image.js';
@@ -17,7 +18,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
   function addFiles(files) {
     const next = [...pages];
     for (const f of files) {
-      if (next.length >= MAX_PAGES) { setErr(`Up to ${MAX_PAGES} pages at a time.`); break; }
+      if (next.length >= MAX_PAGES) { setErr(t('Up to {n} pages at a time.', { n: MAX_PAGES })); break; }
       next.push({ file: f, url: URL.createObjectURL(f) });
     }
     setPages(next);
@@ -33,15 +34,15 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
 
   async function submit() {
     setErr('');
-    if (mode === 'photo' && !pages.length) { setErr('Add at least one photo of your writing.'); return; }
-    if (text.length > 20000) { setErr('Up to 20,000 characters per submission.'); return; }
-    if (mode === 'text' && !text.trim()) { setErr('Type or paste your writing first.'); return; }
+    if (mode === 'photo' && !pages.length) { setErr(t('Add at least one photo of your writing.')); return; }
+    if (text.length > 20000) { setErr(t('Up to 20,000 characters per submission.')); return; }
+    if (mode === 'text' && !text.trim()) { setErr(t('Type or paste your writing first.')); return; }
     try {
       let paths = [];
       if (mode === 'photo') {
         const folder = `${profile.id}/${crypto.randomUUID()}`;
         for (let i = 0; i < pages.length; i++) {
-          setBusy(`Uploading page ${i + 1} of ${pages.length}…`);
+          setBusy(t('Uploading page {a} of {b}…', { a: i + 1, b: pages.length }));
           const blob = await shrinkPhoto(pages[i].file);
           const path = `${folder}/page-${String(i + 1).padStart(2, '0')}.jpg`;
           const { error } = await supabase.storage.from('writing').upload(path, blob, { contentType: 'image/jpeg' });
@@ -49,7 +50,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
           paths.push(path);
         }
       }
-      setBusy('Sending for checking…');
+      setBusy(t('Sending for checking…'));
       const { data, error } = await supabase.from('submissions').insert({
         student_id: profile.id,
         title: title.trim() || 'Untitled writing',
@@ -71,29 +72,29 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
 
   return (
     <div className="stack">
-      <div className="row between"><button className="btn small" onClick={onCancel}>← Back</button></div>
-      <h2 className="title">New writing</h2>
-      <p className="muted small">Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.</p>
+      <div className="row between"><button className="btn small" onClick={onCancel}>← {t('Back')}</button></div>
+      <h2 className="title">{t('New writing')}</h2>
+      <p className="muted small">{t('Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.')}</p>
       <div className="card form">
-        <label className="field">Title<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Letter to my cousin" /></label>
-        <label className="field">Text type
+        <label className="field">{t('Title')}<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('e.g. Letter to my cousin')} /></label>
+        <label className="field">{t('Text type')}
           <select id="ttype" value={type} onChange={(e) => setType(e.target.value)}>
             {TEXT_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
         <div className="tabs">
-          <button className={mode === 'photo' ? 'on' : ''} onClick={() => setMode('photo')}>Photo of my book</button>
-          <button className={mode === 'text' ? 'on' : ''} onClick={() => setMode('text')}>Type or paste</button>
+          <button className={mode === 'photo' ? 'on' : ''} onClick={() => setMode('photo')}>{t('Photo of my book')}</button>
+          <button className={mode === 'text' ? 'on' : ''} onClick={() => setMode('text')}>{t('Type or paste')}</button>
         </div>
 
         {mode === 'photo' ? (
           <div className="stack">
-            <p className="muted small">Photograph each page in good light, held straight over the page. Add the pages in order.</p>
+            <p className="muted small">{t('Photograph each page in good light, held straight over the page. Add the pages in order.')}</p>
             <div className="thumbs">
               {pages.map((p, i) => (
                 <div key={p.url} className="thumb">
                   <img src={p.url} alt={`Page ${i + 1}`} />
-                  <span className="pg">Page {i + 1}</span>
+                  <span className="pg">{t('Page')} {i + 1}</span>
                   <div className="tacts">
                     <button aria-label="Move earlier" onClick={() => move(i, -1)} disabled={i === 0}>‹</button>
                     <button aria-label="Remove page" onClick={() => removePage(i)}>×</button>
@@ -104,11 +105,11 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
               {pages.length < MAX_PAGES && (<>
                 <label className="addpage">
                   <input type="file" accept="image/*" capture="environment" onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
-                  <span>+</span>Take photo
+                  <span>+</span>{t('Take photo')}
                 </label>
                 <label className="addpage">
                   <input type="file" accept="image/*" multiple onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
-                  <span>+</span>{pages.length ? 'Add more pages' : 'Choose photos'}
+                  <span>+</span>{pages.length ? t('Add more pages') : t('Choose photos')}
                 </label>
               </>)}
             </div>
@@ -119,7 +120,7 @@ export default function NewSubmission({ profile, onDone, onCancel }) {
 
         {err && <p className="error">{err}</p>}
         <div className="row">
-          <button className="btn primary" disabled={!!busy} onClick={submit}>{busy || 'Check my writing'}</button>
+          <button className="btn primary" disabled={!!busy} onClick={submit}>{busy || t('Check my writing')}</button>
         </div>
       </div>
     </div>

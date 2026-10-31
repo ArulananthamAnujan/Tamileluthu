@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getLang, t } from '../i18n.js';
 
 // Local calendar date as YYYY-MM-DD (not UTC, so evening classes stay on the right day).
 export function isoDay(d = new Date()) {
@@ -11,11 +12,11 @@ export function addDays(day, n) {
   return isoDay(d);
 }
 export const fmtDay = (day, opts) => day
-  ? new Date(day + (day.length === 10 ? 'T12:00:00' : '')).toLocaleDateString('en-AU', opts || { weekday: 'short', day: 'numeric', month: 'short' })
+  ? new Date(day + (day.length === 10 ? 'T12:00:00' : '')).toLocaleDateString(getLang() === 'ta' ? 'ta-IN' : 'en-AU', opts || { weekday: 'short', day: 'numeric', month: 'short' })
   : '';
 export const money = (cents, cur = 'aud') => cents
   ? new Intl.NumberFormat('en-AU', { style: 'currency', currency: cur.toUpperCase() }).format(cents / 100)
-  : 'Free';
+  : t('Free');
 export const pct = (mark, max) => (mark == null || !max ? null : Math.round((Number(mark) / Number(max)) * 100));
 
 // Tiny hash router: "#/marks?x=1" → { path: 'marks', query: URLSearchParams }.

@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, errText } from '../supabase.js';
-import { useRoster, callFn } from '../lib/scope.js';
+import { useRoster, useParents, callFn } from '../lib/scope.js';
+import { t, tl } from '../i18n.js';
+import WaButton from '../components/Wa.jsx';
+import { siteLink } from '../lib/wa.js';
 import { fmtDay, isoDay, pct, go } from '../lib/util.js';
 import { downloadCsv } from '../lib/csv.js';
 import { ASSESSMENT_KINDS } from '../site.js';
@@ -34,7 +37,7 @@ function Markbook({ ctx, selected }) {
   async function create(e) {
     e.preventDefault(); setMsg('');
     const max = Number(form.max_mark);
-    if (!form.title.trim() || !(max > 0)) { setMsg('Add a title and a maximum mark.'); return; }
+    if (!form.title.trim() || !(max > 0)) { setMsg(t('Add a title and a maximum mark.')); return; }
     const { data, error } = await supabase.from('assessments').insert({
       class_id: cls.id, title: form.title.trim(), kind: form.kind, max_mark: max, held_on: form.held_on, created_by: ctx.profile.id,
     }).select('id').single();
@@ -49,35 +52,35 @@ function Markbook({ ctx, selected }) {
     const cols = [...(list || [])].reverse();
     const by = {}; all.forEach((m) => { by[`${m.student_id}|${m.assessment_id}`] = m; });
     downloadCsv(`markbook-${cls.name}.csv`, [
-      ['Student', ...cols.map((a) => `${a.title} (/${Number(a.max_mark)})`)],
-      ...roster.map((s) => [s.full_name, ...cols.map((a) => { const m = by[`${s.id}|${a.id}`]; return !m ? '' : m.absent ? 'Absent' : m.mark ?? ''; })]),
+      [t('Student'), ...cols.map((a) => `${a.title} (/${Number(a.max_mark)})`)],
+      ...roster.map((s) => [s.full_name, ...cols.map((a) => { const m = by[`${s.id}|${a.id}`]; return !m ? '' : m.absent ? t('Absent') : m.mark ?? ''; })]),
     ]);
   }
 
   return (
     <div className="stack">
       <div className="row between wrap">
-        <h2 className="title">Marks <span className="ta">· மதிப்பெண்கள்</span></h2>
-        <button className="btn small" onClick={exportBook} disabled={!list?.length}>Download markbook (CSV)</button>
+        <h2 className="title">{t('Marks')} <span className="ta">· மதிப்பெண்கள்</span></h2>
+        <button className="btn small" onClick={exportBook} disabled={!list?.length}>{t('Download markbook (CSV)')}</button>
       </div>
       <div className="grid2">
         <section className="card">
-          <h3>Tests and exams</h3>
-          {!list ? <p className="muted">Loading…</p> : !list.length ? <p className="muted">No assessments yet. Create one to start entering marks.</p> : (
+          <h3>{t('Tests and exams')}</h3>
+          {!list ? <p className="muted">{t('Loading…')}</p> : !list.length ? <p className="muted">{t('No assessments yet. Create one to start entering marks.')}</p> : (
             <div className="tablewrap">
               <table className="table">
-                <thead><tr><th>Assessment</th><th>Date</th><th className="num">Entered</th><th className="num">Average</th><th>Status</th></tr></thead>
+                <thead><tr><th>{t('Assessment')}</th><th>{t('Date')}</th><th className="num">{t('Entered')}</th><th className="num">{t('Average')}</th><th>{t('Status')}</th></tr></thead>
                 <tbody>{list.map((a) => {
                   const ms = all.filter((m) => m.assessment_id === a.id);
                   const vals = ms.filter((m) => !m.absent && m.mark != null).map((m) => Number(m.mark));
                   const avg = vals.length ? pct(vals.reduce((x, y) => x + y, 0) / vals.length, a.max_mark) : null;
                   return (
                     <tr key={a.id}>
-                      <td><a href={`#/marks?a=${a.id}`}>{a.title}</a><div className="small muted">{ASSESSMENT_KINDS[a.kind]} · out of {Number(a.max_mark)}</div></td>
+                      <td><a href={`#/marks?a=${a.id}`}>{a.title}</a><div className="small muted">{tl(ASSESSMENT_KINDS[a.kind])} · {t('out of {n}', { n: Number(a.max_mark) })}</div></td>
                       <td>{fmtDay(a.held_on)}</td>
                       <td className="num">{ms.length}/{roster.length}</td>
                       <td className="num">{avg == null ? '–' : `${avg}%`}</td>
-                      <td>{a.published ? <span className="status s-checked">{a.notified_at ? 'Sent' : 'Published'}</span> : <span className="status">Draft</span>}</td>
+                      <td>{a.published ? <span className="status s-checked">{a.notified_at ? t('Sent') : t('Published')}</span> : <span className="status">{t('Draft')}</span>}</td>
                     </tr>
                   );
                 })}</tbody>
@@ -86,20 +89,20 @@ function Markbook({ ctx, selected }) {
           )}
         </section>
         <aside className="card">
-          <h3>New assessment</h3>
+          <h3>{t('New assessment')}</h3>
           <form className="form" onSubmit={create}>
-            <label className="field">Title<input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={200} placeholder="e.g. Term 4 listening test" /></label>
+            <label className="field">{t('Title')}<input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={200} placeholder={t('e.g. Term 4 listening test')} /></label>
             <div className="row wrap">
-              <label className="field">Type
+              <label className="field">{t('Type')}
                 <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
-                  {Object.entries(ASSESSMENT_KINDS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                  {Object.entries(ASSESSMENT_KINDS).map(([k, v]) => <option key={k} value={k}>{tl(v)}</option>)}
                 </select>
               </label>
-              <label className="field">Out of<input type="number" min="1" max="1000" step="0.5" value={form.max_mark} onChange={(e) => setForm({ ...form, max_mark: e.target.value })} style={{ width: '6em' }} /></label>
-              <label className="field">Date<input type="date" value={form.held_on} onChange={(e) => setForm({ ...form, held_on: e.target.value })} /></label>
+              <label className="field">{t('Out of')}<input type="number" min="1" max="1000" step="0.5" value={form.max_mark} onChange={(e) => setForm({ ...form, max_mark: e.target.value })} style={{ width: '6em' }} /></label>
+              <label className="field">{t('Date')}<input type="date" value={form.held_on} onChange={(e) => setForm({ ...form, held_on: e.target.value })} /></label>
             </div>
             {msg && <p className="error small">{msg}</p>}
-            <button className="btn primary">Create and enter marks</button>
+            <button className="btn primary">{t('Create and enter marks')}</button>
           </form>
         </aside>
       </div>
@@ -112,6 +115,7 @@ function MarkSheet({ ctx, a, roster, onBack, onChanged }) {
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const parents = useParents(roster.map((s) => s.id));
 
   useEffect(() => {
     supabase.from('marks').select('*').eq('assessment_id', a.id).then(({ data }) => {
@@ -128,32 +132,32 @@ function MarkSheet({ ctx, a, roster, onBack, onChanged }) {
       const r = rows[s.id];
       if (!r || (r.mark === '' && !r.absent && !r.comment)) continue;
       const n = r.mark === '' ? null : Number(r.mark);
-      if (n != null && (Number.isNaN(n) || n < 0 || n > max)) { setMsg(`${s.full_name}: mark must be between 0 and ${max}.`); setBusy(false); return false; }
+      if (n != null && (Number.isNaN(n) || n < 0 || n > max)) { setMsg(t('{name}: mark must be between 0 and {max}.', { name: s.full_name, max })); setBusy(false); return false; }
       payload.push({ assessment_id: a.id, student_id: s.id, mark: r.absent ? null : n, absent: Boolean(r.absent), comment: r.comment.trim() || null });
     }
     const { error } = payload.length ? await supabase.from('marks').upsert(payload, { onConflict: 'assessment_id,student_id' }) : { error: null };
     setBusy(false);
     if (error) { setMsg(errText(error)); return false; }
-    setDirty(false); setMsg('Saved.'); onChanged();
+    setDirty(false); setMsg(t('Saved.')); onChanged();
     return true;
   }
   async function setPublished(v) {
     if (dirty && !(await save())) return;
     const { error } = await supabase.from('assessments').update({ published: v }).eq('id', a.id);
-    if (error) setMsg(errText(error)); else { setMsg(v ? 'Published: students and parents can see their own mark.' : 'Hidden from students and parents.'); onChanged(); }
+    if (error) setMsg(errText(error)); else { setMsg(v ? t('Published: students and parents can see their own mark.') : t('Hidden from students and parents.')); onChanged(); }
   }
   async function send() {
     if (dirty && !(await save())) return;
-    if (!confirm('Publish these marks and email each parent their child’s result?')) return;
-    setBusy(true); setMsg('Sending…');
+    if (!confirm(t('Publish these marks and email each parent their child’s result?'))) return;
+    setBusy(true); setMsg(t('Sending…'));
     try {
       const r = await callFn('notify-parents', { kind: 'assessment', id: a.id });
-      setMsg(r.note || `Published and emailed ${r.sent} parent${r.sent === 1 ? '' : 's'}.`); onChanged();
+      setMsg(r.note ? t(r.note) : t('Published and emailed {n} parents.', { n: r.sent })); onChanged();
     } catch (e) { setMsg(e.message); }
     setBusy(false);
   }
   async function remove() {
-    if (!confirm(`Delete “${a.title}” and all its marks?`)) return;
+    if (!confirm(t('Delete “{title}” and all its marks?', { title: a.title }))) return;
     await supabase.from('assessments').delete().eq('id', a.id); onBack();
   }
 
@@ -166,30 +170,30 @@ function MarkSheet({ ctx, a, roster, onBack, onChanged }) {
   return (
     <div className="stack">
       <div className="row between wrap">
-        <button className="btn small" onClick={onBack}>← All marks</button>
+        <button className="btn small" onClick={onBack}>← {t('All marks')}</button>
         <div className="row wrap">
-          {a.published ? <button className="btn small" onClick={() => setPublished(false)}>Unpublish</button>
-            : <button className="btn small" onClick={() => setPublished(true)}>Publish (no email)</button>}
-          <button className="btn small primary" onClick={send} disabled={busy}>Send to parents</button>
-          <button className="btn small" onClick={remove}>Delete</button>
+          {a.published ? <button className="btn small" onClick={() => setPublished(false)}>{t('Unpublish')}</button>
+            : <button className="btn small" onClick={() => setPublished(true)}>{t('Publish (no email)')}</button>}
+          <button className="btn small primary" onClick={send} disabled={busy}>{t('Send to parents')}</button>
+          <button className="btn small" onClick={remove}>{t('Delete')}</button>
         </div>
       </div>
       <div>
         <h2 className="title">{a.title}</h2>
-        <p className="muted small">{ASSESSMENT_KINDS[a.kind]} · {fmtDay(a.held_on)} · out of {max} · {a.published ? `Published${a.notified_at ? ', emailed to parents' : ''}` : 'Draft — only you can see it'}</p>
+        <p className="muted small">{tl(ASSESSMENT_KINDS[a.kind])} · {fmtDay(a.held_on)} · {t('out of {n}', { n: max })} · {a.published ? (a.notified_at ? t('Published, emailed to parents') : t('Published')) : t('Draft — only you can see it')}</p>
       </div>
       {stats && (
         <div className="tiles">
-          <div className="tile"><span className="tile-n">{pct(stats.avg, max)}%</span><span>Average</span></div>
-          <div className="tile"><span className="tile-n">{stats.hi}</span><span>Highest</span></div>
-          <div className="tile"><span className="tile-n">{stats.lo}</span><span>Lowest</span></div>
-          <div className="tile"><span className="tile-n">{stats.n}/{roster.length}</span><span>Entered</span></div>
+          <div className="tile"><span className="tile-n">{pct(stats.avg, max)}%</span><span>{t('Average')}</span></div>
+          <div className="tile"><span className="tile-n">{stats.hi}</span><span>{t('Highest')}</span></div>
+          <div className="tile"><span className="tile-n">{stats.lo}</span><span>{t('Lowest')}</span></div>
+          <div className="tile"><span className="tile-n">{stats.n}/{roster.length}</span><span>{t('Entered')}</span></div>
         </div>
       )}
       <section className="card">
         <div className="tablewrap">
           <table className="table marks">
-            <thead><tr><th>Student</th><th>Mark /{max}</th><th className="num">%</th><th>Absent</th><th>Comment (parents see this)</th></tr></thead>
+            <thead><tr><th>{t('Student')}</th><th>{t('Mark')} /{max}</th><th className="num">%</th><th>{t('Absent')}</th><th>{t('Comment (parents see this)')}</th><th>WhatsApp</th></tr></thead>
             <tbody>{roster.map((s, i) => {
               const r = rows[s.id] || { mark: '', absent: false, comment: '' };
               const p = r.absent || r.mark === '' ? null : pct(r.mark, max);
@@ -199,17 +203,21 @@ function MarkSheet({ ctx, a, roster, onBack, onChanged }) {
                   <td><input className="markin" inputMode="decimal" value={r.absent ? '' : r.mark} disabled={r.absent}
                     onChange={(e) => edit(s.id, 'mark', e.target.value.replace(/[^\d.]/g, ''))}
                     onKeyDown={(e) => { if (e.key === 'Enter') document.querySelectorAll('.markin')[i + 1]?.focus(); }}
-                    aria-label={`Mark for ${s.full_name}`} /></td>
+                    aria-label={t('Mark for {name}', { name: s.full_name })} /></td>
                   <td className={'num' + (p != null && p > 100 ? ' bad' : '')}>{p == null ? '' : `${p}%`}</td>
-                  <td><input type="checkbox" checked={Boolean(r.absent)} onChange={(e) => edit(s.id, 'absent', e.target.checked)} aria-label={`${s.full_name} absent`} /></td>
-                  <td><input className="wide" value={r.comment} maxLength={1000} onChange={(e) => edit(s.id, 'comment', e.target.value)} aria-label={`Comment for ${s.full_name}`} /></td>
+                  <td><input type="checkbox" checked={Boolean(r.absent)} onChange={(e) => edit(s.id, 'absent', e.target.checked)} aria-label={t('{name} absent', { name: s.full_name })} /></td>
+                  <td><input className="wide" value={r.comment} maxLength={1000} onChange={(e) => edit(s.id, 'comment', e.target.value)} aria-label={t('Comment for {name}', { name: s.full_name })} /></td>
+                  <td className="row wrap">{a.published && (r.absent || r.mark !== '') && (parents[s.id] || []).filter((x) => x.phone).map((x) => (
+                    <WaButton key={x.id} phone={x.phone} label={x.full_name.split(' ')[0]}
+                      text={`வணக்கம் ${x.full_name}. ${s.full_name} — ${a.title}: ${r.absent ? 'Absent' : `${r.mark}/${max} (${p}%)`}${r.comment ? `\n${r.comment}` : ''}\n${siteLink('marks')}`} />
+                  ))}</td>
                 </tr>
               );
             })}</tbody>
           </table>
         </div>
         <div className="row wrap" style={{ marginTop: 12 }}>
-          <button className="btn primary" onClick={save} disabled={busy || !dirty}>{dirty ? 'Save marks' : 'Saved'}</button>
+          <button className="btn primary" onClick={save} disabled={busy || !dirty}>{dirty ? t('Save marks') : t('Saved')}</button>
           {msg && <span className="small" role="status">{msg}</span>}
         </div>
       </section>
@@ -225,33 +233,33 @@ function MyMarks({ ctx }) {
         setRows((data || []).filter((m) => m.assessment).sort((x, y) => y.assessment.held_on.localeCompare(x.assessment.held_on)));
       });
   }, [ctx.studentId]);
-  if (!rows) return <p className="muted">Loading…</p>;
+  if (!rows) return <p className="muted">{t('Loading…')}</p>;
   const scored = rows.filter((r) => !r.absent && r.mark != null);
   const avg = scored.length ? Math.round(scored.reduce((s, r) => s + pct(r.mark, r.assessment.max_mark), 0) / scored.length) : null;
   const byKind = {};
   scored.forEach((r) => { (byKind[r.assessment.kind] ||= []).push(pct(r.mark, r.assessment.max_mark)); });
   return (
     <div className="stack">
-      <h2 className="title">Marks <span className="ta">· மதிப்பெண்கள்</span>{ctx.role === 'parent' ? ` — ${ctx.studentName}` : ''}</h2>
-      {!rows.length ? <div className="card"><p className="muted">No marks published yet. They appear here when the teacher sends them.</p></div> : (
+      <h2 className="title">{t('Marks')} <span className="ta">· மதிப்பெண்கள்</span>{ctx.role === 'parent' ? ` — ${ctx.studentName}` : ''}</h2>
+      {!rows.length ? <div className="card"><p className="muted">{t('No marks published yet. They appear here when the teacher sends them.')}</p></div> : (
         <>
           <div className="tiles">
-            <div className="tile"><span className="tile-n">{avg == null ? '–' : `${avg}%`}</span><span>Overall average</span></div>
+            <div className="tile"><span className="tile-n">{avg == null ? '–' : `${avg}%`}</span><span>{t('Overall average')}</span></div>
             {Object.entries(byKind).map(([k, v]) => (
-              <div key={k} className="tile"><span className="tile-n">{Math.round(v.reduce((x, y) => x + y, 0) / v.length)}%</span><span>{ASSESSMENT_KINDS[k]}</span></div>
+              <div key={k} className="tile"><span className="tile-n">{Math.round(v.reduce((x, y) => x + y, 0) / v.length)}%</span><span>{tl(ASSESSMENT_KINDS[k])}</span></div>
             ))}
           </div>
           <section className="card">
             <div className="tablewrap">
               <table className="table">
-                <thead><tr><th>Assessment</th><th>Date</th><th className="num">Mark</th><th className="num">%</th><th>Teacher’s comment</th></tr></thead>
+                <thead><tr><th>{t('Assessment')}</th><th>{t('Date')}</th><th className="num">{t('Mark')}</th><th className="num">%</th><th>{t('Teacher’s comment')}</th></tr></thead>
                 <tbody>{rows.map((r) => {
                   const p = r.absent ? null : pct(r.mark, r.assessment.max_mark);
                   return (
                     <tr key={r.assessment.id}>
-                      <td>{r.assessment.title}<div className="small muted">{ASSESSMENT_KINDS[r.assessment.kind]}</div></td>
+                      <td>{r.assessment.title}<div className="small muted">{tl(ASSESSMENT_KINDS[r.assessment.kind])}</div></td>
                       <td>{fmtDay(r.assessment.held_on)}</td>
-                      <td className="num">{r.absent ? 'Absent' : r.mark == null ? '–' : `${Number(r.mark)}/${Number(r.assessment.max_mark)}`}</td>
+                      <td className="num">{r.absent ? t('Absent') : r.mark == null ? '–' : `${Number(r.mark)}/${Number(r.assessment.max_mark)}`}</td>
                       <td className="num">{p == null ? '' : <span className="pbar"><span style={{ width: `${p}%` }} />{p}%</span>}</td>
                       <td className="small">{r.comment || ''}</td>
                     </tr>

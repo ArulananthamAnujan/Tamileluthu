@@ -63,7 +63,8 @@ Deno.serve(async (req) => {
 
     // One email per parent per child (parents of two children get two).
     const messages: { to: string; subject: string; html: string }[] = [];
-    const ctx = { school: SCHOOL, site, className: cls.name, teacher: me?.full_name || "Your teacher" };
+    const { data: settings } = await db.from("school_settings").select("school_name").eq("id", 1).maybeSingle();
+    const ctx = { school: settings?.school_name || SCHOOL, site, className: cls.name, teacher: me?.full_name || "Your teacher" };
     if (kind === "activity") {
       const tos = [...new Set(Object.values(parentEmail))];
       const m = noticeEmail(ctx, item);

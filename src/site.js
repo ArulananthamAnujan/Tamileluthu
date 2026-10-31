@@ -1,44 +1,65 @@
-// Site-wide settings. Change these for your school (or set the VITE_ values in .env).
+// Site-wide settings. Defaults come from .env (VITE_…); the school admin can
+// change the name, logo, photo and contacts from the website (Admin → School).
 const env = import.meta.env;
 export const SITE = {
   name: env.VITE_SITE_NAME || 'தமிழ் எழுத்து',
   nameEn: env.VITE_SITE_NAME_EN || 'Tamil Eluthu',
   school: env.VITE_SCHOOL_NAME || 'Tamil School',
-  tagline: 'Everything for our Tamil school in one place: daily homework, attendance, listening exams, marks, reports for parents, and the தமிழ் திருத்தி writing checker.',
+  schoolTa: '',
+  tagline: '',
+  about: '',
   contactEmail: env.VITE_CONTACT_EMAIL || '',
+  contactPhone: '',
+  address: '',
+  whatsappUrl: '',
+  logoUrl: '',
+  heroUrl: '',
   currency: 'aud',
+  phoneCountry: env.VITE_PHONE_COUNTRY || '61',
 };
 
 export const ACTIVITY_KINDS = {
-  homework: { label: 'Homework', ta: 'வீட்டுப்பாடம்' },
-  classwork: { label: 'Classwork', ta: 'வகுப்புப்பணி' },
-  announcement: { label: 'Notice', ta: 'அறிவிப்பு' },
-  event: { label: 'Event', ta: 'நிகழ்வு' },
-  reminder: { label: 'Reminder', ta: 'நினைவூட்டல்' },
+  homework: { en: 'Homework', ta: 'வீட்டுப்பாடம்' },
+  classwork: { en: 'Classwork', ta: 'வகுப்புப்பணி' },
+  announcement: { en: 'Notice', ta: 'அறிவிப்பு' },
+  event: { en: 'Event', ta: 'நிகழ்வு' },
+  reminder: { en: 'Reminder', ta: 'நினைவூட்டல்' },
 };
 
 export const ATTENDANCE = {
-  present: { label: 'Present', short: 'P' },
-  late: { label: 'Late', short: 'L' },
-  absent: { label: 'Absent', short: 'A' },
-  excused: { label: 'Excused', short: 'E' },
+  present: { en: 'Present', ta: 'வருகை', short: 'P', tashort: 'வ' },
+  late: { en: 'Late', ta: 'தாமதம்', short: 'L', tashort: 'தா' },
+  absent: { en: 'Absent', ta: 'வரவில்லை', short: 'A', tashort: 'இ' },
+  excused: { en: 'Excused', ta: 'விடுப்பு', short: 'E', tashort: 'வி' },
 };
 
 export const RESOURCE_KINDS = {
-  listening: 'Listening exam',
-  reading: 'Reading',
-  speaking: 'Speaking',
-  past_paper: 'Past paper',
-  video: 'Video',
-  other: 'Other',
+  listening: { en: 'Listening exam', ta: 'கேட்டல் தேர்வு' },
+  reading: { en: 'Reading', ta: 'வாசிப்பு' },
+  speaking: { en: 'Speaking', ta: 'பேச்சு' },
+  past_paper: { en: 'Past paper', ta: 'பழைய வினாத்தாள்' },
+  video: { en: 'Video', ta: 'காணொளி' },
+  other: { en: 'Other', ta: 'பிற' },
 };
 
 export const ASSESSMENT_KINDS = {
-  test: 'Test', exam: 'Exam', listening: 'Listening', reading: 'Reading',
-  speaking: 'Speaking', writing: 'Writing', homework: 'Homework', other: 'Other',
+  test: { en: 'Test', ta: 'தேர்வு' },
+  exam: { en: 'Exam', ta: 'பரீட்சை' },
+  listening: { en: 'Listening', ta: 'கேட்டல்' },
+  reading: { en: 'Reading', ta: 'வாசிப்பு' },
+  speaking: { en: 'Speaking', ta: 'பேச்சு' },
+  writing: { en: 'Writing', ta: 'எழுத்து' },
+  homework: { en: 'Homework', ta: 'வீட்டுப்பாடம்' },
+  other: { en: 'Other', ta: 'பிற' },
 };
 
-export const PRODUCT_KINDS = { paper: 'Exam paper', listening: 'Listening pack', notes: 'Notes', bundle: 'Bundle', other: 'Other' };
+export const PRODUCT_KINDS = {
+  paper: { en: 'Exam paper', ta: 'வினாத்தாள்' },
+  listening: { en: 'Listening pack', ta: 'கேட்டல் தொகுப்பு' },
+  notes: { en: 'Notes', ta: 'குறிப்புகள்' },
+  bundle: { en: 'Bundle', ta: 'தொகுப்பு' },
+  other: { en: 'Other', ta: 'பிற' },
+};
 
 export const SKILLS = [
   ['listening', 'Listening', 'கேட்டல்'],
@@ -47,4 +68,6 @@ export const SKILLS = [
   ['writing', 'Writing', 'எழுதுதல்'],
   ['grammar', 'Grammar', 'இலக்கணம்'],
 ];
+// Stored in English; shown in the reader's language.
 export const RATINGS = ['Excellent', 'Very good', 'Good', 'Developing', 'Needs support'];
+export const RATING_TA = { Excellent: 'மிகச் சிறப்பு', 'Very good': 'மிக நன்று', Good: 'நன்று', Developing: 'வளர்ந்து வருகிறது', 'Needs support': 'உதவி தேவை' };

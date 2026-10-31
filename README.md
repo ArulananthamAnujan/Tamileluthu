@@ -15,27 +15,41 @@ One website for a Tamil school's day-to-day work, with accounts for students, pa
 
 The public home page and the paper catalogue can be browsed without an account.
 
-### Turning on the portal (once)
-1. Supabase → **SQL Editor**: run `supabase/migrations/20261101000000_school_portal.sql` (after the two earlier migrations, which are already applied on the current project).
-2. Deploy the new functions:
+Everything is available in **English and Tamil** (globe button in the header; each person's choice is remembered). Teachers can **WhatsApp** parents directly (absences, results, reports) and share the diary with a class group. Everyone gets **in-app notifications** (bell) for new homework, listening exams, results, reports and teacher comments. A **principal/admin** area shows every class, manages teachers, and edits the school's name, logo, photo, contacts and WhatsApp group link without touching code.
+
+### Launch checklist
+1. **Database.** In Supabase → SQL Editor, run these files in order. The first two are already applied on the current project.
+   - `supabase/migrations/20261101000000_school_portal.sql`: diary, attendance, listening, marks, reports, shop
+   - `supabase/migrations/20261102000000_admin_settings_notifications.sql`: admin, school settings, parent phones, notifications
+2. **First admin (principal).** Run this once with their email:
+   ```sql
+   insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)
+     on conflict (email) do update set is_admin = true;
+   update public.profiles set is_admin = true
+    where id = (select id from auth.users where lower(email) = lower('principal@yourschool.org'));
+   ```
+   After that, the admin adds teachers from **Admin → Teachers**. No more SQL is needed for that.
+3. **School details.** Sign in as the admin and open **Admin → School details**. Set the name in English and Tamil, the logo, a school photo, the about text, contacts, the address and the WhatsApp group invite link.
+4. **Server functions.**
    ```bash
    supabase functions deploy notify-parents
    supabase functions deploy shop-checkout
    supabase functions deploy stripe-webhook --no-verify-jwt
    ```
-3. **Emails to parents** (reports, marks, notices) use [Resend](https://resend.com) (free tier: 3,000 emails/month). Verify your domain in Resend, then:
+5. **Parent emails** (reports, results and notices; written in English and Tamil) use [Resend](https://resend.com). Verify your domain there, then:
    ```bash
-   supabase secrets set RESEND_API_KEY=re_... NOTIFY_FROM="Tamil School <noreply@yourdomain.com>" SCHOOL_NAME="Tamil School" SITE_URL=https://yourdomain.com
+   supabase secrets set RESEND_API_KEY=re_... NOTIFY_FROM="Your School <noreply@yourdomain.com>" SITE_URL=https://yourdomain.com
    ```
-   Without these, “Send to parents” still publishes in the portal; parents just see it when they sign in.
-4. **Paid papers** use Stripe Checkout. In Stripe → Developers → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/stripe-webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`, then:
+   Without these, sending still publishes in the portal and creates notifications.
+6. **Paid papers (Stripe).** In Stripe → Developers → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/stripe-webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`, then:
    ```bash
    supabase secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_...
    ```
-   Free papers, external “buy from author” links and manual “Give access” (for cash or bank transfer) work without Stripe.
-5. Optional: set `VITE_SCHOOL_NAME`, `VITE_SITE_NAME`, `VITE_CONTACT_EMAIL` in `.env` before `npm run build` (see `.env.example`).
+   Free papers, “buy from author” links and manual **Give access** sales (cash or bank transfer) work without Stripe. Test with `sk_test_` keys and card `4242 4242 4242 4242` first.
+7. **Build and upload** (see the Hostinger steps below). Optional `.env` values: `VITE_PHONE_COUNTRY` (default `61`, used to turn 04xx numbers into WhatsApp links), plus fallbacks for the name and contact.
+8. **Before inviting families,** review `src/pages/Info.jsx` (Privacy, Terms & refunds) with your school committee, and have a Tamil teacher review the wording in `src/ta.js`.
 
-Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Tests: `tests/portal.sql` (database rules, rolled back) and `node --test tests/*.test.mjs`.
+Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Tests: `tests/security.sql`, `tests/portal.sql` and `tests/admin.sql` (database rules, all rolled back) and `node --test tests/*.test.mjs`.
 
 ---
 

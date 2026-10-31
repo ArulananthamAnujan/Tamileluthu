@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { t } from '../i18n.js';
 import { supabase, errText } from '../supabase.js';
 import SubmissionList from '../components/SubmissionList.jsx';
 import SubmissionView from '../components/SubmissionView.jsx';
@@ -27,7 +28,7 @@ export default function Student({ profile, setProfile }) {
     e.preventDefault(); setMsg('');
     const { data, error } = await supabase.rpc('join_class', { code });
     if (error) { setMsg(errText(error)); return; }
-    setMsg(`You joined ${data}.`); setCode(''); load();
+    setMsg(t('You joined {name}.', { name: data })); setCode(''); load();
   }
   async function newCode() {
     const { data, error } = await supabase.rpc('new_parent_code');
@@ -45,35 +46,35 @@ export default function Student({ profile, setProfile }) {
   return (
     <div className="stack">
       <div className="row between wrap">
-        <h2 className="title">My writing</h2>
-        <button className="btn primary" onClick={() => setView({ name: 'new' })}>+ New writing</button>
+        <h2 className="title">{t('My writing')} <span className="ta">· தமிழ் திருத்தி</span></h2>
+        <button className="btn primary" onClick={() => setView({ name: 'new' })}>+ {t('New writing')}</button>
       </div>
       <div className="grid2">
         <section className="card">
           <SubmissionList subs={subs} onOpen={(s) => setView({ name: 'sub', sub: s })}
-            empty="No writing yet. Press New writing, then take a photo of a page in your book." />
+            empty={t('No writing yet. Press New writing, then take a photo of a page in your book.')} />
         </section>
         <aside className="stack">
           <Progress subs={subs} title="My most common mistakes" />
           <section className="card">
-            <h3>My class</h3>
+            <h3>{t('My class')}</h3>
             {classes.length
               ? <ul className="plain">{classes.map((c) => <li key={c.class_id}><b>{c.classes?.name}</b>{c.classes?.teacher?.full_name ? ` · ${c.classes.teacher.full_name}` : ''}</li>)}</ul>
-              : <p className="muted small">Join your class so your teacher can see your writing.</p>}
+              : <p className="muted small">{t('Join your class so your teacher can see your work.')}</p>}
             <form className="row" onSubmit={join}>
-              <input id="classcode" className="code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Class code" maxLength={6} />
-              <button className="btn">Join</button>
+              <input id="classcode" className="code" value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('Class code')} maxLength={6} />
+              <button className="btn">{t('Join')}</button>
             </form>
             {msg && <p className="small">{msg}</p>}
           </section>
           <section className="card">
-            <h3>Parent code</h3>
-            <p className="muted small">Give this code to your parent. They enter it in their account to see your writing and feedback.</p>
+            <h3>{t('Parent code')}</h3>
+            <p className="muted small">{t('Give this code to your parent. They enter it in their account to see your homework, marks, reports and writing.')}</p>
             <p className="bigcode">{profile.parent_code}</p>
-            <button className="btn small" onClick={newCode}>Make a new code</button>
+            <button className="btn small" onClick={newCode}>{t('Make a new code')}</button>
             {parents.length > 0 && (<>
-              <p className="label">Linked parents</p>
-              <ul className="plain">{parents.map((p) => <li key={p.parent_id} className="row between">{p.parent?.full_name || 'Parent'}<button className="btn small" onClick={() => unlink(p.parent_id)}>Remove</button></li>)}</ul>
+              <p className="label">{t('Linked parents')}</p>
+              <ul className="plain">{parents.map((p) => <li key={p.parent_id} className="row between">{p.parent?.full_name || t('Parent')}<button className="btn small" onClick={() => unlink(p.parent_id)}>{t('Remove')}</button></li>)}</ul>
             </>)}
           </section>
         </aside>
