@@ -4,7 +4,7 @@ import { SITE } from './site.js';
 import { useHash, go } from './lib/util.js';
 import Connect from './components/Connect.jsx';
 import Auth from './pages/Auth.jsx';
-import Landing from './pages/Landing.jsx';
+import Landing, { SiteHeader, SiteFooter, Logo } from './pages/Landing.jsx';
 import Portal from './portal/Portal.jsx';
 import Shop from './portal/Shop.jsx';
 import InstallButton from './components/InstallButton.jsx';
@@ -12,8 +12,9 @@ import InstallButton from './components/InstallButton.jsx';
 const ROLE_LABEL = { student: 'Student', parent: 'Parent', teacher: 'Teacher' };
 
 function Brand() {
-  return <a className="brand" href="#/">{SITE.name.split(' ')[0]} <span>{SITE.name.split(' ').slice(1).join(' ')}</span></a>;
+  return <Logo />;
 }
+const initials = (n) => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -54,20 +55,14 @@ export default function App() {
   if (session === undefined) return <div className="shell"><p className="muted">Loading…</p></div>;
 
   if (!session) {
-    const page = route.path === 'signin' || route.path === 'signup'
-      ? <Auth initial={route.path} key={route.path} />
-      : route.path === 'shop' ? <Shop ctx={null} query={route.query} /> : <Landing />;
+    if (route.path !== 'signin' && route.path !== 'signup' && route.path !== 'shop') return <Landing />;
     return (
-      <div className="shell">
-        <header className="top">
-          <Brand />
-          <nav className="who">
-            <a className="btn small ghost" href="#/shop">Papers</a>
-            <InstallButton />
-            <a className="btn small primary" href="#/signin">Sign in</a>
-          </nav>
-        </header>
-        {page}
+      <div className="site">
+        <SiteHeader />
+        <div className={route.path === 'shop' ? 'shell' : 'auth-wrap'}>
+          {route.path === 'shop' ? <Shop ctx={null} query={route.query} /> : <Auth initial={route.path} key={route.path} />}
+        </div>
+        <SiteFooter />
       </div>
     );
   }
@@ -88,20 +83,29 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
-      <header className="top noprint">
-        <Brand />
-        <div className="who">
-          {profile && <span>{profile.full_name || session.user.email} · <b>{ROLE_LABEL[profile.role]}</b></span>}
-          <InstallButton />
-          {!builtIn && <button className="btn small" onClick={forgetServer} title="Change server">Server</button>}
-          <button className="btn small" onClick={() => { supabase.auth.signOut(); go(''); }}>Sign out</button>
+    <div className="app">
+      <header className="appbar noprint">
+        <div className="container appbar-in">
+          <Brand />
+          <div className="who">
+            <InstallButton />
+            {!builtIn && <button className="btn small outline-light" onClick={forgetServer} title="Change server">Server</button>}
+            {profile && (
+              <span className="userchip">
+                <span className="avatar" aria-hidden="true">{initials(profile.full_name || session.user.email)}</span>
+                <span className="uname"><b>{profile.full_name || session.user.email}</b><small>{ROLE_LABEL[profile.role]}</small></span>
+              </span>
+            )}
+            <button className="btn small outline-light" onClick={() => { supabase.auth.signOut(); go(''); }}>Sign out</button>
+          </div>
         </div>
       </header>
+      <div className="shell">
       {!profile && (profileErr
         ? <div className="card"><p>Your account has no profile ({profileErr}). Sign out and create the account again, or contact your teacher.</p></div>
         : <p className="muted">Loading your account…</p>)}
       {profile && <Portal profile={profile} setProfile={setProfile} />}
+      </div>
     </div>
   );
 }

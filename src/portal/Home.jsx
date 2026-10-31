@@ -5,6 +5,7 @@ import { isoDay, addDays, fmtDay, pct } from '../lib/util.js';
 import { ASSESSMENT_KINDS } from '../site.js';
 import ActivityList from './ActivityList.jsx';
 import { NeedsSetup, NewClass } from './Setup.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Home({ ctx }) {
   if (!ctx.classIds.length) return <div className="stack"><Greeting ctx={ctx} /><NeedsSetup ctx={ctx} /></div>;
@@ -52,7 +53,7 @@ function TeacherHome({ ctx }) {
         <a className="tile" href="#/attendance"><span className="tile-n">{marked ?? '–'}/{roster.length}</span><span>Marked today</span></a>
         <a className="tile" href="#/diary"><span className="tile-n">{items?.filter((a) => a.on_date === isoDay()).length ?? '–'}</span><span>Diary posts today</span></a>
         <a className="tile" href="#/marks"><span className="tile-n">{drafts.length}</span><span>Unpublished marks</span></a>
-        <a className="tile" href="#/writing"><span className="tile-n">✎</span><span>தமிழ் திருத்தி</span></a>
+        <a className="tile" href="#/writing"><span className="tile-n"><Icon name="writing" size={30} /></span><span>தமிழ் திருத்தி</span></a>
       </div>
       <div className="grid2">
         <section className="card">
@@ -128,7 +129,7 @@ function FamilyHome({ ctx }) {
         <a className="tile" href="#/diary"><span className="tile-n">{items ? todo : '–'}</span><span>Homework to do</span></a>
         <a className="tile" href="#/attendance"><span className="tile-n">{rate == null ? '–' : `${rate}%`}</span><span>Attendance (12 months)</span></a>
         <a className="tile" href="#/marks"><span className="tile-n">{marks[0] && !marks[0].absent && marks[0].mark != null ? `${pct(marks[0].mark, marks[0].assessment.max_mark)}%` : '–'}</span><span>Latest mark</span></a>
-        <a className="tile" href="#/reports"><span className="tile-n">{report ? '📄' : '–'}</span><span>{report ? report.term : 'No report yet'}</span></a>
+        <a className="tile" href="#/reports"><span className="tile-n">{report ? <Icon name="reports" size={30} /> : '–'}</span><span>{report ? report.term : 'No report yet'}</span></a>
       </div>
       <div className="grid2">
         <section className="card">

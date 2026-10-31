@@ -45,7 +45,7 @@ export default function Auth({ initial = 'signin' }) {
 
   return (
     <div className="stack">
-      <div className="card narrow auth">
+      <div className="card narrow auth"><span className="auth-mark" aria-hidden="true">அ</span>
         <div className="row between"><h2 className="title">{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Welcome back · வணக்கம்'}</h2><InstallButton /></div>
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={mode === 'signin'} className={mode === 'signin' ? 'on' : ''} onClick={() => setMode('signin')}>Sign in</button>

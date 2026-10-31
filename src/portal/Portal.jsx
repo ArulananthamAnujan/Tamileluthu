@@ -11,6 +11,7 @@ import Shop from './Shop.jsx';
 import Student from '../pages/Student.jsx';
 import Parent from '../pages/Parent.jsx';
 import Teacher from '../pages/Teacher.jsx';
+import Icon from '../components/Icon.jsx';
 
 const NAV = [
   ['today', 'Today', 'இன்று'],
@@ -62,7 +63,7 @@ export default function Portal({ profile, setProfile }) {
       <nav className="nav" aria-label="Sections">
         {NAV.map(([k, en, ta]) => (
           <a key={k} href={`#/${k}`} className={section === k ? 'on' : ''} aria-current={section === k ? 'page' : undefined}>
-            <b>{en}</b><span>{ta}</span>
+            <Icon name={k} size={20} /><b>{en}</b><span>{ta}</span>
           </a>
         ))}
       </nav>
