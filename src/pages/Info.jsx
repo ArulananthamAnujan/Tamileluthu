@@ -39,7 +39,7 @@ function Privacy() {
   const ta = getLang() === 'ta';
   return (
     <Wrap title={t('Privacy')} ta="தனியுரிமை">
-      {ta && <p className="card notice small">இந்தப் பக்கத்தின் சுருக்கம்: உங்கள் பிள்ளையின் தகவல்களை அவரின் ஆசிரியர்கள், நீங்கள், பள்ளி நிர்வாகி மட்டுமே பார்க்க முடியும். நாங்கள் தகவல்களை விற்பதில்லை. எழுத்துத் திருத்தத்திற்காக மட்டும் எழுத்தும் புகைப்படங்களும் Anthropic நிறுவனத்தின் Claude-க்கு அனுப்பப்படும்.</p>}
+      {ta && <p className="card notice small">இந்தப் பக்கத்தின் சுருக்கம்: உங்கள் பிள்ளையின் தகவல்களை அவரின் ஆசிரியர்கள், நீங்கள், பள்ளி நிர்வாகி மட்டுமே பார்க்க முடியும். நாங்கள் தகவல்களை விற்பதில்லை. எழுத்துத் திருத்தத்திற்காக மட்டும் எழுத்தும் புகைப்படங்களும் AI மாதிரிகளுக்கு அனுப்பப்படும்.</p>}
       <h3>What we collect</h3>
       <ul>
         <li>Account details: name, email, role, and (optionally) a parent’s mobile number.</li>
@@ -57,7 +57,7 @@ function Privacy() {
       <h3>Other services we use</h3>
       <ul>
         <li>Supabase (Sydney region) stores the data and logins.</li>
-        <li>Anthropic’s Claude checks writing and reads handwriting for தமிழ் திருத்தி.</li>
+        <li>AI models check writing and read handwriting for தமிழ் திருத்தி.</li>
         <li>An email service sends reports, results and notices to parents, if the school has switched it on.</li>
         <li>Stripe processes payments in the paper shop.</li>
       </ul>

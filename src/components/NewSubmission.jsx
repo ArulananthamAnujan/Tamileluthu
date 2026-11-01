@@ -83,7 +83,7 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
     <div className="stack">
       <div className="row between"><button className="btn small" onClick={onCancel}>← {t('Back')}</button></div>
       <h2 className="title">{forTeacher ? t('Check a student’s writing') : t('New writing')}</h2>
-      <p className="muted small">{forTeacher ? t('The writing and photos are sent to Anthropic for AI feedback. The result is private to you until you send the report.') : t('Checking sends your writing and photos to Anthropic for AI feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.')}</p>
+      <p className="muted small">{forTeacher ? t('The writing and photos are sent to our AI models for feedback. The result is private to you until you send the report.') : t('Checking sends your writing and photos to our AI models for feedback. Avoid including private contact details. Your linked parent and class teacher can view your work.')}</p>
       <div className="card form">
         {forTeacher && (
           <label className="field">{t('Student’s name')}

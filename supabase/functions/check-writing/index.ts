@@ -87,7 +87,7 @@ async function askClaude(content: Content[], schema: Record<string, unknown>, ef
   } catch (e) {
     console.error("Claude API error:", e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : String(e));
     if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) {
-      throw new CheckError("The checker's AI key is not working. Ask the school admin to check ANTHROPIC_API_KEY in Supabase.");
+      throw new CheckError("The checker's AI key is not working. Ask the school admin to check the AI model key in Supabase.");
     }
     if (e instanceof Anthropic.NotFoundError || e instanceof Anthropic.BadRequestError) {
       throw new CheckError("The checker's AI settings need attention (model or request). Ask the school admin to look at the check-writing logs.");

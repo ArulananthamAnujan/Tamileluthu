@@ -256,7 +256,7 @@ function School({ onSaved }) {
               <label className="field">{t('Per day')}<input type="number" min="0" value={f.check_limit_day ?? 0} onChange={set('check_limit_day')} /></label>
               <label className="field">{t('Retries per piece of writing')}<input type="number" min="0" value={f.check_limit_per_writing ?? 0} onChange={set('check_limit_per_writing')} /></label>
             </div>
-            <p className="small muted">{t('Every check is paid for on your Anthropic account. Leave these at 0 for no limit; set them only if checks are being wasted. You can also set a monthly spending cap in the Anthropic Console.')}</p>
+            <p className="small muted">{t('Every check is paid for on your AI models account. Leave these at 0 for no limit; set them only if checks are being wasted. You can also set a monthly spending cap in your AI models account.')}</p>
           </fieldset>
         )}
       </section>

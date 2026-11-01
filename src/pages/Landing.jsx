@@ -270,7 +270,7 @@ export function SiteFooter() {
       <div className="container foot-note small">
         <span>v{__BUILD__}</span>
         <span>© {new Date().getFullYear()} {SITE.school}{SITE.contactEmail ? ` · ${SITE.contactEmail}` : ''}{SITE.contactPhone ? ` · ${SITE.contactPhone}` : ''}</span>
-        <span>{t('Writing checked by தமிழ் திருத்தி is sent to Anthropic’s Claude for checking. Each family only sees its own child’s records.')}</span>
+        <span>{t('Writing checked by தமிழ் திருத்தி is sent to AI models for checking. Each family only sees its own child’s records.')}</span>
       </div>
     </footer>
   );
