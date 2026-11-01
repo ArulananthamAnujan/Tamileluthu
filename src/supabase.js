@@ -29,6 +29,9 @@ export function errText(e) {
   if (/Email not confirmed/i.test(m)) return 'Please confirm your email first. Check your inbox for the link.';
   if (/Database error saving new user/i.test(m)) return 'This email is not registered as a teacher. Ask the school to add it.';
   if (/Failed to fetch|NetworkError/i.test(m)) return 'Cannot reach the server. Check your internet connection.';
+  if (/email rate limit|over_email_send_rate_limit|rate limit exceeded/i.test(m)) return 'Too many sign-up or password emails were sent in the last hour, so the school’s email limit was reached. Please try again in an hour, or ask the school office to create the account.';
+  if (/For security purposes, you can only request this after/i.test(m)) return 'Please wait a minute before asking for another email.';
+  if (/User already registered/i.test(m)) return 'This email already has an account. Sign in instead, or use “Forgot password?”.';
   return m;
 }
 

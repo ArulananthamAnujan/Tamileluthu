@@ -187,7 +187,8 @@ See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for evidence and remainin
    ```
 4. **Authentication → URL Configuration**: set **Site URL** to your website address (step 3), and add it under **Redirect URLs**. While testing locally, also add `http://localhost:5173`.
 
-### 1b. Send login emails from your Hostinger mailbox (needed for password reset)
+### 1b. Send login emails from your own mailbox (fixes "email rate limit exceeded")
+Supabase's built-in email sender is for testing only and allows a few emails per hour for the whole project. After that, sign-ups and password resets fail with **"email rate limit exceeded"**. To fix it, connect your own mailbox, then raise the limit.
 Supabase's built-in sender only allows 2 emails per hour, so sign-up confirmations and password resets would stop working with a whole class. Send them through Hostinger instead:
 1. hPanel → **Emails** → create a mailbox, e.g. `noreply@yourdomain.com`.
 2. Supabase → **Authentication → Emails → SMTP Settings** → turn on **Custom SMTP**:

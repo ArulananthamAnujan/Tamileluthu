@@ -813,4 +813,7 @@ export default {
   "Send link on WhatsApp": "WhatsApp இல் இணைப்பை அனுப்பு",
   "Copy link": "இணைப்பை நகலெடு",
   "Open PDF": "PDF ஐத் திற",
+  "Too many sign-up or password emails were sent in the last hour, so the school’s email limit was reached. Please try again in an hour, or ask the school office to create the account.": "கடந்த ஒரு மணி நேரத்தில் அதிகமான பதிவு/கடவுச்சொல் மின்னஞ்சல்கள் அனுப்பப்பட்டதால் பள்ளியின் மின்னஞ்சல் வரம்பு எட்டப்பட்டது. ஒரு மணி நேரத்தில் மீண்டும் முயலுங்கள், அல்லது பள்ளி அலுவலகத்திடம் கணக்கை உருவாக்கக் கேளுங்கள்.",
+  "Please wait a minute before asking for another email.": "இன்னொரு மின்னஞ்சலைக் கேட்கும் முன் ஒரு நிமிடம் காத்திருங்கள்.",
+  "This email already has an account. Sign in instead, or use “Forgot password?”.": "இந்த மின்னஞ்சலுக்கு ஏற்கெனவே கணக்கு உள்ளது. உள்நுழையுங்கள், அல்லது “கடவுச்சொல் மறந்ததா?” பயன்படுத்துங்கள்.",
 };
