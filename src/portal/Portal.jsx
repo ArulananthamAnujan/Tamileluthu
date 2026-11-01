@@ -13,6 +13,7 @@ import Account from './Account.jsx';
 import Admin from './Admin.jsx';
 import Info from '../pages/Info.jsx';
 import Invite from './Invite.jsx';
+import Install, { IOSInstallTip } from '../pages/Install.jsx';
 import Subscription from './Subscription.jsx';
 import { supabase, errText } from '../supabase.js';
 import Student from '../pages/Student.jsx';
@@ -30,8 +31,8 @@ export const NAV = [
   ['writing', 'திருத்தி', 'Writing'],
   ['shop', 'Papers', 'வினாத்தாள்'],
 ];
-const OTHER = ['account', 'admin', 'privacy', 'terms', 'contact', 'invite', 'subscription'];
-const NO_PICKER = ['writing', 'shop', 'account', 'admin', 'privacy', 'terms', 'contact', 'subscription'];
+const OTHER = ['account', 'admin', 'privacy', 'terms', 'contact', 'invite', 'subscription', 'install'];
+const NO_PICKER = ['writing', 'shop', 'account', 'admin', 'privacy', 'terms', 'contact', 'subscription', 'install'];
 
 const remember = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* private mode */ } };
 const recall = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -83,6 +84,7 @@ export function SectionView({ section, ctx, query, profile, setProfile, onSettin
   }
   if (section === 'account') return <Account ctx={ctx} setProfile={setProfile} />;
   if (section === 'invite') return <Invite ctx={ctx} />;
+  if (section === 'install') return <Install />;
   if (section === 'subscription') return <Subscription ctx={ctx} />;
   if (section === 'admin') return <Admin ctx={ctx} onSettings={onSettings} />;
   if (['privacy', 'terms', 'contact'].includes(section)) return <Info page={section} />;
@@ -130,6 +132,7 @@ export default function Portal({ profile, setProfile, onSettings }) {
       )}
       {joinMsg && <div className="card notice row between wrap" role="status"><span>{joinMsg}</span><button className="btn small" onClick={clearJoinMsg}>OK</button></div>}
       <main id="main">{body}</main>
+      <IOSInstallTip />
       <footer className="appfoot small muted noprint">
         {profile.role !== 'teacher' && <a href="#/subscription">{t('Subscription')}</a>}
         <a href="#/contact">{t('About & contact')}</a><a href="#/privacy">{t('Privacy')}</a><a href="#/terms">{t('Terms & refunds')}</a><span className="ver">v{__BUILD__}</span>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { t } from '../i18n.js';
 
 // Shows "Install app" when the phone or browser allows adding the app to the home screen.
 export default function InstallButton() {
   const [prompt, setPrompt] = useState(null);
-  const [iosHint, setIosHint] = useState(false);
   const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone;
 
   useEffect(() => {
@@ -13,17 +13,10 @@ export default function InstallButton() {
   }, []);
 
   if (standalone || /ThiruthiApp/.test(navigator.userAgent)) return null;
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   if (prompt) {
-    return <button className="btn small" onClick={async () => { prompt.prompt(); await prompt.userChoice; setPrompt(null); }}>Install app</button>;
+    return <button className="btn small" onClick={async () => { prompt.prompt(); await prompt.userChoice; setPrompt(null); }}>{t('Install app')}</button>;
   }
-  if (isIOS) {
-    return (
-      <span className="install-ios">
-        <button className="btn small" onClick={() => setIosHint(!iosHint)}>Install app</button>
-        {iosHint && <span className="hint small">In Safari, tap Share, then <b>Add to Home Screen</b>.</span>}
-      </span>
-    );
-  }
+  if (isIOS) return <a className="btn small" href="#/install">{t('Install app')}</a>;
   return null;
 }

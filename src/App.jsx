@@ -8,6 +8,7 @@ import Connect from './components/Connect.jsx';
 import Auth from './pages/Auth.jsx';
 import Landing, { SiteHeader, SiteFooter, Logo } from './pages/Landing.jsx';
 import Info from './pages/Info.jsx';
+import Install, { IOSInstallTip } from './pages/Install.jsx';
 import Portal from './portal/Portal.jsx';
 import Shop from './portal/Shop.jsx';
 import InstallButton from './components/InstallButton.jsx';
@@ -20,7 +21,7 @@ import './app/prefs.js';
 
 const ROLE_LABEL = { student: 'Student', parent: 'Parent', teacher: 'Teacher' };
 const initials = (n) => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
-const PUBLIC = ['signin', 'signup', 'join', 'shop', 'privacy', 'terms', 'contact'];
+const PUBLIC = ['signin', 'signup', 'join', 'shop', 'privacy', 'terms', 'contact', 'install'];
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -84,8 +85,9 @@ export default function App() {
     const joining = route.path === 'join';
     if (isApp && !['privacy', 'terms', 'contact'].includes(route.path)) return <Welcome joining={joining} key={route.path} />;
     if (isApp) return <div className="ax-info"><button className="btn small" onClick={() => go('')}>← {t('Back')}</button><Info page={route.path} /></div>;
-    if (!PUBLIC.includes(route.path)) return <Landing />;
+    if (!PUBLIC.includes(route.path)) return <><Landing /><IOSInstallTip /></>;
     const page = route.path === 'shop' ? <Shop ctx={null} query={route.query} />
+      : route.path === 'install' ? <Install />
       : ['privacy', 'terms', 'contact'].includes(route.path) ? <Info page={route.path} />
       : <Auth initial={joining ? 'signup' : route.path} joining={joining} key={route.path} />;
     return (

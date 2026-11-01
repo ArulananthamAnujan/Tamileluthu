@@ -105,6 +105,7 @@ export default function Landing() {
             <div className="row wrap hero-cta">
               <a className="btn gold big" href="#/signup">{t('Create your account')} <Icon name="arrow" size={18} /></a>
               <a className="btn outline-light big" href="#/signin">{t('Sign in')}</a>
+              <a className="btn ghost big install-link" href="#/install">📱 {t('Install the app')}</a>
             </div>
             <ul className="trust">
               <li><Icon name="lock" size={16} /> {t('Private by design')}</li>

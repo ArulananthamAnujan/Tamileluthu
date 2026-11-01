@@ -664,3 +664,19 @@ html[lang="ta"] .essay h4{font-family:var(--f-ta)}
 .rewrite{background:color-mix(in srgb,var(--gold-soft) 55%,var(--paper));border-radius:14px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent)}
 .rewrite-text{white-space:pre-wrap;font-family:var(--f-ta);font-size:17px;line-height:1.9;background:var(--paper);border-radius:10px;padding:14px;margin:8px 0}
 .pdflink{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+
+/* ===== Install guide ===== */
+.install-hero{display:flex;gap:16px;align-items:center}
+.install-hero .logo-mark.big{width:64px;height:64px;border-radius:18px;font-size:32px}
+.isteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.isteps li{display:flex;gap:14px;align-items:flex-start}
+.isteps p{margin:2px 0 0}
+.isteps b{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.inum{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.ios-ic{color:#0A84FF;vertical-align:middle}
+.ios-tip{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:50;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:18px;box-shadow:var(--shadow-lg);padding:14px 40px 14px 16px;display:flex;flex-direction:column;gap:4px;animation:up .3s ease}
+.ios-tip p{margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ios-tip::after{content:"";position:absolute;bottom:-8px;left:50%;width:16px;height:16px;background:var(--paper);border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);transform:translateX(-50%) rotate(45deg)}
+.ios-tip-x{position:absolute;top:8px;right:8px;border:0;background:none;color:var(--muted);cursor:pointer;padding:6px}
+.inapp{border:2px solid var(--gold)}
+.hero-cta .install-link{color:#fff}
