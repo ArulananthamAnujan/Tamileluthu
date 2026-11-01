@@ -39,7 +39,7 @@ function Overview() {
   async function load() {
     const since = addDays(isoDay(), -30);
     const [c, m, l, a, d] = await Promise.all([
-      supabase.from('classes').select('id, name, join_code, teacher:profiles(full_name)').order('name'),
+      supabase.from('classes').select('id, name, join_code, teacher:profiles!classes_teacher_id_fkey(full_name)').order('name'),
       supabase.from('class_members').select('class_id, student_id'),
       supabase.from('parent_links').select('parent_id, student_id'),
       supabase.from('attendance').select('class_id, status').gte('on_date', since),

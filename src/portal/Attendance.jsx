@@ -38,7 +38,7 @@ function RollCall({ ctx }) {
     setMsg('');
     const payload = students.map((s) => ({
       class_id: cls.id, student_id: s.id, on_date: day, status,
-      note: rows[s.id]?.note || null, marked_by: ctx.profile.id, marked_at: new Date().toISOString(),
+      note: rows[s.id]?.note || null, marked_by: ctx.profile.id,
     }));
     const { error } = await supabase.from('attendance').upsert(payload, { onConflict: 'class_id,student_id,on_date' });
     if (error) { setMsg(errText(error)); return; }

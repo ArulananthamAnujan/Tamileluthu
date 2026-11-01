@@ -19,7 +19,7 @@ export default function Student({ profile, setProfile }) {
   async function load() {
     const [s, c, p] = await Promise.all([
       supabase.from('submissions').select('*').eq('student_id', profile.id).order('created_at', { ascending: false }),
-      supabase.from('class_members').select('class_id, classes(name, teacher:profiles(full_name))').eq('student_id', profile.id),
+      supabase.from('class_members').select('class_id, classes(name, teacher:profiles!classes_teacher_id_fkey(full_name))').eq('student_id', profile.id),
       supabase.from('parent_links').select('parent_id, parent:profiles!parent_links_parent_id_fkey(full_name)').eq('student_id', profile.id),
     ]);
     setSubs(s.data || []); setClasses(c.data || []); setParents(p.data || []);

@@ -14,7 +14,7 @@ export function useScope(profile) {
       setState({ loading: false, classes: data || [], children: [], memberships: [] });
     } else if (profile.role === 'student') {
       const { data } = await supabase.from('class_members')
-        .select('class_id, student_id, classes(id, name, teacher:profiles(full_name))').eq('student_id', profile.id);
+        .select('class_id, student_id, classes(id, name, teacher:profiles!classes_teacher_id_fkey(full_name))').eq('student_id', profile.id);
       setState({ loading: false, classes: (data || []).map((m) => m.classes).filter(Boolean), children: [], memberships: data || [] });
     } else {
       const { data: links } = await supabase.from('parent_links')
@@ -23,7 +23,7 @@ export function useScope(profile) {
       let memberships = [];
       if (kids.length) {
         const { data } = await supabase.from('class_members')
-          .select('class_id, student_id, classes(id, name, teacher:profiles(full_name))').in('student_id', kids.map((k) => k.id));
+          .select('class_id, student_id, classes(id, name, teacher:profiles!classes_teacher_id_fkey(full_name))').in('student_id', kids.map((k) => k.id));
         memberships = data || [];
       }
       const seen = new Map();

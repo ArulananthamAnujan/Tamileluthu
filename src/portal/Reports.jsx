@@ -295,7 +295,7 @@ function MyReports({ ctx }) {
   const [list, setList] = useState(null);
   const [open, setOpen] = useState(null);
   useEffect(() => {
-    supabase.from('reports').select('*, class:classes(name, teacher:profiles(full_name))').eq('student_id', ctx.studentId)
+    supabase.from('reports').select('*, class:classes(name, teacher:profiles!classes_teacher_id_fkey(full_name))').eq('student_id', ctx.studentId)
       .order('published_at', { ascending: false }).then(({ data }) => setList(data || []));
   }, [ctx.studentId]);
   if (open) return <ReportCard report={open} studentName={ctx.studentName} className={open.class?.name} teacher={open.class?.teacher?.full_name} onBack={() => setOpen(null)} />;
