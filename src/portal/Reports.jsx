@@ -189,7 +189,7 @@ function usePeriod(studentId, classId, start, end) {
       let aq = supabase.from('attendance').select('status').eq('student_id', studentId).eq('class_id', classId);
       let mq = supabase.from('marks').select('mark, absent, comment, assessment:assessments!inner(id, title, kind, max_mark, held_on, class_id)')
         .eq('student_id', studentId).eq('assessment.class_id', classId);
-      let wq = supabase.from('submissions').select('id, status, issues').eq('student_id', studentId);
+      let wq = supabase.from('submissions').select('id, status, issues').or(`student_id.eq.${studentId},for_student.eq.${studentId}`);
       if (start) { aq = aq.gte('on_date', start); mq = mq.gte('assessment.held_on', start); wq = wq.gte('created_at', start); }
       if (end) { aq = aq.lte('on_date', end); mq = mq.lte('assessment.held_on', end); wq = wq.lte('created_at', end + 'T23:59:59'); }
       const [a, m, w] = await Promise.all([aq, mq, wq]);

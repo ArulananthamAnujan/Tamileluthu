@@ -849,4 +849,6 @@ export default {
   "You opened the link inside WhatsApp / Instagram / Facebook. Their built-in browser cannot install apps.": "நீங்கள் இணைப்பை WhatsApp / Instagram / Facebook உள்ளே திறந்துள்ளீர்கள். அவற்றின் உள் உலாவியால் செயலிகளை நிறுவ முடியாது.",
   "then": "பின்",
   "“Add to Home Screen”": "“Add to Home Screen”",
+  "In your class. The student and their parents will see this report.": "உங்கள் வகுப்பில் உள்ளார். மாணவரும் பெற்றோரும் இந்த அறிக்கையைப் பார்ப்பார்கள்.",
+  "Not in your class list, so only you will see this report. Pick a name from the list to share it with the student and parents.": "உங்கள் வகுப்புப் பட்டியலில் இல்லை; எனவே இந்த அறிக்கையை நீங்கள் மட்டுமே பார்ப்பீர்கள். மாணவருடனும் பெற்றோருடனும் பகிர, பட்டியலிலிருந்து பெயரைத் தெரிவுசெய்யுங்கள்.",
 };

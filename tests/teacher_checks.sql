@@ -29,7 +29,7 @@ do $$ begin
 end $$;
 select set_config('request.jwt.claim.sub','c0000000-0000-4000-8000-000000000003',true);
 do $$ begin
-  if (select count(*) from public.submissions)<>0 then raise exception 'Student sees teacher checks'; end if;
+  if (select count(*) from public.submissions)<>1 or (select checked_for from public.submissions)<>'S' then raise exception 'Student should see only the check linked to them'; end if;
   insert into public.submissions(student_id,input_mode,original_text) values(auth.uid(),'text','தமிழ்');
   begin
     insert into public.submissions(student_id,input_mode,original_text,checked_for,for_student) values(auth.uid(),'text','x','O','c0000000-0000-4000-8000-000000000004');

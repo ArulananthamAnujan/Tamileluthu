@@ -89,7 +89,8 @@ export default function NewSubmission({ profile, onDone, onCancel, roster }) {
           <label className="field">{t('Student’s name')}
             <input value={who} onChange={(e) => setWho(e.target.value)} list="tt-roster" maxLength={120} autoComplete="off" placeholder={t('e.g. Arun Kumar')} />
             <datalist id="tt-roster">{roster.map((r) => <option key={r.id} value={r.full_name} />)}</datalist>
-            {match && <span className="small okc">✓ {t('In your class')}</span>}
+            {match ? <span className="small okc">✓ {t('In your class. The student and their parents will see this report.')}</span>
+              : who.trim() && <span className="small muted">{t('Not in your class list, so only you will see this report. Pick a name from the list to share it with the student and parents.')}</span>}
           </label>
         )}
         <label className="field">{t('Title')}<input id="title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('e.g. Letter to my cousin')} /></label>

@@ -21,8 +21,9 @@ export default function Parent({ profile }) {
     const kids = (data || []).map((d) => d.student).filter(Boolean);
     setChildren(kids);
     if (kids.length) {
+      const ids = kids.map((k) => k.id).join(',');
       const { data: s } = await supabase.from('submissions').select('*')
-        .in('student_id', kids.map((k) => k.id)).order('created_at', { ascending: false });
+        .or(`student_id.in.(${ids}),for_student.in.(${ids})`).order('created_at', { ascending: false });
       setSubs(s || []);
       setChild((c) => c && kids.some((k) => k.id === c.id) ? c : kids[0]);
     }
@@ -36,8 +37,8 @@ export default function Parent({ profile }) {
     setMsg(t('Linked to {name}.', { name: data || t('your child') })); setCode(''); load();
   }
 
-  if (open) return <SubmissionView sub={open} viewer="parent" onBack={() => setOpen(null)} />;
-  const mine = child ? subs.filter((s) => s.student_id === child.id) : [];
+  if (open) return <SubmissionView sub={open} viewer="parent" studentName={child?.full_name} onBack={() => setOpen(null)} />;
+  const mine = child ? subs.filter((s) => s.student_id === child.id || s.for_student === child.id) : [];
 
   return (
     <div className="stack">

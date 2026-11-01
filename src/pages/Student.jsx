@@ -18,7 +18,7 @@ export default function Student({ profile, setProfile }) {
 
   async function load() {
     const [s, c, p] = await Promise.all([
-      supabase.from('submissions').select('*').eq('student_id', profile.id).order('created_at', { ascending: false }),
+      supabase.from('submissions').select('*').or(`student_id.eq.${profile.id},for_student.eq.${profile.id}`).order('created_at', { ascending: false }),
       supabase.from('class_members').select('class_id, classes(name, teacher:profiles!classes_teacher_id_fkey(full_name))').eq('student_id', profile.id),
       supabase.from('parent_links').select('parent_id, parent:profiles!parent_links_parent_id_fkey(full_name)').eq('student_id', profile.id),
     ]);
@@ -43,7 +43,7 @@ export default function Student({ profile, setProfile }) {
   const upsert = (s) => setSubs((list) => [s, ...list.filter((x) => x.id !== s.id)]);
 
   if (view.name === 'new') return <NewSubmission profile={profile} onCancel={() => setView({ name: 'home' })} onDone={(s) => { upsert(s); setView({ name: 'sub', sub: s }); }} />;
-  if (view.name === 'sub') return <SubmissionView sub={view.sub} viewer="student" onBack={() => { setView({ name: 'home' }); load(); }} onChanged={upsert} />;
+  if (view.name === 'sub') return <SubmissionView sub={view.sub} viewer={view.sub.student_id === profile.id ? 'student' : 'parent'} studentName={profile.full_name} onBack={() => { setView({ name: 'home' }); load(); }} onChanged={upsert} />;
 
   return (
     <div className="stack">
