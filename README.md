@@ -145,7 +145,7 @@ Tamil writing feedback for VCE students:
 - **Parents** enter their child's parent code and see only their own child's writing, mistakes and the teacher's comments.
 - **Teachers** create classes, see every student's writing, the class's most common mistakes, and write comments that students and parents can read.
 
-Built with React (Vite), Supabase (logins, database, photo storage) and the Claude API (reading handwriting and checking).
+Built with React (Vite), Supabase (logins, database, photo storage) and AI models (reading handwriting and checking).
 
 ---
 
@@ -172,7 +172,7 @@ Before using it with students, get the school's approval and parent consent for 
 
 ## Current project
 
-This repository now defaults to the dedicated **Tamil Thiruthi** Supabase project in Sydney (`zqeagskgyykxdxccjxkh`). Its database and checking function are deployed, and the Anthropic connection has passed live synthetic tests. The browser configuration contains only a publishable key; keep privileged keys and the Anthropic key in Supabase Secrets.
+This repository now defaults to the dedicated **Tamil Thiruthi** Supabase project in Sydney (`zqeagskgyykxdxccjxkh`). Its database and checking function are deployed, and the AI model connection has passed live synthetic tests. The browser configuration contains only a publishable key; keep privileged keys and the AI model key in Supabase Secrets.
 
 Run `npm ci` and `npm run build` to build against this project. Set both `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only when deliberately overriding it. Do not rerun the initial schema or security migration on the existing project: they have already been applied.
 
@@ -203,19 +203,21 @@ Supabase's built-in sender only allows 2 emails per hour, so sign-up confirmatio
 Test it: on the sign-in screen, tap **Forgot password?**, enter your email, and check the email arrives from your Hostinger address.
 
 ### 2. Deploy the checking function
-You need an Anthropic API key from <https://console.anthropic.com> (Settings → API keys). Add some credit; each check costs roughly a few cents (more for several photo pages).
+You need an API key from your AI model provider's console (Settings → API keys). Add some credit; each check costs roughly a few cents (more for several photo pages).
 
 Install the Supabase CLI (<https://supabase.com/docs/guides/cli>), then in this folder:
 ```bash
 supabase login
 supabase link --project-ref YOUR-PROJECT-REF
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+supabase secrets set AI_API_KEY=your-ai-model-key
 supabase functions deploy check-writing
 ```
 Optional settings:
-- `supabase secrets set ANTHROPIC_MODEL=claude-opus-5-5`: the most careful checking, but slower and dearer. The default is `claude-sonnet-5-5`.
-- `supabase secrets set ANTHROPIC_EFFORT=high`: deeper checking (`low`/`medium`/`high`). The default is `medium`, which keeps photo checks well within the time limit.
-- `supabase secrets set ANTHROPIC_CHECK_EFFORT=xhigh`: how hard the line-by-line correction pass thinks (default `high`, so it catches the small mistakes). If checks of long multi-page essays time out on the Supabase free plan (150-second limit), set it to `medium` or upgrade to Pro (400 seconds).
+- `supabase secrets set AI_MODEL=<model ID>`: use a different AI model, e.g. a larger one for the most careful checking (slower and dearer). A balanced default is built in.
+- `supabase secrets set AI_EFFORT=high`: deeper checking (`low`/`medium`/`high`). The default is `medium`, which keeps photo checks well within the time limit.
+- `supabase secrets set AI_CHECK_EFFORT=xhigh`: how hard the line-by-line correction pass thinks (default `high`, so it catches the small mistakes). If checks of long multi-page essays time out on the Supabase free plan (150-second limit), set it to `medium` or upgrade to Pro (400 seconds).
+
+Projects already set up with the older secret names (`ANTHROPIC_API_KEY` and so on) keep working; you don't need to change them.
 
 **If a check fails,** the student now sees the actual reason, for example "busy, retry", "AI key not working", "took too long" or "no writing could be read". For the details, open Supabase → Edge Functions → **check-writing → Logs**.
 
@@ -267,7 +269,7 @@ No app store is needed. (Publishing to the Google Play Store or Apple App Store 
 
 ```
 supabase/migrations/0001_schema.sql   tables, roles, privacy rules, photo bucket
-supabase/functions/check-writing/     reads handwriting + checks Tamil (Claude API)
+supabase/functions/check-writing/     reads handwriting + checks Tamil (AI models)
 src/pages/                            Auth, Student, Parent, Teacher screens
 src/components/                       feedback view, upload form, lists, progress
 src/categories.js                     the mistake categories (same as the class sheet)
@@ -315,4 +317,4 @@ Apply `supabase/migrations/20261031050145_harden_student_access.sql` after the i
 - Privileged database implementations live in the unexposed `private` schema. Public RPC wrappers use invoker permissions. Anonymous access and unused table privileges are revoked. Teacher allow-list and attempt-log tables deliberately have no client RLS policies.
 - Student text is explicitly treated as untrusted input to the AI. This reduces prompt manipulation risk but does not establish marking accuracy.
 
-Validation: `node --test tests/security.test.mjs`, `npm run build`, and `tests/security.sql` against a test database (the script rolls back all fixtures). Do not put service-role or Anthropic keys in frontend variables. The AI key and a valid provider model are still required for live marking tests.
+Validation: `node --test tests/security.test.mjs`, `npm run build`, and `tests/security.sql` against a test database (the script rolls back all fixtures). Do not put service-role or AI model keys in frontend variables. The AI key and a valid provider model are still required for live marking tests.

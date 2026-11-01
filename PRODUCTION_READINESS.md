@@ -23,9 +23,9 @@ Raw synthetic results are under `tests/*readiness-results.json`. These are small
 - Updated vulnerable dependencies and kept exact versions plus the lockfile.
 - Fixed the Android signing-expression build failure and added security tests to its CI workflow.
 - Changed definite-sounding marking labels to AI suggestions, removed the absolute “verb must be last” instruction, and reduced unnecessary technical claims in general feedback.
-- Added an explicit disclosure that writing/photos are sent to Anthropic.
+- Added an explicit disclosure that writing/photos are sent to AI models.
 - Protected profile loading from stale responses during account changes.
-- Configured the public Supabase project URL and publishable key as the frontend default. No privileged or Anthropic keys are in the frontend.
+- Configured the public Supabase project URL and publishable key as the frontend default. No privileged or AI model keys are in the frontend.
 - Selected newly created classes immediately, so teachers see the correct join code.
 - Refreshed completed submissions and teacher comments on opening and while viewing. Revoked access clears the view. Photo links expire after five minutes and are renewed when reopened.
 
