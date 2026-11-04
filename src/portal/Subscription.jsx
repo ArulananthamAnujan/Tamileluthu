@@ -93,14 +93,12 @@ export function PlanCard({ student, self, compact }) {
     <div className="plans">
       {plans.map((p, i) => {
         const mine = acc.active && acc.plan_id === p.id;
-        const perCheck = money(Math.round(p.price_cents / p.checks_per_month), acc.currency);
         return (
           <div key={p.id} className={'plan-opt' + (mine ? ' mine' : '') + (i === 1 && plans.length > 2 ? ' best' : '')}>
             {i === 1 && plans.length > 2 && <span className="plan-tag">{t('Popular')}</span>}
             <b className="plan-opt-name">{planName(p)}</b>
             <span className="plan-opt-price">{money(p.price_cents, acc.currency)}<small> / {t('month')}</small></span>
             <span className="plan-opt-n">{t('{n} checks a month', { n: p.checks_per_month })}</span>
-            <span className="small muted">{t('{price} per check', { price: perCheck })}</span>
             {mine ? <span className="plan-badge on">{t('Your plan')}</span>
               : <button className={'btn ' + (card ? '' : 'gold')} disabled={!!busy}
                   onClick={() => (card ? change(p) : go('subscribe-checkout', p))}>
