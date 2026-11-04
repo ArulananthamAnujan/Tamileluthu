@@ -30,8 +30,8 @@ do $$ declare r jsonb; i int; sid uuid; begin
   if r->>'status'<>'payment_required' then raise exception 'Paywall missing: %', r; end if;
 
   -- Paid student: 3 checks this month, then quota.
-  insert into public.subscriptions(student_id,status,current_period_start,current_period_end)
-  values('d0000000-0000-4000-8000-000000000003','active',now()-interval '1 day',now()+interval '29 days');
+  insert into public.subscriptions(student_id,status,current_period_start,current_period_end,checks_per_month)
+  values('d0000000-0000-4000-8000-000000000003','active',now()-interval '1 day',now()+interval '29 days',3);
   for i in 6..8 loop
     select id into sid from ids where n=i;
     r := private.claim_writing_check(sid,'d0000000-0000-4000-8000-000000000003');

@@ -473,7 +473,7 @@ Deno.serve(async (req) => {
     if (claim.status === "forbidden") return json({ error: "You can only check your own writing." }, 403);
     if (["limited", "busy"].includes(claim.status)) return json({ error: "The school has set a limit on how many checks each person can do. Please try again later, or ask the school admin." }, 429);
     if (claim.status === "payment_required") return json({ error: "Your free checks are used up. Subscribe to keep checking your writing: open My account → Subscription (a parent can pay for you).", code: "payment_required" }, 402);
-    if (claim.status === "quota") return json({ error: `You have used all ${claim.access?.quota ?? ""} checks for this month. Your allowance starts again on your next renewal date.`, code: "quota" }, 429);
+    if (claim.status === "quota") return json({ error: `You have used all ${claim.access?.quota ?? ""} checks for this month. Your allowance starts again on your next renewal date, or choose a bigger plan under Subscription to keep checking now.`, code: "quota" }, 429);
     if (["checked", "checking"].includes(claim.status)) return json({ ok: true, status: claim.status });
     if (claim.status !== "claimed" || !claim.token) return json({ error: "Could not start the check." }, 503);
     // @ts-ignore EdgeRuntime is provided by Supabase

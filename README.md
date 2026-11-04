@@ -107,6 +107,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261108000000_attendance_marked_at.sql`: stamps the attendance time automatically (needed for attendance to save)
    - `supabase/migrations/20261109000000_share_teacher_checks.sql`: students and their parents can see writing a teacher checked for them, and get a notification when it is ready
    - `supabase/migrations/20261110000000_account_approval.sql`: new student and parent accounts wait for the admin's approval (Admin → Approvals); removes the placeholder school name so no school details show until the admin adds them
+   - `supabase/migrations/20261111000000_subscription_plans.sql`: monthly plans with their own price and checks (starts with Basic 6 checks A$45, Plus 20 checks A$139, Premium 35 checks A$229); edit them under Admin → Subscriptions. Redeploy `subscribe-checkout` and `stripe-webhook` with it
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

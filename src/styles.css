@@ -607,6 +607,17 @@ a.btn.disabled{opacity:.55}
 .plan-points li{display:flex;gap:8px;align-items:flex-start}
 .plan-points .icon{color:var(--ok);margin-top:3px}
 .quota{display:flex;flex-direction:column;gap:4px}
+.plan.active .plan-price{font-size:18px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.plan-opt{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px;border:1.5px solid var(--rule);border-radius:14px;background:var(--paper)}
+.plan-opt.best{border-color:var(--gold);box-shadow:var(--shadow)}
+.plan-opt.mine{border-color:var(--ok)}
+.plan-opt .btn,.plan-opt .plan-badge{margin-top:auto;align-self:stretch;text-align:center}
+.plan-opt-name{font-size:15px;color:var(--ink)}
+.plan-opt-price{font-family:var(--f-display);font-size:26px;font-weight:600;color:var(--accent)}
+.plan-opt-price small{font-family:inherit;font-size:13px;font-weight:400;color:var(--muted)}
+.plan-opt-n{font-weight:700}
+.plan-tag{position:absolute;top:-10px;right:12px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold);color:var(--gold-ink)}
 .quota-bar{height:8px;border-radius:4px;background:var(--rule);overflow:hidden}
 .quota-bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
 .paywall{align-items:center}
