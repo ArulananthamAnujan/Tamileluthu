@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       db.from("profiles").select("full_name, role").eq("id", sub.student_id).single(),
       db.from("school_settings").select("school_name").eq("id", 1).maybeSingle(),
     ]);
-    const school = st?.school_name || Deno.env.get("SCHOOL_NAME") || "Tamil School";
+    const school = st?.school_name || Deno.env.get("SCHOOL_NAME") || "Tamil Eluthu";
     const ctx = { school, teacher: me?.full_name || "", className: "", student: owner?.role === "student" ? owner.full_name : (sub.checked_for || "") };
     const msg = writingReportEmail(ctx, sub, typeof note === "string" ? note.slice(0, 1000) : "");
     const sent = await sendMails(list.map((e) => ({ to: e, ...msg, replyTo: who.user.email || undefined })), school);

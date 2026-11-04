@@ -6,7 +6,7 @@ import { admin, caller, cors, json, siteUrl, UUID } from "../_shared/http.ts";
 import { reportEmail, marksEmail, noticeEmail } from "../_shared/emails.mjs";
 import { mailReady, sendMails } from "../_shared/mail.ts";
 
-const SCHOOL = Deno.env.get("SCHOOL_NAME") || "Tamil School";
+const SCHOOL = Deno.env.get("SCHOOL_NAME") || "Tamil Eluthu";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });

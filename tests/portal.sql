@@ -9,6 +9,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('44444444-4444-4444-8444-444444444444','portal-teacher@example.invalid','{"role":"teacher","full_name":"T One"}'),
 ('55555555-5555-4555-8555-555555555555','portal-teacher2@example.invalid','{"role":"teacher","full_name":"T Two"}'),
 ('66666666-6666-4666-8666-666666666666','portal-p2@example.invalid','{"role":"parent","full_name":"P Two"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.classes(id,name,teacher_id) values
 ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Class A','44444444-4444-4444-8444-444444444444'),
 ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','Class B','55555555-5555-4555-8555-555555555555');

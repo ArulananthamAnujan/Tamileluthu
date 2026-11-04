@@ -5,11 +5,22 @@ import { isoDay, addDays, fmtDay } from '../lib/util.js';
 import { downloadCsv } from '../lib/csv.js';
 import { loadSettings } from '../lib/settings.js';
 import { SITE } from '../site.js';
-import { money } from '../lib/util.js';
+import { money, useHash } from '../lib/util.js';
 
 // Principal / school admin: whole-school overview, teachers, and school details.
 export default function Admin({ ctx, onSettings }) {
-  const [tab, setTab] = useState('overview');
+  const { query } = useHash();
+  const [tab, setTab] = useState(() => query.get('tab') || 'overview');
+  const [waiting, setWaiting] = useState(0);
+  useEffect(() => { if (query.get('tab')) setTab(query.get('tab')); }, [query.get('tab')]);
+  useEffect(() => {
+    if (!ctx.profile.is_admin) return;
+    supabase.rpc('admin_accounts').then(({ data }) => {
+      const n = (data || []).filter((a) => !a.approved).length;
+      setWaiting(n);
+      if (n && !query.get('tab')) setTab('approvals');
+    });
+  }, []);
   if (!ctx.profile.is_admin) return <div className="card"><p>{t('Only the school admin can open this page.')}</p></div>;
   return (
     <div className="stack">
@@ -17,12 +28,14 @@ export default function Admin({ ctx, onSettings }) {
         <h2 className="title">{t('School admin')} <span className="ta">· நிர்வாகம்</span></h2>
         <div className="tabs">
           <button className={tab === 'overview' ? 'on' : ''} onClick={() => setTab('overview')}>{t('Overview')}</button>
+          <button className={tab === 'approvals' ? 'on' : ''} onClick={() => setTab('approvals')}>{t('Approvals')}{waiting ? ` (${waiting})` : ''}</button>
           <button className={tab === 'staff' ? 'on' : ''} onClick={() => setTab('staff')}>{t('Teachers')}</button>
           <button className={tab === 'subs' ? 'on' : ''} onClick={() => setTab('subs')}>{t('Subscriptions')}</button>
           <button className={tab === 'school' ? 'on' : ''} onClick={() => setTab('school')}>{t('School details')}</button>
         </div>
       </div>
       {tab === 'overview' && <Overview />}
+      {tab === 'approvals' && <Approvals onCount={setWaiting} />}
       {tab === 'staff' && <Staff me={ctx.profile} />}
       {tab === 'subs' && <Subs />}
       {tab === 'school' && <School onSaved={onSettings} />}
@@ -119,6 +132,98 @@ function Overview() {
   );
 }
 
+// New student and parent accounts wait here until the admin approves them.
+function Approvals({ onCount }) {
+  const [list, setList] = useState(null);
+  const [msg, setMsg] = useState('');
+  const [find, setFind] = useState('');
+  const [busy, setBusy] = useState('');
+
+  async function load() {
+    const { data, error } = await supabase.rpc('admin_accounts');
+    if (error) { setMsg(errText(error)); setList([]); return; }
+    setList(data || []);
+    onCount((data || []).filter((a) => !a.approved).length);
+  }
+  useEffect(() => { load(); }, []);
+  async function run(id, fn, args, ok) {
+    setBusy(id); setMsg('');
+    const { error } = await supabase.rpc(fn, args);
+    setBusy('');
+    if (error) { setMsg(errText(error)); return; }
+    setMsg(ok); load();
+  }
+
+  if (!list) return <p className="muted">{t('Loading…')}</p>;
+  const waiting = list.filter((a) => !a.approved);
+  const q = find.trim().toLowerCase();
+  const approved = list.filter((a) => a.approved && (!q || `${a.full_name} ${a.email}`.toLowerCase().includes(q)));
+  const role = (r) => t(r === 'parent' ? 'Parent' : 'Student');
+  const approveAll = async () => {
+    if (!confirm(t('Approve all {n} waiting accounts?', { n: waiting.length }))) return;
+    for (const a of waiting) {
+      const { error } = await supabase.rpc('admin_set_approved', { uid: a.id, value: true });
+      if (error) { setMsg(errText(error)); break; }
+    }
+    load();
+  };
+
+  return (
+    <div className="stack">
+      {msg && <p className="small" role="status">{msg}</p>}
+      <section className="card">
+        <div className="row between wrap">
+          <h3>{t('Waiting for approval')} ({waiting.length})</h3>
+          {waiting.length > 1 && <button className="btn small" onClick={approveAll}>{t('Approve all')}</button>}
+        </div>
+        {!waiting.length ? <p className="muted">{t('No one is waiting. New student and parent sign-ups will appear here.')}</p> : (
+          <div className="tablewrap">
+            <table className="table">
+              <thead><tr><th>{t('Name')}</th><th>{t('Email')}</th><th>{t('Account')}</th><th>{t('Signed up')}</th><th></th></tr></thead>
+              <tbody>{waiting.map((a) => (
+                <tr key={a.id}>
+                  <td><b>{a.full_name || '–'}</b></td>
+                  <td>{a.email}</td>
+                  <td>{role(a.role)}</td>
+                  <td>{fmtDay(a.created_at.slice(0, 10))}</td>
+                  <td><div className="row wrap">
+                    <button className="btn small primary" disabled={busy === a.id} onClick={() => run(a.id, 'admin_set_approved', { uid: a.id, value: true }, t('{name} is approved.', { name: a.full_name || a.email }))}>{t('Approve')}</button>
+                    <button className="btn small" disabled={busy === a.id} onClick={() => confirm(t('Decline and delete the account for {email}?', { email: a.email })) && run(a.id, 'admin_decline', { uid: a.id }, t('Declined.'))}>{t('Decline')}</button>
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+        <p className="muted small">{t('Teachers do not need approval: adding their email under Teachers already allows them. Declining deletes the waiting account.')}</p>
+      </section>
+      <section className="card">
+        <div className="row between wrap">
+          <h3>{t('Approved students and parents')} ({list.length - waiting.length})</h3>
+          <input type="search" value={find} onChange={(e) => setFind(e.target.value)} placeholder={t('Search name or email')} />
+        </div>
+        {!approved.length ? <p className="muted">{t('No accounts found.')}</p> : (
+          <div className="tablewrap">
+            <table className="table">
+              <thead><tr><th>{t('Name')}</th><th>{t('Email')}</th><th>{t('Account')}</th><th>{t('Classes')} / {t('Children')}</th><th></th></tr></thead>
+              <tbody>{approved.map((a) => (
+                <tr key={a.id}>
+                  <td><b>{a.full_name || '–'}</b></td>
+                  <td>{a.email}</td>
+                  <td>{role(a.role)}</td>
+                  <td className="small">{(a.role === 'parent' ? a.children : a.classes) || '–'}</td>
+                  <td><button className="btn small" disabled={busy === a.id} onClick={() => confirm(t('Block {name}? They will not be able to use the site until you approve them again.', { name: a.full_name || a.email })) && run(a.id, 'admin_set_approved', { uid: a.id, value: false }, t('Blocked.'))}>{t('Block')}</button></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+        <p className="muted small">{t('A blocked account moves back to the waiting list, where you can approve it again.')}</p>
+      </section>
+    </div>
+  );
+}
+
 function Staff({ me }) {
   const [list, setList] = useState(null);
   const [email, setEmail] = useState('');
@@ -210,7 +315,6 @@ function School({ onSaved }) {
       if (f.check_limit_hour !== undefined) {
         for (const k of ['check_limit_hour', 'check_limit_day', 'check_limit_per_writing']) row[k] = Math.max(0, Math.floor(Number(f[k]) || 0));
       }
-      if (!row.school_name) throw new Error(t('Enter the school’s name.'));
       if (row.whatsapp_url && !/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\//i.test(row.whatsapp_url)) throw new Error(t('The WhatsApp link should start with https://chat.whatsapp.com/'));
       if (files.logo) row.logo_path = await upload(files.logo);
       if (files.hero) row.hero_path = await upload(files.hero);
@@ -229,7 +333,7 @@ function School({ onSaved }) {
     <form className="grid2" onSubmit={save}>
       <section className="card form">
         <h3>{t('School details')}</h3>
-        <label className="field">{t('School name (English)')}<input value={f.school_name || ''} onChange={set('school_name')} maxLength={120} required /></label>
+        <label className="field">{t('School name (English)')}<input value={f.school_name || ''} onChange={set('school_name')} maxLength={120} placeholder={t('Leave empty to show no school name')} /></label>
         <label className="field">{t('School name (Tamil)')}<input value={f.school_name_ta || ''} onChange={set('school_name_ta')} maxLength={120} placeholder="தமிழ்ப் பள்ளி" /></label>
         <label className="field">{t('Short welcome line (home page)')}<textarea rows={2} value={f.tagline || ''} onChange={set('tagline')} maxLength={400} /></label>
         <label className="field">{t('About the school')}<textarea rows={5} value={f.about || ''} onChange={set('about')} maxLength={3000} placeholder={t('When and where classes run, year levels, history of the school…')} /></label>

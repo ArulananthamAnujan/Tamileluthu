@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase.js';
 import { useRoster, useParents } from '../lib/scope.js';
 import { isoDay, addDays, fmtDay, pct } from '../lib/util.js';
-import { ASSESSMENT_KINDS, SITE } from '../site.js';
+import { ASSESSMENT_KINDS, SITE, schoolName } from '../site.js';
 import { t, tl, getLang } from '../i18n.js';
 import { siteLink } from '../lib/wa.js';
 import ActivityList, { activityText } from './ActivityList.jsx';
@@ -62,7 +62,7 @@ function TeacherHome({ ctx }) {
   }, [cls.id]);
   const todays = (items || []).filter((a) => a.on_date === isoDay());
   const shareToday = todays.length ? todays.map((a) => activityText(a, cls.name)).join('\n\n') : '';
-  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.school, url: `${window.location.origin}/#/join?code=${cls.join_code}`, code: cls.join_code });
+  const invite = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: schoolName(), url: `${window.location.origin}/#/join?code=${cls.join_code}`, code: cls.join_code });
 
   return (
     <div className="stack">

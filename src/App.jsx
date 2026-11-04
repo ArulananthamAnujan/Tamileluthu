@@ -17,6 +17,7 @@ import Bell from './components/Bell.jsx';
 import { isApp } from './app/isApp.js';
 import AppShell from './app/AppShell.jsx';
 import Welcome from './app/Welcome.jsx';
+import Pending from './pages/Pending.jsx';
 import './app/prefs.js';
 
 const ROLE_LABEL = { student: 'Student', parent: 'Parent', teacher: 'Teacher' };
@@ -36,7 +37,7 @@ export default function App() {
 
   const refreshSettings = () => loadSettings().then(() => {
     setSettingsVersion((v) => v + 1);
-    document.title = `${SITE.school} · ${SITE.nameEn}`;
+    document.title = SITE.school ? `${SITE.school} · ${SITE.nameEn}` : SITE.nameEn;
   });
   useEffect(() => { if (configured) refreshSettings(); }, []);
 
@@ -63,6 +64,13 @@ export default function App() {
       });
     return () => { cancelled = true; };
   }, [session?.user.id]);
+  // Students and parents wait for the school admin to approve their account.
+  const waiting = profile && profile.approved === false;
+  const recheck = async () => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+    if (data) setProfile(data);
+    return data;
+  };
 
   // Invite links: remember the class code until the person is signed in as a student.
   useEffect(() => {
@@ -113,6 +121,8 @@ export default function App() {
       </div></div>
     );
   }
+
+  if (waiting) return <Pending profile={profile} email={session.user.email} onCheck={recheck} />;
 
   if (isApp) {
     if (!profile) return <div className="ax-loading"><span className="logo-mark">அ</span><p className="muted">{profileErr ? t('Your account has no profile. Sign out and create the account again, or contact your teacher.') : t('Loading your account…')}</p>{profileErr && <button className="btn" onClick={() => supabase.auth.signOut()}>{t('Sign out')}</button>}</div>;

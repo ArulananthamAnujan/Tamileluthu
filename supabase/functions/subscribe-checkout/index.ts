@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       "metadata[payer_id]": who.user.id,
       "subscription_data[metadata][student_id]": student_id,
       "subscription_data[metadata][payer_id]": who.user.id,
-      "subscription_data[description]": `${settings.school_name}: writing checker for ${student.full_name}`.slice(0, 500),
+      "subscription_data[description]": `${settings.school_name || "Tamil Eluthu"}: writing checker for ${student.full_name}`.slice(0, 500),
     };
     if (existing?.stripe_customer_id) form.customer = existing.stripe_customer_id;
     else if (who.user.email) form.customer_email = who.user.email;

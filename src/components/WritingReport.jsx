@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n.js';
-import { SITE } from '../site.js';
+import { SITE, schoolName, schoolLine } from '../site.js';
 import { callFn } from '../lib/scope.js';
 import { waLink } from '../lib/wa.js';
 import { CATS, GROUPS, catOf, typeLabel, fmtDate } from '../categories.js';
@@ -32,7 +32,7 @@ export function reportText(sub, name, limit = 3500) {
     e.rewrite?.text ? `\n*${t('Model rewrite')} · மாதிரி மீள்வரைவு*\n${e.rewrite.text}` : '',
   ].filter(Boolean);
   const lines = [
-    `${SITE.school} · தமிழ் திருத்தி`,
+    `${schoolName()} · தமிழ் திருத்தி`,
     `${name || ''}${sub.title ? ` — ${sub.title}` : ''}`,
     ...essayLines,
     '',
@@ -93,7 +93,7 @@ export default function WritingReport({ sub, studentName, onBack }) {
       <article ref={reportRef} data-pdf-root className="card reportcard printable wreport">
         <header className="rc-head">
           <div>
-            <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</p>
+            {(SITE.logoUrl || schoolLine()) && <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{schoolLine()}</p>}
             <h2 className="title">எழுத்துத் திருத்தம் · {t('Writing feedback')}</h2>
           </div>
           <div className="rc-meta small">

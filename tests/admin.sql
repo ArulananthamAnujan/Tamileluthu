@@ -7,6 +7,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('a0000000-0000-4000-8000-000000000003','adm-student@example.invalid','{"role":"student","full_name":"Student"}'),
 ('a0000000-0000-4000-8000-000000000004','adm-parent@example.invalid','{"role":"parent","full_name":"Parent"}'),
 ('a0000000-0000-4000-8000-000000000005','adm-other@example.invalid','{"role":"parent","full_name":"Other"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 do $$ begin
   if not (select is_admin from public.profiles where id='a0000000-0000-4000-8000-000000000001') then raise exception 'Admin flag not set at signup'; end if;
   if (select is_admin from public.profiles where id='a0000000-0000-4000-8000-000000000002') then raise exception 'Teacher wrongly admin'; end if;

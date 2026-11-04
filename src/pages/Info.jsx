@@ -1,5 +1,5 @@
 import React from 'react';
-import { SITE } from '../site.js';
+import { SITE, schoolName, schoolLine } from '../site.js';
 import { t, getLang } from '../i18n.js';
 import Icon from '../components/Icon.jsx';
 
@@ -22,8 +22,8 @@ function Wrap({ title, ta, children }) {
 function Contact() {
   return (
     <Wrap title={t('About & contact')} ta="தொடர்புக்கு">
-      <h3>{SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</h3>
-      {SITE.about ? <p className="pre">{SITE.about}</p> : <p>{t('A community school teaching Tamil language and culture.')}</p>}
+      {schoolLine() && <h3>{schoolLine()}</h3>}
+      {SITE.about && <p className="pre">{SITE.about}</p>}
       <ul className="contact">
         {SITE.address && <li><Icon name="school" size={18} /><span>{SITE.address}</span></li>}
         {SITE.contactEmail && <li><Icon name="mail" size={18} /><a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></li>}
@@ -79,7 +79,7 @@ function Terms() {
       {ta && <p className="card notice small">சுருக்கம்: வாங்கிய வினாத்தாள்களை உங்கள் குடும்பத்தின் படிப்புக்காக மட்டும் பயன்படுத்தவும். கோப்பு திறக்கவில்லை அல்லது தவறான கோப்பு என்றால் 14 நாட்களுக்குள் பள்ளியைத் தொடர்பு கொள்ளுங்கள்; பணம் திருப்பித் தரப்படும்.</p>}
       <h3>Using the site</h3>
       <ul>
-        <li>Accounts are for students, parents and teachers of {SITE.school}. Keep your password private.</li>
+        <li>Accounts are for students, parents and teachers of {schoolName()}. Keep your password private.</li>
         <li>தமிழ் திருத்தி gives AI-assisted practice feedback. It can make mistakes and is not an official exam mark.</li>
         <li>Be respectful in anything you write; teachers may remove inappropriate content.</li>
       </ul>

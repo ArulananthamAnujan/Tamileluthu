@@ -4,6 +4,7 @@ insert into public.teacher_emails(email) values('att-teacher@example.invalid');
 insert into auth.users(id,email,raw_user_meta_data) values
 ('a1111111-1111-4111-8111-111111111111','att-s1@example.invalid','{"role":"student","full_name":"Att S"}'),
 ('a4444444-4444-4444-8444-444444444444','att-teacher@example.invalid','{"role":"teacher","full_name":"Att T"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.classes(id,name,teacher_id) values('a0aaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Att Class','a4444444-4444-4444-8444-444444444444');
 insert into public.class_members(class_id,student_id) values('a0aaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','a1111111-1111-4111-8111-111111111111');
 set local role authenticated;

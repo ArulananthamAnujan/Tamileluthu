@@ -57,7 +57,7 @@ export default function Welcome({ joining = false }) {
           ? <button className="btn gold big" onClick={() => goTo(i + 1)}>{t('Next')} <Icon name="arrow" size={18} /></button>
           : <button className="btn gold big" onClick={() => { buzz(); setAuth('signup'); }}>{t('Create your account')} <Icon name="arrow" size={18} /></button>}
         <button className="btn outline-light big" onClick={() => { buzz(); setAuth('signin'); }}>{t('I already have an account')}</button>
-        <p className="small">{SITE.school}</p>
+        {SITE.school && <p className="small">{SITE.school}</p>}
       </div>
     </div>
   );

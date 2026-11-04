@@ -8,6 +8,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('5c000000-0000-4000-8000-000000000003','sc-s2@example.invalid','{"role":"student","full_name":"SC Other"}'),
 ('5c000000-0000-4000-8000-000000000004','sc-p1@example.invalid','{"role":"parent","full_name":"SC Parent"}'),
 ('5c000000-0000-4000-8000-000000000005','sc-p2@example.invalid','{"role":"parent","full_name":"SC Other Parent"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.classes(id,name,teacher_id) values('5c0aaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','SC','5c000000-0000-4000-8000-000000000001');
 insert into public.class_members(class_id,student_id) values
 ('5c0aaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','5c000000-0000-4000-8000-000000000002'),

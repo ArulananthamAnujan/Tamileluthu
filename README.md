@@ -15,7 +15,7 @@ One website for a Tamil school's day-to-day work, with accounts for students, pa
 
 The public home page and the paper catalogue can be browsed without an account.
 
-Everything is available in **English and Tamil** (globe button in the header; each person's choice is remembered). Teachers can **WhatsApp** parents directly (absences, results, reports) and share the diary with a class group. Everyone gets **in-app notifications** (bell) for new homework, listening exams, results, reports and teacher comments. A **principal/admin** area shows every class, manages teachers, and edits the school's name, logo, photo, contacts and WhatsApp group link without touching code.
+Everything is available in **English and Tamil** (globe button in the header; each person's choice is remembered). Teachers can **WhatsApp** parents directly (absences, results, reports) and share the diary with a class group. Everyone gets **in-app notifications** (bell) for new homework, listening exams, results, reports and teacher comments. A **principal/admin** area shows every class, manages teachers, **approves new student and parent accounts** (they see a “waiting for approval” page and cannot join a class or use anything until approved; the admin can also block an account later), and edits the school's name, logo, photo, contacts and WhatsApp group link without touching code. No school details are shown until the admin adds them.
 
 ### The phone app is different from the website
 Inside the Android app, or when the site is added to a phone's home screen, people get an app layout instead of the website:
@@ -106,6 +106,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261107000000_report_files.sql`: private storage for report PDFs, shared as 30-day links when a phone blocks file sharing
    - `supabase/migrations/20261108000000_attendance_marked_at.sql`: stamps the attendance time automatically (needed for attendance to save)
    - `supabase/migrations/20261109000000_share_teacher_checks.sql`: students and their parents can see writing a teacher checked for them, and get a notification when it is ready
+   - `supabase/migrations/20261110000000_account_approval.sql`: new student and parent accounts wait for the admin's approval (Admin → Approvals); removes the placeholder school name so no school details show until the admin adds them
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

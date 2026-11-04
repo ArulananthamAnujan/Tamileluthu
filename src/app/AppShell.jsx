@@ -70,7 +70,7 @@ export default function AppShell({ profile, setProfile, onSettings }) {
       <header className={'ax-top' + (section === 'today' ? ' home' : '')}>
         <div className="ax-bar">
           {section === 'today'
-            ? <span className="ax-brand">{SITE.logoUrl ? <img src={SITE.logoUrl} alt="" /> : <span className="logo-mark">அ</span>}<b>{SITE.schoolTa || SITE.school}</b></span>
+            ? <span className="ax-brand">{SITE.logoUrl ? <img src={SITE.logoUrl} alt="" /> : <span className="logo-mark">அ</span>}<b>{SITE.schoolTa || SITE.school || SITE.name}</b></span>
             : <button className="ax-back" onClick={() => (window.history.length > 1 ? window.history.back() : go('today'))} aria-label={t('Back')}><Icon name="arrow" size={20} /></button>}
           <span className="spacer" />
           <Bell profileId={profile.id} />

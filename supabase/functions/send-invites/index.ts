@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       db.from("profiles").select("full_name").eq("id", who.user.id).single(),
       db.from("school_settings").select("school_name").eq("id", 1).maybeSingle(),
     ]);
-    const school = st?.school_name || Deno.env.get("SCHOOL_NAME") || "Tamil School";
+    const school = st?.school_name || Deno.env.get("SCHOOL_NAME") || "Tamil Eluthu";
     const ctx = { school, site: siteUrl(req), className: cls.name, teacher: me?.full_name || "Your teacher", code: cls.join_code };
     const msg = inviteEmail(ctx, typeof note === "string" ? note.slice(0, 1000) : "");
     const sent = await sendMails(list.map((to) => ({ to, ...msg, replyTo: who.user.email || undefined })), school);
