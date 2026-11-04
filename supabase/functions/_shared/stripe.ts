@@ -40,6 +40,9 @@ export async function syncSubscription(db: any, subscriptionId: string) {
     stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
     stripe_subscription_id: sub.id,
     paid_by: sub.metadata?.payer_id || null,
+    // The plan and its monthly allowance are saved on the Stripe subscription when it starts or changes.
+    ...(sub.metadata?.plan_id ? { plan_id: sub.metadata.plan_id } : {}),
+    ...(Number(sub.metadata?.checks_per_month) > 0 ? { checks_per_month: Number(sub.metadata.checks_per_month) } : {}),
     updated_at: new Date().toISOString(),
   }, { onConflict: "student_id" });
   if (error) throw new Error(`Could not save subscription: ${error.message}`);
