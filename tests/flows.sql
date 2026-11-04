@@ -8,6 +8,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('f0000000-0000-4000-8000-000000000001','fl-t@example.invalid','{"role":"teacher","full_name":"Teacher"}'),
 ('f0000000-0000-4000-8000-000000000002','fl-s@example.invalid','{"role":"student","full_name":"Kavin"}'),
 ('f0000000-0000-4000-8000-000000000003','fl-p@example.invalid','{"role":"parent","full_name":"Parent"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 set local role authenticated;
 
 -- TEACHER: profile, class, diary, listening, assessment, marks, attendance, report

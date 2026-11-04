@@ -6,6 +6,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('c0000000-0000-4000-8000-000000000002','tc-teacher2@example.invalid','{"role":"teacher","full_name":"T2"}'),
 ('c0000000-0000-4000-8000-000000000003','tc-student@example.invalid','{"role":"student","full_name":"S"}'),
 ('c0000000-0000-4000-8000-000000000004','tc-other@example.invalid','{"role":"student","full_name":"O"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.classes(id,name,teacher_id) values('c1000000-0000-4000-8000-000000000001','C','c0000000-0000-4000-8000-000000000001');
 insert into public.class_members(class_id,student_id) values('c1000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000003');
 set local role authenticated;

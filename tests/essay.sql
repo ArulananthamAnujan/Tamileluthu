@@ -3,6 +3,7 @@ begin;
 insert into auth.users(id,email,raw_user_meta_data) values
 ('e0000000-0000-4000-8000-000000000001','essay-s1@example.invalid','{"role":"student","full_name":"S1"}'),
 ('e0000000-0000-4000-8000-000000000002','essay-s2@example.invalid','{"role":"student","full_name":"S2"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 set local role authenticated;
 select set_config('request.jwt.claim.sub','e0000000-0000-4000-8000-000000000001',true);
 do $$ declare sid uuid; begin

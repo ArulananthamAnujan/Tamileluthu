@@ -5,7 +5,7 @@ import { t, tl, getLang } from '../i18n.js';
 import WaButton from '../components/Wa.jsx';
 import { siteLink } from '../lib/wa.js';
 import { fmtDay, isoDay, pct } from '../lib/util.js';
-import { SKILLS, RATINGS, RATING_TA, ASSESSMENT_KINDS, ATTENDANCE, SITE } from '../site.js';
+import { SKILLS, RATINGS, RATING_TA, ASSESSMENT_KINDS, ATTENDANCE, SITE, schoolName, schoolLine } from '../site.js';
 import { NeedsSetup } from './Setup.jsx';
 import PdfShare from '../components/PdfShare.jsx';
 
@@ -228,14 +228,14 @@ export function ReportCard({ report, studentName, className, teacher, onBack }) 
       <div className="row between wrap noprint">
         <button className="btn small" onClick={onBack}>← {t('Back')}</button>
         <div className="row wrap">
-          <PdfShare targetRef={pdfRef} title={`${studentName || ''} · ${report.term} · ${SITE.school}`}
+          <PdfShare targetRef={pdfRef} title={`${studentName || ''} · ${report.term} · ${schoolName()}`}
             filename={`report-${(studentName || 'student').replace(/[^\w\u0B80-\u0BFF -]+/g, '').trim().replace(/\s+/g, '-')}-${report.term.replace(/\s+/g, '-')}.pdf`} />
         </div>
       </div>
       <article ref={pdfRef} data-pdf-root className="card reportcard printable">
         <header className="rc-head">
           <div>
-            <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</p>
+            {(SITE.logoUrl || schoolLine()) && <p className="rc-school">{SITE.logoUrl && <img src={SITE.logoUrl} alt="" className="rc-logo" />}{schoolLine()}</p>}
             <h2 className="title">தேர்ச்சி அறிக்கை · Student report</h2>
           </div>
           <div className="rc-meta small">

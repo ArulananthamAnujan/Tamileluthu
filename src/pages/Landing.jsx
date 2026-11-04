@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase.js';
-import { SITE, PRODUCT_KINDS } from '../site.js';
+import { SITE, PRODUCT_KINDS, schoolName, schoolLine } from '../site.js';
 import { money } from '../lib/util.js';
 import Icon, { Kolam } from '../components/Icon.jsx';
 import InstallButton from '../components/InstallButton.jsx';
@@ -11,7 +11,7 @@ export function Logo() {
   return (
     <a className="logo" href="#/" aria-label={`${SITE.nameEn} home`}>
       <span className="logo-mark" aria-hidden="true">{SITE.logoUrl ? <img src={SITE.logoUrl} alt="" /> : 'அ'}</span>
-      <span className="logo-text"><b>{SITE.schoolTa || SITE.name}</b><small>{SITE.school !== 'Tamil School' ? SITE.school : SITE.nameEn}</small></span>
+      <span className="logo-text"><b>{SITE.schoolTa || SITE.name}</b><small>{SITE.school || SITE.nameEn}</small></span>
     </a>
   );
 }
@@ -96,7 +96,7 @@ export default function Landing() {
         <Kolam className="kolam-a" /><Kolam className="kolam-b" />
         <div className="container hero-grid">
           <div className="hero-copy">
-            <span className="pill"><Icon name="star" size={14} /> {SITE.school}{SITE.schoolTa ? ` · ${SITE.schoolTa}` : ''}</span>
+            {schoolLine() && <span className="pill"><Icon name="star" size={14} /> {schoolLine()}</span>}
             {getLang() === 'ta'
               ? <h1 className="h1-ta">தமிழ் கற்போம், <em>ஒன்றாக</em> வளர்வோம்.</h1>
               : <h1>Learn, track and celebrate <em>Tamil</em>, together.</h1>}
@@ -129,10 +129,10 @@ export default function Landing() {
       {(SITE.heroUrl || SITE.about) && (
         <section className="sec container about-sec">
           <div className={SITE.heroUrl ? 'about-grid' : ''}>
-            {SITE.heroUrl && <img className="about-photo" src={SITE.heroUrl} alt={SITE.school} />}
+            {SITE.heroUrl && <img className="about-photo" src={SITE.heroUrl} alt={SITE.school || ''} />}
             <div>
               <span className="kicker">{t('About our school')}</span>
-              <h2>{SITE.school}</h2>
+              {SITE.school && <h2>{SITE.school}</h2>}
               {SITE.schoolTa && <p className="ta-sub">{SITE.schoolTa}</p>}
               {SITE.about && <p className="pre about-text">{SITE.about}</p>}
               <div className="row wrap">
@@ -269,7 +269,7 @@ export function SiteFooter() {
       </div>
       <div className="container foot-note small">
         <span>v{__BUILD__}</span>
-        <span>© {new Date().getFullYear()} {SITE.school}{SITE.contactEmail ? ` · ${SITE.contactEmail}` : ''}{SITE.contactPhone ? ` · ${SITE.contactPhone}` : ''}</span>
+        <span>© {new Date().getFullYear()} {schoolName()}{SITE.contactEmail ? ` · ${SITE.contactEmail}` : ''}{SITE.contactPhone ? ` · ${SITE.contactPhone}` : ''}</span>
         <span>{t('Writing checked by தமிழ் திருத்தி is sent to AI models for checking. Each family only sees its own child’s records.')}</span>
       </div>
     </footer>

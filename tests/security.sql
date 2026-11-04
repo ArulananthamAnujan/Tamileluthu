@@ -6,6 +6,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('22222222-2222-4222-8222-222222222222','security-other@example.invalid','{"role":"student"}'),
 ('33333333-3333-4333-8333-333333333333','security-parent@example.invalid','{"role":"parent"}'),
 ('44444444-4444-4444-8444-444444444444','security-teacher@example.invalid','{"role":"teacher"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.classes(id,name,teacher_id) values('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Security fixture','44444444-4444-4444-8444-444444444444');
 insert into public.class_members(class_id,student_id) values('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111');
 insert into public.parent_links(parent_id,student_id) values('33333333-3333-4333-8333-333333333333','11111111-1111-4111-8111-111111111111');

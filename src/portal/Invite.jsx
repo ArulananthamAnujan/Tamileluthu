@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { callFn, useRoster } from '../lib/scope.js';
 import { t } from '../i18n.js';
-import { SITE } from '../site.js';
+import { SITE, schoolName } from '../site.js';
 import { waLink } from '../lib/wa.js';
 import { NeedsSetup } from './Setup.jsx';
 import Icon from '../components/Icon.jsx';
@@ -24,9 +24,9 @@ export function InviteCard({ cls }) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const link = joinLink(cls.join_code);
-  const text = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: SITE.school, url: link, code: cls.join_code });
+  const text = t('Join {cls} on {site}: create a Student account at {url} and enter the class code {code}.', { cls: cls.name, site: schoolName(), url: link, code: cls.join_code });
   const list = splitEmails(emails);
-  const subject = t('Join {cls} at {school}', { cls: cls.name, school: SITE.school });
+  const subject = t('Join {cls} at {school}', { cls: cls.name, school: schoolName() });
   const mailto = `mailto:?bcc=${encodeURIComponent(list.join(','))}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`${note ? note + '\n\n' : ''}${text}\n\n${t('Parents: after your child joins, open their account to find the parent code and link your own Parent account.')}`)}`;
 
   async function copy() {

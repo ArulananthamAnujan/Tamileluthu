@@ -4,7 +4,7 @@ const env = import.meta.env;
 export const SITE = {
   name: env.VITE_SITE_NAME || 'தமிழ் எழுத்து',
   nameEn: env.VITE_SITE_NAME_EN || 'Tamil Eluthu',
-  school: env.VITE_SCHOOL_NAME || 'Tamil School',
+  school: env.VITE_SCHOOL_NAME || '', // empty until the admin adds the school's details
   schoolTa: '',
   tagline: '',
   about: '',
@@ -17,6 +17,11 @@ export const SITE = {
   currency: 'aud',
   phoneCountry: env.VITE_PHONE_COUNTRY || '61',
 };
+
+// The school's name for sentences and titles; the app's name until the admin adds one.
+export const schoolName = () => SITE.school || SITE.nameEn;
+// School name with its Tamil name, or empty when the admin has not added it.
+export const schoolLine = () => [SITE.school, SITE.schoolTa].filter(Boolean).join(' · ');
 
 export const ACTIVITY_KINDS = {
   homework: { en: 'Homework', ta: 'வீட்டுப்பாடம்' },

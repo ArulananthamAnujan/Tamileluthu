@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { t, getLang } from '../i18n.js';
-import { SITE } from '../site.js';
+import { SITE, schoolName } from '../site.js';
 import { isIOS, isAndroid, inAppBrowser, isInstalled } from '../lib/device.js';
 import Icon from '../components/Icon.jsx';
 
@@ -69,7 +69,7 @@ export default function Install() {
         <span className="logo-mark big">{SITE.logoUrl ? <img src={SITE.logoUrl} alt="" /> : 'அ'}</span>
         <div>
           <h2 className="title">{t('Install the app')} <span className="ta">· செயலியை நிறுவுக</span></h2>
-          <p className="small muted">{SITE.school} · {t('Free · no App Store needed · always up to date')}</p>
+          <p className="small muted">{schoolName()} · {t('Free · no App Store needed · always up to date')}</p>
         </div>
       </div>
       {isInstalled() && <div className="card notice"><b>✓ {t('The app is already installed on this device.')}</b></div>}

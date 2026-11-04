@@ -7,6 +7,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
 ('d0000000-0000-4000-8000-000000000003','sub-s1@example.invalid','{"role":"student","full_name":"Paid"}'),
 ('d0000000-0000-4000-8000-000000000004','sub-s2@example.invalid','{"role":"student","full_name":"Unpaid"}'),
 ('d0000000-0000-4000-8000-000000000005','sub-p@example.invalid','{"role":"parent","full_name":"P"}');
+update public.profiles set approved = true where not approved; -- existing accounts are approved
 insert into public.parent_links(parent_id,student_id) values('d0000000-0000-4000-8000-000000000005','d0000000-0000-4000-8000-000000000004');
 update public.school_settings set sub_required=true, sub_trial_checks=2, sub_checks_per_month=3 where id=1;
 

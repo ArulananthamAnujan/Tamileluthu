@@ -1,16 +1,18 @@
 import { supabase } from '../supabase.js';
 import { SITE } from '../site.js';
 
+const DEFAULT_SCHOOL = SITE.school;
+const DEFAULT_EMAIL = SITE.contactEmail;
 const pub = (path) => (path ? supabase.storage.from('branding').getPublicUrl(path).data.publicUrl : '');
 
 export function applySettings(d) {
   if (!d) return;
   Object.assign(SITE, {
-    school: d.school_name || SITE.school,
+    school: d.school_name || DEFAULT_SCHOOL,
     schoolTa: d.school_name_ta || '',
     tagline: d.tagline || '',
     about: d.about || '',
-    contactEmail: d.contact_email || SITE.contactEmail,
+    contactEmail: d.contact_email || DEFAULT_EMAIL,
     contactPhone: d.contact_phone || '',
     address: d.address || '',
     whatsappUrl: d.whatsapp_url || '',
