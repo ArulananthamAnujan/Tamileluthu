@@ -5,6 +5,7 @@ import { money, fmtDay } from '../lib/util.js';
 import { t, getLang } from '../i18n.js';
 import { SITE } from '../site.js';
 import Icon from '../components/Icon.jsx';
+import { iosApp } from '../lib/device.js';
 
 export function useAccess(studentId) {
   const [acc, setAcc] = useState(null);
@@ -133,8 +134,8 @@ export function PlanCard({ student, self, compact }) {
           {acc.quota > 0 && acc.used >= acc.quota && <p className="small bad">{t('All checks for this month are used. Choose a bigger plan to keep checking now, or wait for next month.')}</p>}
           {!compact && (
             <div className="row wrap">
-              {card && <button className="btn" disabled={!!busy} onClick={() => go('billing-portal')}>{busy === 'billing-portal' ? t('Please wait…') : t('Manage, change card or cancel')}</button>}
-              {plans.length > 1 && <button className="btn" onClick={() => setChanging(!changing)}>{card ? t('Change plan') : t('Pay by card instead')}</button>}
+              {card && !iosApp && <button className="btn" disabled={!!busy} onClick={() => go('billing-portal')}>{busy === 'billing-portal' ? t('Please wait…') : t('Manage, change card or cancel')}</button>}
+              {plans.length > 1 && !iosApp && <button className="btn" onClick={() => setChanging(!changing)}>{card ? t('Change plan') : t('Pay by card instead')}</button>}
             </div>
           )}
           {!compact && changing && choices}
@@ -142,9 +143,11 @@ export function PlanCard({ student, self, compact }) {
       ) : (
         <>
           {acc.trial_left > 0 && <p className="small okc">{self ? t('You have {n} free trial checks left.', { n: acc.trial_left }) : t('{name} still has {n} free trial checks.', { name, n: acc.trial_left })}</p>}
-          <p className="small">{t('Choose a monthly plan. Every plan includes line-by-line corrections, an examiner-style mark and a model rewrite, and teachers and parents see the feedback too. Cancel any time.')}</p>
+          {!iosApp && <p className="small">{t('Choose a monthly plan. Every plan includes line-by-line corrections, an examiner-style mark and a model rewrite, and teachers and parents see the feedback too. Cancel any time.')}</p>}
+          {iosApp ? <p className="small muted">{t('Subscriptions cannot be bought in the iPhone app.')}</p> : <>
           {plans.length ? choices : <p className="muted">{t('Subscriptions are not set up yet.')}</p>}
           <p className="small muted">{t('Secure card payment by Stripe. Prefer to pay the school in cash or by bank transfer? Ask the school office and they will switch it on.')}{SITE.contactEmail ? ` ${SITE.contactEmail}` : ''}</p>
+          </>}
         </>
       )}
       {msg && <p className="small" role="status">{msg}</p>}

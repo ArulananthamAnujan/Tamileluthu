@@ -6,6 +6,7 @@ import { PRODUCT_KINDS, SITE } from '../site.js';
 import { t, tl } from '../i18n.js';
 import WaButton from '../components/Wa.jsx';
 import { siteLink } from '../lib/wa.js';
+import { iosApp } from '../lib/device.js';
 
 const PUBLIC_COLS = 'id, title, description, author, level, kind, price_cents, currency, external_url, active, seller_id, created_at';
 const EXT = { 'application/pdf': 'pdf', 'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'application/zip': 'zip',
@@ -119,6 +120,7 @@ export default function Shop({ ctx, query }) {
                     {p.description && <p className="small pre clamp">{p.description}</p>}
                     <div className="row wrap product-foot">
                       {owned[p.id] ? <button className="btn primary small" onClick={() => download(p.id)}>{t('Download')}</button>
+                        : iosApp && p.price_cents ? <span className="small muted">{t('Not available in the iPhone app')}</span>
                         : ext ? <a className="btn primary small" href={ext} target="_blank" rel="noopener noreferrer">{p.price_cents ? t('Buy from author') : t('Open')} ↗</a>
                         : <button className="btn primary small" disabled={busy === p.id} onClick={() => buy(p)}>{busy === p.id ? t('Please wait…') : p.price_cents ? `${t('Buy')} ${money(p.price_cents, p.currency)}` : signedIn ? t('Get free') : t('Sign in to download')}</button>}
                       <WaButton text={`${p.title} — ${money(p.price_cents, p.currency)}\n${siteLink('shop')}`} />

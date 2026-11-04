@@ -7,6 +7,7 @@ import NewSubmission from '../components/NewSubmission.jsx';
 import Progress from '../components/Progress.jsx';
 import { useAccess } from '../portal/Subscription.jsx';
 import Icon from '../components/Icon.jsx';
+import { iosApp } from '../lib/device.js';
 
 export default function Student({ profile, setProfile }) {
   const [subs, setSubs] = useState([]);
@@ -99,7 +100,7 @@ export function AccessBanner({ studentId, name }) {
       <span><Icon name="subscription" size={18} /> {acc.trial_left
         ? t('{name} has {n} free trial checks left. Subscribe to keep checking every month.', { name: name || t('You'), n: acc.trial_left })
         : t('Free checks are used up. A monthly subscription switches the writing checker back on.')}</span>
-      <a className="btn small gold" href="#/subscription">{t('Subscribe')}</a>
+      {!iosApp && <a className="btn small gold" href="#/subscription">{t('Subscribe')}</a>}
     </div>
   );
 }

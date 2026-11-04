@@ -1,0 +1,33 @@
+# XcodeGen project description for the iPhone app. The Xcode project itself is
+# generated (on a Mac: `brew install xcodegen && cd ios && xcodegen generate`),
+# so it never needs to be committed. GitHub Actions does this automatically.
+name: Thiruthi
+options:
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Thiruthi:
+    type: application
+    platform: iOS
+    sources:
+      - path: Thiruthi
+        excludes:
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_NAME: Thiruthi
+        PRODUCT_BUNDLE_IDENTIFIER: au.thiruthi.app
+        INFOPLIST_FILE: Thiruthi/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_BITCODE: NO
+        # Your live website address; GitHub Actions fills it in from APP_URL.
+        THIRUTHI_APP_URL: ""

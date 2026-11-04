@@ -298,8 +298,20 @@ The `android/` folder is a small Android app that contains the website and conne
 
 Every push to `main` builds a new version automatically; installing it updates the app in place (same signing key).
 
-### iPhone
-APK files are Android-only. iPhone users open your Hostinger address in **Safari → Share → Add to Home Screen**. It then opens like an app with its own icon, full screen, with the camera button working. (A native App Store app would need a Mac and an Apple Developer account, and Apple often rejects apps that only wrap a website.)
+### iPhone app (App Store / TestFlight)
+The `ios/` folder is the iPhone version of the Android app: a small native app (Swift) that opens your live website (`APP_URL`), so every website update reaches it instantly. It connects the photo buttons to the camera and photo library, shares report PDFs through the iPhone share sheet (WhatsApp, Mail, Save to Files), and opens WhatsApp, email and other websites outside the app.
+
+You need an **Apple Developer account** (US$99 a year), but no Mac: GitHub builds the app on a Mac for you.
+
+1. Enrol at developer.apple.com, then note your **Team ID** (Membership page).
+2. In **App Store Connect → Apps → +**, create the app with bundle ID **`au.thiruthi.app`** (register the ID first under Certificates, Identifiers & Profiles → Identifiers if it is not listed).
+3. In **App Store Connect → Users and Access → Integrations → App Store Connect API**, create a key with **Admin** access. Download the `.p8` file (only possible once) and note the Key ID and Issuer ID.
+4. In GitHub, **Settings → Secrets and variables → Actions**, add `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_P8` (the whole contents of the `.p8` file) and `APP_URL` (already used by Android).
+5. **Actions → Build iPhone app → Run workflow** (on `main`). About 10–30 minutes after it finishes, the build appears in **App Store Connect → TestFlight**. Add testers there; they install it with Apple's **TestFlight** app. To publish on the App Store, fill in the listing and submit it for review.
+
+**Apple's payment rules:** Apple does not allow iPhone apps to sell digital services (the writing checker subscriptions, paid papers) except through Apple's in-app purchases. The iPhone app therefore hides the subscribe, change plan and buy buttons; families subscribe on the website and the app shows their plan and checks as normal. Apple may still reject apps that are mostly a website, so describe the app's features (camera checking, reports, notifications) clearly when you submit it.
+
+**Without an Apple account:** iPhone users can open your website in **Safari → Share → Add to Home Screen**. It opens like an app, full screen with its own icon, and subscriptions work there.
 
 If you build without Supabase overrides, the app uses the dedicated Tamil Thiruthi project configured in `src/project-config.js`. Set both environment variables together to use another project.
 

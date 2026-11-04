@@ -910,4 +910,6 @@ export default {
   "For families who pay the school directly. The plan’s checks reset every month. 0 months removes access given by hand (card subscriptions are cancelled by the family or in Stripe).": "பள்ளிக்கு நேரடியாகச் செலுத்தும் குடும்பங்களுக்கு. திட்டத்தின் சரிபார்ப்புகள் ஒவ்வொரு மாதமும் புதுப்பிக்கப்படும். 0 மாதங்கள் என்றால் கைமுறையாக வழங்கிய அனுமதி நீக்கப்படும் (அட்டைச் சந்தாக்களைக் குடும்பமோ Stripe இலோ நிறுத்த வேண்டும்).",
   "Run the subscription plans database update (20261111000000_subscription_plans.sql) first.": "முதலில் சந்தாத் திட்டத் தரவுத்தள மேம்படுத்தலை (20261111000000_subscription_plans.sql) இயக்குங்கள்.",
   "You have {n} free trial checks left.": "உங்களுக்கு இன்னும் {n} இலவசச் சோதனைச் சரிபார்ப்புகள் உள்ளன.",
+  "Subscriptions cannot be bought in the iPhone app.": "iPhone செயலியில் சந்தா வாங்க முடியாது.",
+  "Not available in the iPhone app": "iPhone செயலியில் கிடைக்காது",
 };

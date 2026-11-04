@@ -1,0 +1,66 @@
+name: Build iPhone app
+
+# Every change to the iPhone app is built on a Mac to check it compiles.
+# When the Apple secrets below are set, a push to main (or "Run workflow" in
+# the Actions tab) also signs the app and uploads it to TestFlight / App Store Connect.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   APP_URL                       your live website, e.g. https://yourschool.org (also used by Android)
+#   APPLE_TEAM_ID                 10-character Team ID (developer.apple.com → Membership)
+#   APP_STORE_CONNECT_KEY_ID      App Store Connect → Users and Access → Integrations → Keys (Admin access)
+#   APP_STORE_CONNECT_ISSUER_ID   shown on the same page
+#   APP_STORE_CONNECT_KEY_P8      the contents of the downloaded AuthKey_XXXX.p8 file
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['ios/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+jobs:
+  ios:
+    runs-on: macos-15
+    env:
+      APP_URL: ${{ secrets.APP_URL || vars.APP_URL }}
+      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the Xcode project
+        working-directory: ios
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Check the app builds (simulator, no signing)
+        working-directory: ios
+        run: |
+          xcodebuild -project Thiruthi.xcodeproj -scheme Thiruthi -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO THIRUTHI_APP_URL="$APP_URL" build | tail -n 40
+          exit ${PIPESTATUS[0]}
+
+      - name: Sign and upload to TestFlight
+        if: github.ref == 'refs/heads/main' && env.TEAM_ID != '' && env.ASC_KEY_ID != '' && env.ASC_ISSUER_ID != '' && env.ASC_KEY_P8 != ''
+        working-directory: ios
+        run: |
+          case "$APP_URL" in https://*) ;; *) echo "::error::Set the APP_URL secret to your website (https://…) first."; exit 1;; esac
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s\n' "$ASC_KEY_P8" > "$KEY"
+          AUTH=(-allowProvisioningUpdates -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+          xcodebuild -project Thiruthi.xcodeproj -scheme Thiruthi -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Thiruthi.xcarchive" archive \
+            DEVELOPMENT_TEAM="$TEAM_ID" CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            THIRUTHI_APP_URL="$APP_URL" "${AUTH[@]}" | tail -n 40
+          test "${PIPESTATUS[0]}" -eq 0
+          cp ExportOptions.plist "$RUNNER_TEMP/ExportOptions.plist"
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" "$RUNNER_TEMP/ExportOptions.plist"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Thiruthi.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" "${AUTH[@]}"
+          echo "Uploaded build ${{ github.run_number }}. It appears in App Store Connect → TestFlight after Apple processes it (about 10–30 minutes)."
+
+      - name: Explain what is missing
+        if: github.ref == 'refs/heads/main' && (env.TEAM_ID == '' || env.ASC_KEY_ID == '' || env.ASC_ISSUER_ID == '' || env.ASC_KEY_P8 == '')
+        run: echo "::warning::The app builds. To send it to iPhones (TestFlight / App Store), add the Apple secrets listed at the top of .github/workflows/ios.yml."
