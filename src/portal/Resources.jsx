@@ -3,6 +3,8 @@ import { supabase, errText } from '../supabase.js';
 import { fmtDay, isoDay, safeUrl, go } from '../lib/util.js';
 import { RESOURCE_KINDS } from '../site.js';
 import { NeedsSetup } from './Setup.jsx';
+import { YouTube } from '../components/Attachments.jsx';
+import { youtubeId } from '../lib/media.js';
 import { t, tl } from '../i18n.js';
 import WaButton from '../components/Wa.jsx';
 import { siteLink } from '../lib/wa.js';
@@ -90,6 +92,7 @@ export default function Resources({ ctx }) {
                     <span className="tag">{tl(RESOURCE_KINDS[r.kind])}</span>
                     <h3>{r.title}</h3>
                     {r.description && <p className="small pre">{r.description}</p>}
+                    {youtubeId(r.url) && <YouTube url={r.url} title={r.title} />}
                     <p className="small muted">{t('Posted')} {fmtDay(r.created_at.slice(0, 10))}{r.due_on ? ` · ${t('Due')} ${fmtDay(r.due_on)}` : ''}</p>
                     <div className="row wrap">
                       <a className="btn primary small" href={safeUrl(r.url)} target="_blank" rel="noopener noreferrer">{r.kind === 'listening' ? `▶ ${t('Start listening')}` : `${t('Open')} ↗`}</a>

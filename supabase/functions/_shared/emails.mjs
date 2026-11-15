@@ -34,7 +34,9 @@ export function noticeEmail(ctx, a) {
     html: wrap(ctx, `<p>Dear parent, / அன்புள்ள பெற்றோரே,</p><p style="font-size:17px"><b>${esc(a.title)}</b></p>
 ${a.body ? `<p style="white-space:pre-wrap">${esc(a.body)}</p>` : ''}
 ${a.due_on ? `<p>Date / திகதி: ${esc(a.due_on)}</p>` : ''}
-${a.link_url ? `<p><a href="${esc(a.link_url)}">${esc(a.link_url)}</a></p>` : ''}`, '/#/today'),
+${a.link_url ? `<p><a href="${esc(a.link_url)}">${esc(a.link_url)}</a></p>` : ''}
+${a.video_url ? `<p>Video / காணொளி: <a href="${esc(a.video_url)}">${esc(a.video_url)}</a></p>` : ''}
+${a.attachments?.length ? `<p>Files / கோப்புகள்: ${a.attachments.map((f) => esc(f.name)).join(', ')} (open the diary on the school site to download)</p>` : ''}`, '/#/today'),
   };
 }
 

@@ -5,8 +5,9 @@ One website for a Tamil school's day-to-day work, with accounts for students, pa
 | Section | Teachers | Students | Parents |
 |---|---|---|---|
 | **Today** | Class code, roll-call status, unsent marks | Homework due, latest mark, attendance | Same, for each linked child |
-| **Diary** (நாட்குறிப்பு) | Post homework, classwork, notices, events; email notices to parents | See posts, tick homework done | See posts and whether homework is done |
+| **Diary** (நாட்குறிப்பு) | Post homework, classwork, notices, events; attach files and a YouTube video; email notices to parents | See posts, open files, watch the video, tick homework done | See posts, files and videos, and whether homework is done |
 | **Attendance** (வருகை) | One-tap roll call (present/late/absent/excused), summary, CSV | Own record | Child's record |
+| **Practice** (பயிற்சி) | Preview games, release them to a class, see every student's score, CSV | Play released games, see score, stars and the right answers | See the child's games and scores |
 | **Listening** (கேட்டல்) | Link listening exams/audio/past papers, release answers, enter marks | Open exams, see answers and marks | — |
 | **Marks** (மதிப்பெண்) | Markbook, mark sheets, publish, email results to parents, CSV | Own published marks | Child's published marks + email |
 | **Reports** (அறிக்கை) | Term reports with skills, comments, automatic attendance and marks; email to parents | Own published reports | Child's reports + email; print/PDF, WhatsApp share |
@@ -16,6 +17,37 @@ One website for a Tamil school's day-to-day work, with accounts for students, pa
 The public home page and the paper catalogue can be browsed without an account.
 
 Everything is available in **English and Tamil** (globe button in the header; each person's choice is remembered). Teachers can **WhatsApp** parents directly (absences, results, reports) and share the diary with a class group. Everyone gets **in-app notifications** (bell) for new homework, listening exams, results, reports and teacher comments. A **principal/admin** area shows every class, manages teachers, **approves new student and parent accounts** (they see a “waiting for approval” page and cannot join a class or use anything until approved; the admin can also block an account later), and edits the school's name, logo, photo, contacts and WhatsApp group link without touching code. No school details are shown until the admin adds them.
+
+### Homework files and YouTube videos
+In **Diary → Post to the diary**, a teacher can:
+- **Add files**: PDF, Word, PowerPoint, Excel, pictures (JPG, PNG) or audio (MP3, M4A). Up to 8 files on a post, 25 MB each. Files are private: only that class, its parents and school admins can open them.
+- **Add a YouTube video**: paste the link from YouTube's Share button. The video plays inside the diary, and there is always an **Open on YouTube** link under it in case a phone will not play it in the page. YouTube links in the Listening section play in the page too.
+
+Students and parents open the files and watch the video from the diary or the Today page. Removing a file from a post, or deleting the post, deletes the file from storage.
+
+### Practice games (hidden until you release them)
+The site comes with **18 games (112 questions)** built from the *VCE Tamil Writing Practice Workbook* (Units 3 and 4): one game for each workbook topic, grouped by the workbook's six stages.
+
+| Stage | Workbook | Games |
+|---|---|---|
+| 1 | Q01–Q13 | Read the question first · Fix the verb ending · Fix the sentence |
+| 2 | Q14–Q33 | Pick the joining word · Choose the best rewrite · Spoken or formal? · Build the paragraph · Idea, explanation, example, link |
+| 3 | Q34–Q44 | Which opening works? · Question, idea or scene? · Match the opening to the text type |
+| 4 | Q45–Q51 | Which reference fits? · Does the quotation earn its place? |
+| 5 | Q52–Q60 | Plan both sides · Be the editor · Give good advice |
+| 6 | Q61–Q72 | Know your text type · From plan to final draft |
+
+There are four kinds of question: choose the answer, tap the wrong word, match the pairs, and put the lines in order. After each question the student sees whether it was right and why. At the end they see their score, stars and a review of every right answer, and can play again. The score is marked by the database, not by the student's phone.
+
+**Who can see a game**
+1. **Admins only.** New games are hidden from everyone else. An admin opens **Practice → Game library** (or **Admin → Practice games**) and plays a game in **Preview**.
+2. **Admin gives it to teachers.** Use **Give all games** for all teachers or one teacher, or **Teachers** on a single game. **Take all back** hides them again; classes that already have a game keep it.
+3. **Teacher releases it to a class.** In **Practice → Game library**, the teacher presses **Release to (class)** and can set a due date. Students and parents get a notification.
+4. **Students play.** The teacher sees each student's best score, last score and number of tries under **Practice → (class) → Scores**, and can download a CSV. Parents see their child's scores.
+
+**Before you give the games out:** the answer keys were written for this site, because the workbook's teacher guide was not available. Have a Tamil teacher play each game in Preview first. Explanations are in English; questions are in Tamil.
+
+**Changing or adding games:** edit `supabase/practice/workbook.mjs`, run `node scripts/practice-seed.mjs`, then run the rewritten `supabase/migrations/20261115000001_practice_workbook.sql` in Supabase again (it updates the games in place and keeps scores).
 
 ### The phone app is different from the website
 Inside the Android app, or when the site is added to a phone's home screen, people get an app layout instead of the website:
@@ -108,6 +140,8 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261109000000_share_teacher_checks.sql`: students and their parents can see writing a teacher checked for them, and get a notification when it is ready
    - `supabase/migrations/20261110000000_account_approval.sql`: new student and parent accounts wait for the admin's approval (Admin → Approvals); removes the placeholder school name so no school details show until the admin adds them
    - `supabase/migrations/20261111000000_subscription_plans.sql`: monthly plans with their own price and checks (starts with Basic 6 checks A$45, Plus 20 checks A$139, Premium 35 checks A$229); edit them under Admin → Subscriptions. Redeploy `subscribe-checkout` and `stripe-webhook` with it
+   - `supabase/migrations/20261115000000_homework_files_practice.sql`: files and YouTube videos on diary posts, and practice games (hidden until an admin gives them to teachers and a teacher releases them)
+   - `supabase/migrations/20261115000001_practice_workbook.sql`: loads the 18 VCE writing workbook games. Redeploy `notify-parents` with these so emailed notices include the video link and file names
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)
@@ -135,7 +169,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
 7. **Build and upload** (see the Hostinger steps below). Optional `.env` values: `VITE_PHONE_COUNTRY` (default `61`, used to turn 04xx numbers into WhatsApp links), plus fallbacks for the name and contact.
 8. **Before inviting families,** review `src/pages/Info.jsx` (Privacy, Terms & refunds) with your school committee, and have a Tamil teacher review the wording in `src/ta.js`.
 
-Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Tests: `tests/security.sql`, `tests/portal.sql` and `tests/admin.sql` (database rules, all rolled back) and `node --test tests/*.test.mjs`.
+Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Homework files are in a private bucket, one folder per class. Practice games are visible only to admins until shared, and scores only to the student, their parents, the class teacher and admins. Tests: `tests/security.sql`, `tests/portal.sql`, `tests/admin.sql` and `tests/practice.sql` (database rules, all rolled back) and `node --test tests/*.test.mjs`.
 
 ---
 

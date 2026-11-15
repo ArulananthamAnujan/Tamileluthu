@@ -138,6 +138,8 @@ public class MainActivity extends Activity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri url = request.getUrl();
+            // Pages inside frames (an embedded YouTube video) load in their frame.
+            if (!request.isForMainFrame()) return false;
             if (appHost.equals(url.getHost()) || LOCAL_HOST.equals(url.getHost())) return false;
             // Links to other sites (e.g. photo links, email links) open outside the app.
             try {

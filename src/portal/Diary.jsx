@@ -7,8 +7,9 @@ import ActivityList, { activityText } from './ActivityList.jsx';
 import { t, tl } from '../i18n.js';
 import WaButton from '../components/Wa.jsx';
 import { NeedsSetup } from './Setup.jsx';
+import { youtubeId, youtubeWatchUrl, FILE_TYPES, FILE_ACCEPT, MAX_FILE_BYTES, MAX_FILES, fileExt, fmtSize } from '../lib/media.js';
 
-const blank = () => ({ kind: 'homework', title: '', body: '', link_url: '', on_date: isoDay(), due_on: addDays(isoDay(), 7) });
+const blank = () => ({ kind: 'homework', title: '', body: '', link_url: '', video_url: '', attachments: [], on_date: isoDay(), due_on: addDays(isoDay(), 7) });
 
 export default function Diary({ ctx }) {
   const [items, setItems] = useState(null);
@@ -18,6 +19,8 @@ export default function Diary({ ctx }) {
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState('');
+  const [files, setFiles] = useState([]); // new files, not uploaded yet
+  const [busy, setBusy] = useState(false);
   const teacher = ctx.role === 'teacher';
 
   async function load() {
@@ -45,6 +48,20 @@ export default function Diary({ ctx }) {
 
   if (!ctx.classIds.length) return <NeedsSetup ctx={ctx} />;
 
+  function addFiles(list) {
+    const picked = [...list]; const ok = [];
+    setMsg('');
+    for (const f of picked) {
+      if (!FILE_TYPES[fileExt(f.name)]) { setMsg(t('“{name}” cannot be attached. Use PDF, Word, PowerPoint, Excel, a picture or audio.', { name: f.name })); continue; }
+      if (f.size > MAX_FILE_BYTES) { setMsg(t('“{name}” is larger than 25 MB.', { name: f.name })); continue; }
+      ok.push(f);
+    }
+    const room = MAX_FILES - form.attachments.length - files.length;
+    if (ok.length > room) setMsg(t('A post can have up to {n} files.', { n: MAX_FILES }));
+    setFiles((cur) => [...cur, ...ok.slice(0, Math.max(0, room))]);
+  }
+  const removeStored = (paths) => (paths.length ? supabase.storage.from('homework').remove(paths) : Promise.resolve());
+
   async function save(e) {
     e.preventDefault(); setMsg('');
     const row = {
@@ -53,15 +70,39 @@ export default function Diary({ ctx }) {
     };
     if (!row.title) { setMsg(t('Please add a title.')); return; }
     if (row.link_url && !/^https?:\/\//i.test(row.link_url)) { setMsg(t('Links must start with https://')); return; }
+    const video = form.video_url.trim();
+    const vid = youtubeId(video);
+    if (video && !vid) { setMsg(t('That is not a YouTube link. Copy the link from YouTube’s Share button.')); return; }
+    row.video_url = vid ? youtubeWatchUrl(vid) : null;
+
+    setBusy(true);
+    const before = editing ? (items.find((a) => a.id === editing)?.attachments || []) : [];
+    const classId = editing ? items.find((a) => a.id === editing)?.class_id || ctx.cls.id : ctx.cls.id;
+    const added = [];
+    for (const f of files) {
+      const ext = fileExt(f.name);
+      const path = `${classId}/${crypto.randomUUID()}.${ext}`;
+      setMsg(t('Uploading {name}…', { name: f.name }));
+      const { error: upErr } = await supabase.storage.from('homework').upload(path, f, { contentType: FILE_TYPES[ext] });
+      if (upErr) { await removeStored(added.map((x) => x.path)); setBusy(false); setMsg(t('“{name}” could not be uploaded.', { name: f.name }) + ' ' + errText(upErr)); return; }
+      added.push({ path, name: f.name.slice(0, 200), size: f.size });
+    }
+    row.attachments = [...form.attachments, ...added];
     const { error } = editing
       ? await supabase.from('activities').update(row).eq('id', editing)
       : await supabase.from('activities').insert({ ...row, class_id: ctx.cls.id, created_by: ctx.profile.id });
-    if (error) { setMsg(errText(error)); return; }
-    setForm(blank()); setEditing(null); setMsg(editing ? t('Saved.') : t('Posted. Students and parents can see it now.')); load();
+    setBusy(false);
+    if (error) { await removeStored(added.map((x) => x.path)); setMsg(errText(error)); return; }
+    // Files taken off the post are deleted from storage.
+    const kept = new Set(row.attachments.map((x) => x.path));
+    await removeStored(before.filter((x) => !kept.has(x.path)).map((x) => x.path));
+    setForm(blank()); setFiles([]); setEditing(null); setMsg(editing ? t('Saved.') : t('Posted. Students and parents can see it now.')); load();
   }
   async function remove(a) {
     if (!confirm(t('Delete “{title}”?', { title: a.title }))) return;
-    await supabase.from('activities').delete().eq('id', a.id); load();
+    const { error } = await supabase.from('activities').delete().eq('id', a.id);
+    if (!error) await removeStored((a.attachments || []).map((x) => x.path));
+    load();
   }
   async function notify(a) {
     setMsg(t('Sending…'));
@@ -98,7 +139,7 @@ export default function Diary({ ctx }) {
           )}
           {items ? <ActivityList items={items} done={done}
             onToggle={ctx.role === 'student' ? toggle : undefined}
-            onEdit={teacher ? (a) => { setEditing(a.id); setForm({ ...blank(), ...a, link_url: a.link_url || '', due_on: a.due_on || '' }); window.scrollTo(0, 0); } : undefined}
+            onEdit={teacher ? (a) => { setEditing(a.id); setFiles([]); setForm({ ...blank(), ...a, link_url: a.link_url || '', video_url: a.video_url || '', attachments: a.attachments || [], due_on: a.due_on || '' }); window.scrollTo(0, 0); } : undefined}
             onDelete={teacher ? remove : undefined}
             onNotify={teacher ? notify : undefined}
             classNames={names} showClass={ctx.classIds.length > 1} share
@@ -118,14 +159,36 @@ export default function Diary({ ctx }) {
                 <label className="field">{t('Title')}<input value={form.title} onChange={set('title')} maxLength={200} placeholder={t('e.g. Read பாடம் 4 and answer questions 1–5')} /></label>
                 <label className="field">{t('Details')}<textarea rows={4} value={form.body} onChange={set('body')} maxLength={5000} /></label>
                 <label className="field">{t('Link (optional)')}<input value={form.link_url} onChange={set('link_url')} placeholder="https://" inputMode="url" /></label>
+                <label className="field">{t('YouTube video (optional)')}<input value={form.video_url} onChange={set('video_url')} placeholder="https://youtu.be/…" inputMode="url" /></label>
+                {form.video_url.trim() && (youtubeId(form.video_url)
+                  ? <p className="small okc">✓ {t('The video will play inside the diary.')}</p>
+                  : <p className="small bad">{t('That is not a YouTube link. Copy the link from YouTube’s Share button.')}</p>)}
+                <div className="field">{t('Files (optional)')}
+                  {(form.attachments.length > 0 || files.length > 0) && (
+                    <ul className="filelist">
+                      {form.attachments.map((f) => (
+                        <li key={f.path}><span className="file-name">{f.name}</span><span className="small muted">{fmtSize(f.size)}</span>
+                          <button type="button" className="btn small" onClick={() => setForm((x) => ({ ...x, attachments: x.attachments.filter((y) => y.path !== f.path) }))}>{t('Remove')}</button></li>
+                      ))}
+                      {files.map((f, i) => (
+                        <li key={`${f.name}-${i}`}><span className="file-name">{f.name}</span><span className="small muted">{fmtSize(f.size)} · {t('new')}</span>
+                          <button type="button" className="btn small" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))}>{t('Remove')}</button></li>
+                      ))}
+                    </ul>
+                  )}
+                  <label className="btn small addfile">{t('Add files')}
+                    <input type="file" multiple accept={FILE_ACCEPT} onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+                  </label>
+                  <span className="small muted">{t('PDF, Word, PowerPoint, Excel, pictures or audio. Up to {n} files, 25 MB each.', { n: MAX_FILES })}</span>
+                </div>
                 <div className="row wrap">
                   <label className="field">{t('Date')}<input type="date" value={form.on_date} onChange={set('on_date')} required /></label>
                   <label className="field">{form.kind === 'event' ? t('Event date') : t('Due')}<input type="date" value={form.due_on || ''} onChange={set('due_on')} /></label>
                 </div>
                 {msg && <p className="small" role="status">{msg}</p>}
                 <div className="row">
-                  <button className="btn primary">{editing ? t('Save') : t('Post')}</button>
-                  {editing && <button type="button" className="btn" onClick={() => { setEditing(null); setForm(blank()); }}>{t('Cancel')}</button>}
+                  <button className="btn primary" disabled={busy}>{busy ? t('Please wait…') : editing ? t('Save') : t('Post')}</button>
+                  {editing && <button type="button" className="btn" disabled={busy} onClick={() => { setEditing(null); setFiles([]); setForm(blank()); }}>{t('Cancel')}</button>}
                 </div>
                 <p className="muted small">{t('Students and parents get a notification straight away. Use “Share” to post it in your class WhatsApp group, or “Email parents” for important notices.')}</p>
               </form>

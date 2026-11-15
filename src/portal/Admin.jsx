@@ -5,7 +5,7 @@ import { isoDay, addDays, fmtDay } from '../lib/util.js';
 import { downloadCsv } from '../lib/csv.js';
 import { loadSettings } from '../lib/settings.js';
 import { SITE } from '../site.js';
-import { money, useHash } from '../lib/util.js';
+import { money, useHash, go } from '../lib/util.js';
 
 // Principal / school admin: whole-school overview, teachers, and school details.
 export default function Admin({ ctx, onSettings }) {
@@ -32,6 +32,7 @@ export default function Admin({ ctx, onSettings }) {
           <button className={tab === 'staff' ? 'on' : ''} onClick={() => setTab('staff')}>{t('Teachers')}</button>
           <button className={tab === 'subs' ? 'on' : ''} onClick={() => setTab('subs')}>{t('Subscriptions')}</button>
           <button className={tab === 'school' ? 'on' : ''} onClick={() => setTab('school')}>{t('School details')}</button>
+          <button onClick={() => go('practice?tab=library')}>{t('Practice games')} ↗</button>
         </div>
       </div>
       {tab === 'overview' && <Overview />}

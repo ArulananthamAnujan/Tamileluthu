@@ -4,10 +4,13 @@ import { fmtDay, isoDay, safeUrl } from '../lib/util.js';
 import { t, tl } from '../i18n.js';
 import WaButton from '../components/Wa.jsx';
 import { siteLink } from '../lib/wa.js';
+import { YouTube, Files } from '../components/Attachments.jsx';
 
 export function activityText(a, className) {
   const k = ACTIVITY_KINDS[a.kind] || ACTIVITY_KINDS.homework;
-  return [`${k.en} · ${k.ta}${className ? ` — ${className}` : ''}`, `*${a.title}*`, a.body, a.due_on ? `Due / கடைசி நாள்: ${fmtDay(a.due_on)}` : '', safeUrl(a.link_url) || '', siteLink('diary')]
+  return [`${k.en} · ${k.ta}${className ? ` — ${className}` : ''}`, `*${a.title}*`, a.body, a.due_on ? `Due / கடைசி நாள்: ${fmtDay(a.due_on)}` : '', safeUrl(a.link_url) || '',
+    a.video_url ? `Video / காணொளி: ${a.video_url}` : '',
+    a.attachments?.length ? `Files / கோப்புகள்: ${a.attachments.map((f) => f.name).join(', ')}` : '', siteLink('diary')]
     .filter(Boolean).join('\n');
 }
 
@@ -31,6 +34,8 @@ export default function ActivityList({ items, classNames = {}, done = {}, onTogg
             <p className="act-title">{a.title}</p>
             {a.body && <p className="act-body">{a.body}</p>}
             {link && <p className="small"><a href={link} target="_blank" rel="noopener noreferrer">{t('Open link')} ↗</a></p>}
+            {a.video_url && <YouTube url={a.video_url} title={a.title} />}
+            <Files files={a.attachments} />
             <div className="row wrap act-foot">
               {onToggle && a.kind === 'homework' && (
                 <label className="row small check">
