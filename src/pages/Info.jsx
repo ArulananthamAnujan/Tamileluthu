@@ -43,7 +43,7 @@ function Privacy() {
       <h3>What we collect</h3>
       <ul>
         <li>Account details: name, email, role, and (optionally) a parent’s mobile number.</li>
-        <li>School records added by teachers: class membership, diary posts and the files attached to them, attendance, marks, comments and term reports.</li>
+        <li>School records added by teachers: class membership, diary posts and the files attached to them, documents shared with a class, attendance, marks, comments and term reports.</li>
         <li>Practice game results: each time a student finishes a game, their answers and score are saved for the student, their parents and their teacher.</li>
         <li>Writing and photos of writing that students upload to தமிழ் திருத்தி, and the feedback on them.</li>
         <li>Purchases from the paper shop. Card payments are processed by Stripe; we never see or store card numbers.</li>

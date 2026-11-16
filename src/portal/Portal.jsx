@@ -7,6 +7,7 @@ import Diary from './Diary.jsx';
 import Attendance from './Attendance.jsx';
 import Resources from './Resources.jsx';
 import Practice from './Practice.jsx';
+import Documents from './Documents.jsx';
 import Marks from './Marks.jsx';
 import Reports from './Reports.jsx';
 import Shop from './Shop.jsx';
@@ -28,6 +29,7 @@ export const NAV = [
   ['attendance', 'Attendance', 'வருகை'],
   ['listening', 'Listening', 'கேட்டல்'],
   ['practice', 'Practice', 'பயிற்சி'],
+  ['documents', 'Documents', 'ஆவணங்கள்'],
   ['marks', 'Marks', 'மதிப்பெண்'],
   ['reports', 'Reports', 'அறிக்கை'],
   ['writing', 'திருத்தி', 'Writing'],
@@ -73,7 +75,7 @@ export function usePortal(profile) {
   return { scope, ctx, cls, child, setClsId, setChildId, joinMsg, clearJoinMsg: () => setJoinMsg('') };
 }
 
-export const SECTIONS = { today: Home, diary: Diary, attendance: Attendance, listening: Resources, practice: Practice, marks: Marks, reports: Reports, shop: Shop };
+export const SECTIONS = { today: Home, diary: Diary, attendance: Attendance, listening: Resources, practice: Practice, documents: Documents, marks: Marks, reports: Reports, shop: Shop };
 export function isSection(path, profile) {
   return NAV.some(([k]) => k === path) || OTHER.includes(path) || (path === 'admin' && profile.is_admin);
 }

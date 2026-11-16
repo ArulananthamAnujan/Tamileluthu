@@ -8,6 +8,7 @@ One website for a Tamil school's day-to-day work, with accounts for students, pa
 | **Diary** (நாட்குறிப்பு) | Post homework, classwork, notices, events; attach files and a YouTube video; email notices to parents | See posts, open files, watch the video, tick homework done | See posts, files and videos, and whether homework is done |
 | **Attendance** (வருகை) | One-tap roll call (present/late/absent/excused), summary, CSV | Own record | Child's record |
 | **Practice** (பயிற்சி) | Preview games, release them to a class, see every student's score, CSV | Play released games, see score, stars and the right answers | See the child's games and scores |
+| **Documents** (ஆவணங்கள்) | Upload a document once and share it with one or more classes; add or remove classes later | Open documents shared with their class | Open the child's class documents |
 | **Listening** (கேட்டல்) | Link listening exams/audio/past papers, release answers, enter marks | Open exams, see answers and marks | — |
 | **Marks** (மதிப்பெண்) | Markbook, mark sheets, publish, email results to parents, CSV | Own published marks | Child's published marks + email |
 | **Reports** (அறிக்கை) | Term reports with skills, comments, automatic attendance and marks; email to parents | Own published reports | Child's reports + email; print/PDF, WhatsApp share |
@@ -24,6 +25,14 @@ In **Diary → Post to the diary**, a teacher can:
 - **Add a YouTube video**: paste the link from YouTube's Share button. The video plays inside the diary, and there is always an **Open on YouTube** link under it in case a phone will not play it in the page. YouTube links in the Listening section play in the page too.
 
 Students and parents open the files and watch the video from the diary or the Today page. Removing a file from a post, or deleting the post, deletes the file from storage.
+
+### Documents shared with classes (batches)
+Open **Documents** to give students files that are not tied to one homework post, such as a workbook or notes.
+- **Share a document**: choose one or more files (PDF, Word, PowerPoint, Excel, pictures or audio; 25 MB each), tick the classes that should get them, and press **Upload and share**. Students and parents get a notification.
+- **Share with another batch later**: under **My documents**, tick another class next to the document. Nothing is uploaded again. Untick a class to take the document back from it, or use **Share with all classes**.
+- **Rename** changes the title and note; **Delete** removes the document from every class.
+- A teacher shares with their own classes. A school admin can share with any class in the school.
+- Students and parents see only documents shared with their own class, newest first.
 
 ### Practice games (hidden until you release them)
 The site comes with **18 games (112 questions)** built from the *VCE Tamil Writing Practice Workbook* (Units 3 and 4): one game for each workbook topic, grouped by the workbook's six stages.
@@ -150,6 +159,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261115000000_homework_files_practice.sql`: files and YouTube videos on diary posts, and practice games (hidden until an admin gives them to teachers and a teacher releases them)
    - `supabase/migrations/20261115000001_practice_workbook.sql`: loads the 18 VCE writing workbook games. Redeploy `notify-parents` with these so emailed notices include the video link and file names
    - `supabase/migrations/20261116000000_practice_editor.sql`: lets admins edit games and add their own from the website
+   - `supabase/migrations/20261117000000_documents.sql`: the Documents section (share a file with one or more classes)
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)
@@ -177,7 +187,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
 7. **Build and upload** (see the Hostinger steps below). Optional `.env` values: `VITE_PHONE_COUNTRY` (default `61`, used to turn 04xx numbers into WhatsApp links), plus fallbacks for the name and contact.
 8. **Before inviting families,** review `src/pages/Info.jsx` (Privacy, Terms & refunds) with your school committee, and have a Tamil teacher review the wording in `src/ta.js`.
 
-Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Homework files are in a private bucket, one folder per class. Practice games are visible only to admins until shared, and scores only to the student, their parents, the class teacher and admins. Tests: `tests/security.sql`, `tests/portal.sql`, `tests/admin.sql` and `tests/practice.sql` (database rules, all rolled back) and `node --test tests/*.test.mjs`.
+Privacy for the new sections is enforced by the database like everything else: a teacher only sees and writes records for students in their own classes; students and parents only see their own child's attendance, marks and reports, and only after the teacher publishes marks and reports. Paper files are in a private bucket and can be downloaded only by the seller, buyers, or anyone signed in for free items. Parent email addresses are never sent to the website. Homework files are in a private bucket, one folder per class. Practice games are visible only to admins until shared, and scores only to the student, their parents, the class teacher and admins. Tests: `tests/security.sql`, `tests/portal.sql`, `tests/admin.sql`, `tests/practice.sql` and `tests/documents.sql` (database rules, all rolled back) and `node --test tests/*.test.mjs`.
 
 ---
 
