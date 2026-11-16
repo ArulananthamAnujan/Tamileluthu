@@ -3,14 +3,9 @@ import { supabase, errText } from '../supabase.js';
 import { fmtDay } from '../lib/util.js';
 import { t } from '../i18n.js';
 import { NeedsSetup } from './Setup.jsx';
+import Reader, { canRead } from '../components/Reader.jsx';
 import { FILE_TYPES, FILE_ACCEPT, MAX_FILE_BYTES, fileExt, fmtSize } from '../lib/media.js';
 
-async function openFile(doc, setMsg) {
-  const name = (doc.file_name || '').replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 120) || true;
-  const { data, error } = await supabase.storage.from('documents').createSignedUrl(doc.file_path, 300, { download: name });
-  if (error || !data?.signedUrl) { setMsg(t('This file could not be opened. Ask your teacher to share it again.')); return; }
-  window.location.href = data.signedUrl;
-}
 const FileTag = ({ doc }) => <span className="file-ext" aria-hidden="true">{fileExt(doc.file_name)}</span>;
 
 // Documents a teacher shares with one or more classes (batches).
@@ -23,6 +18,7 @@ function ReaderDocs({ ctx }) {
   const [rows, setRows] = useState(null);
   const [find, setFind] = useState('');
   const [msg, setMsg] = useState('');
+  const [open, setOpen] = useState(null);
   useEffect(() => {
     if (!ctx.classIds.length) return;
     supabase.from('document_classes').select('class_id, created_at, document:documents(id, title, note, file_path, file_name, size)')
@@ -54,12 +50,13 @@ function ReaderDocs({ ctx }) {
                   {r.document.note && <p className="small pre">{r.document.note}</p>}
                   <span className="small muted">{fmtDay(r.created_at.slice(0, 10))}{ctx.classIds.length > 1 && names[r.class_id] ? ` · ${names[r.class_id]}` : ''}{r.document.size ? ` · ${fmtSize(r.document.size)}` : ''}</span>
                 </div>
-                <button className="btn primary small" onClick={() => openFile(r.document, setMsg)}>{t('Open')}</button>
+                <button className="btn primary small" onClick={() => setOpen(r.document)}>{canRead(r.document.file_name) ? t('Read') : t('Open')}</button>
               </li>
             ))}
           </ul>
         )}
       </section>
+      {open && <Reader bucket="documents" path={open.file_path} name={open.file_name} title={open.title} onClose={() => setOpen(null)} />}
     </div>
   );
 }
@@ -75,6 +72,7 @@ function TeacherDocs({ ctx }) {
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
   const [edit, setEdit] = useState(null);
+  const [open, setOpen] = useState(null);
 
   async function load() {
     const { data, error } = await supabase.from('documents').select('id, title, note, file_path, file_name, size, created_at, shares:document_classes(class_id)')
@@ -194,7 +192,7 @@ function TeacherDocs({ ctx }) {
                       {!classes.length && <span className="small muted">{t('Create a class first.')}</span>}
                     </div>
                     <div className="row wrap act-foot">
-                      <button className="btn small" onClick={() => openFile(d, setMsg)}>{t('Open')}</button>
+                      <button className="btn small" onClick={() => setOpen(d)}>{canRead(d.file_name) ? t('Read') : t('Open')}</button>
                       {classes.length > 1 && d.shares.length < classes.length && <button className="btn small" onClick={() => shareAll(d)}>{t('Share with all classes')}</button>}
                       <button className="btn small" onClick={() => setEdit({ id: d.id, title: d.title, note: d.note || '' })}>{t('Rename')}</button>
                       <button className="btn small" onClick={() => remove(d)}>{t('Delete')}</button>
@@ -219,6 +217,7 @@ function TeacherDocs({ ctx }) {
                 <input type="file" multiple accept={FILE_ACCEPT} onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
               </label>
               <span className="small muted">{t('PDF, Word, PowerPoint, Excel, pictures or audio. Up to 10 at a time, 25 MB each.')}</span>
+              <span className="small muted">{t('PDFs open as a booklet that students read on the page. Word, PowerPoint and Excel files can only be downloaded, so save them as PDF first.')}</span>
             </div>
             {files.length <= 1 && <label className="field">{t('Title (optional)')}<input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={200} placeholder={t('Uses the file name if left empty')} /></label>}
             <label className="field">{t('Note for students (optional)')}<textarea rows={2} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} maxLength={1000} /></label>
@@ -235,6 +234,7 @@ function TeacherDocs({ ctx }) {
           </form>
         </aside>
       </div>
+      {open && <Reader bucket="documents" path={open.file_path} name={open.file_name} title={open.title} onClose={() => setOpen(null)} />}
     </div>
   );
 }

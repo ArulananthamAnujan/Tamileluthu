@@ -68,3 +68,15 @@ test('file helpers', () => {
   assert.equal(fmtSize(2 * 1048576), '2.0 MB');
   assert.equal(fmtSize(500), '1 KB');
 });
+
+import { spreadsFor, spreadOfPage } from '../src/lib/booklet.js';
+test('booklet page groups', () => {
+  assert.deepEqual(spreadsFor(5, true), [[1], [2, 3], [4, 5]]);
+  assert.deepEqual(spreadsFor(4, true), [[1], [2, 3], [4]]);
+  assert.deepEqual(spreadsFor(1, true), [[1]]);
+  assert.deepEqual(spreadsFor(3, false), [[1], [2], [3]]);
+  assert.deepEqual(spreadsFor(0, true), []);
+  assert.equal(spreadOfPage(spreadsFor(24, true), 5), 2);
+  assert.equal(spreadOfPage(spreadsFor(24, false), 5), 4);
+  assert.equal(spreadOfPage(spreadsFor(3, true), 99), 0);
+});

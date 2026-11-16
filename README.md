@@ -34,6 +34,13 @@ Open **Documents** to give students files that are not tied to one homework post
 - A teacher shares with their own classes. A school admin can share with any class in the school.
 - Students and parents see only documents shared with their own class, newest first.
 
+### Reading documents as a booklet
+Students and parents read shared documents and homework files on the page, without leaving the site or the app.
+- **PDFs open as a booklet.** On a computer or a tablet held sideways, two pages show side by side like an open book; on a phone, one page at a time. Turn pages with the arrows, by tapping the edge of a page, by swiping, or with the arrow keys. The slider jumps to any page, **+** and **−** change the size, and the reader remembers the page each person was on.
+- **Pictures and audio** open on the page too.
+- **Word, PowerPoint and Excel files cannot be shown on the page**; they are downloaded instead. Save them as PDF before uploading if students should read them in the booklet.
+- **Download** is always available in the reader.
+
 ### Practice games (hidden until you release them)
 The site comes with **18 games (112 questions)** built from the *VCE Tamil Writing Practice Workbook* (Units 3 and 4): one game for each workbook topic, grouped by the workbook's six stages.
 

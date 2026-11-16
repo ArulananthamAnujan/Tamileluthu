@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabase.js';
 import { t } from '../i18n.js';
+import Reader from './Reader.jsx';
 import { youtubeId, youtubeEmbedUrl, youtubeThumb, youtubeWatchUrl, fileExt, fmtSize } from '../lib/media.js';
 
 // A YouTube video that plays inside the page. It loads only after the first tap,
@@ -28,29 +28,20 @@ export function YouTube({ url, title }) {
   );
 }
 
-// Files attached to a diary post. Each opens through a short-lived private link.
+// Files attached to a diary post. PDFs open as a booklet on the page.
 export function Files({ files }) {
-  const [msg, setMsg] = useState('');
-  const [busy, setBusy] = useState(null);
+  const [open, setOpen] = useState(null);
   if (!files?.length) return null;
-  async function open(f) {
-    setMsg(''); setBusy(f.path);
-    const name = (f.name || '').replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 120) || true;
-    const { data, error } = await supabase.storage.from('homework').createSignedUrl(f.path, 300, { download: name });
-    setBusy(null);
-    if (error || !data?.signedUrl) { setMsg(t('This file could not be opened. Ask your teacher to attach it again.')); return; }
-    window.location.href = data.signedUrl;
-  }
   return (
     <div className="files">
       {files.map((f) => (
-        <button key={f.path} type="button" className="file" onClick={() => open(f)} disabled={busy === f.path}>
+        <button key={f.path} type="button" className="file" onClick={() => setOpen(f)}>
           <span className="file-ext" aria-hidden="true">{fileExt(f.name) || fileExt(f.path)}</span>
           <span className="file-name">{f.name}</span>
           {f.size ? <span className="small muted">{fmtSize(f.size)}</span> : null}
         </button>
       ))}
-      {msg && <p className="small bad" role="status">{msg}</p>}
+      {open && <Reader bucket="homework" path={open.path} name={open.name} onClose={() => setOpen(null)} />}
     </div>
   );
 }

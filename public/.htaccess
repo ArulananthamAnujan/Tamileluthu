@@ -22,9 +22,11 @@ RewriteRule ^ index.html [L]
     Header set Cache-Control "no-cache"
   </FilesMatch>
   # Built files have unique names, so they can be cached for a year
-  <FilesMatch "\.(js|css|png|jpg|svg|woff2)$">
+  <FilesMatch "\.(js|mjs|css|png|jpg|svg|woff2)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
 
 AddType application/manifest+json .webmanifest
+# The booklet reader's PDF engine is a .mjs file; it must be served as JavaScript.
+AddType text/javascript .mjs
