@@ -23,7 +23,7 @@ function Feedback({ item, got }) {
     <div className={'g-fb ' + (full ? 'g-good' : 'g-miss')} role="status">
       <b>{full ? t('Correct!') : got > 0 ? t('{n} of {max} correct', { n: got, max: itemMax(item) }) : t('Not quite.')}</b>
       {item.t === 'spot' && item.fix && <p lang="ta" className="g-fix"><s>{item.words[item.answer]}</s> → <b>{item.fix}</b></p>}
-      <p>{pick(item, 'why')}</p>
+      {pick(item, 'why') && <p>{pick(item, 'why')}</p>}
     </div>
   );
 }
@@ -239,7 +239,7 @@ export default function Game({ set, preview, best, onFinish, onClose }) {
                 <div className="row between"><span lang="ta" className="g-rq">{it.q}</span><span className="g-pts">{got}/{max}</span></div>
                 {it.sub && <p lang="ta" className="g-rsub">{it.sub}</p>}
                 <Key item={it} />
-                <p className="small muted">{pick(it, 'why')}</p>
+                {pick(it, 'why') && <p className="small muted">{pick(it, 'why')}</p>}
               </li>
             );
           })}

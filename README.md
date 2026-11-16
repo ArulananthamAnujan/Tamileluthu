@@ -47,7 +47,14 @@ There are four kinds of question: choose the answer, tap the wrong word, match t
 
 **Before you give the games out:** the answer keys were written for this site, because the workbook's teacher guide was not available. Have a Tamil teacher play each game in Preview first. Explanations are in English; questions are in Tamil.
 
-**Changing or adding games:** edit `supabase/practice/workbook.mjs`, run `node scripts/practice-seed.mjs`, then run the rewritten `supabase/migrations/20261115000001_practice_workbook.sql` in Supabase again (it updates the games in place and keeps scores).
+**Editing questions and adding your own games (admins).** In **Practice → Game library**:
+- **Edit** on any game opens the editor. Change the name, topic, stage, instructions and every question: the wording, the answers, which answer is right, and the explanation. Move, copy or delete questions, and add new ones of any of the four kinds.
+- **+ New game** starts an empty game. Give it a name, add questions, and press **Save game**. It is hidden like the others until you give it to teachers.
+- **Try it** plays your draft before you save. **Delete game** removes a game from every class together with its scores.
+- Saving changes a game for classes that already have it. Scores students already have stay as they were.
+- A game you have edited is kept if the workbook file is run again in Supabase.
+
+Developers can also change the workbook games in bulk: edit `supabase/practice/workbook.mjs`, run `node scripts/practice-seed.mjs`, then run the rewritten `supabase/migrations/20261115000001_practice_workbook.sql` in Supabase again (it updates games that were not edited on the website, and keeps scores).
 
 ### The phone app is different from the website
 Inside the Android app, or when the site is added to a phone's home screen, people get an app layout instead of the website:
@@ -142,6 +149,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261111000000_subscription_plans.sql`: monthly plans with their own price and checks (starts with Basic 6 checks A$45, Plus 20 checks A$139, Premium 35 checks A$229); edit them under Admin → Subscriptions. Redeploy `subscribe-checkout` and `stripe-webhook` with it
    - `supabase/migrations/20261115000000_homework_files_practice.sql`: files and YouTube videos on diary posts, and practice games (hidden until an admin gives them to teachers and a teacher releases them)
    - `supabase/migrations/20261115000001_practice_workbook.sql`: loads the 18 VCE writing workbook games. Redeploy `notify-parents` with these so emailed notices include the video link and file names
+   - `supabase/migrations/20261116000000_practice_editor.sql`: lets admins edit games and add their own from the website
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

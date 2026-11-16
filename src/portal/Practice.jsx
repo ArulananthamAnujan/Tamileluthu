@@ -7,6 +7,7 @@ import { percent, stars } from '../lib/practice.js';
 import { t } from '../i18n.js';
 import { NeedsSetup } from './Setup.jsx';
 import Game, { pick, marksOf, Stars } from './Game.jsx';
+import GameEditor, { blankGame } from './GameEditor.jsx';
 
 // Best and latest result per release (and per student for the teacher's table).
 function summarise(attempts) {
@@ -26,6 +27,7 @@ const stageGroups = (sets) => {
   return [...m.entries()].sort((a, b) => a[0] - b[0]);
 };
 const SET_COLS = 'id, slug, stage, sort, topic, topic_ta, title, title_ta, intro, intro_ta, source, items';
+const backOr = (path) => (window.history.length > 1 ? window.history.back() : go(path));
 
 // Practice games. Admins hold the library and give games to teachers; a teacher
 // releases a game to a class; students play it and see their score.
@@ -94,7 +96,19 @@ export default function Practice({ ctx, query }) {
   }
   if (previewId && teacher) {
     const s = (library || []).find((x) => x.id === previewId) || releases.find((x) => x.set_id === previewId)?.set;
-    if (s) return <Game key={s.id} set={s} preview onClose={() => window.history.length > 1 ? window.history.back() : go('practice')} />;
+    if (s) return <Game key={s.id} set={s} preview onClose={() => backOr('practice')} />;
+  }
+
+  const editId = query?.get('edit');
+  if (editId && admin && library) {
+    const g = editId === 'new' ? blankGame(Number(query.get('stage')) || 1) : library.find((x) => x.id === editId);
+    if (g) {
+      return (
+        <GameEditor key={editId} game={g} nextSort={Math.max(0, ...library.map((x) => x.sort)) + 10}
+          onClose={() => backOr('practice?tab=library')}
+          onSaved={async (text) => { await load(); setMsg(text); setTab('library'); go('practice?tab=library'); }} />
+      );
+    }
   }
 
   const title = <h2 className="title">{t('Practice games')} <span className="ta">· பயிற்சி விளையாட்டுகள்</span></h2>;
@@ -298,7 +312,12 @@ function Library({ ctx, admin, library, shares, releases, reload, setMsg }) {
   }
 
   if (!library.length) {
-    return <section className="card"><p className="muted">{admin ? t('No games are loaded yet. Run the practice games migration in Supabase.') : t('You have no games yet. The school admin chooses which games each teacher gets.')}</p></section>;
+    return (
+      <section className="card">
+        <p className="muted">{admin ? t('No games are loaded yet. Run the practice games migration in Supabase.') : t('You have no games yet. The school admin chooses which games each teacher gets.')}</p>
+        {admin && <button className="btn primary" onClick={() => go('practice?edit=new')}>+ {t('New game')}</button>}
+      </section>
+    );
   }
   return (
     <>
@@ -319,6 +338,12 @@ function Library({ ctx, admin, library, shares, releases, reload, setMsg }) {
           <p className="small muted">{t('Or use “Teachers” on a game to choose one by one. Play each game in Preview before you give it out.')}</p>
         </section>
       )}
+      {admin && (
+        <section className="card row between wrap">
+          <span>{t('Change any question with “Edit”, or make your own game.')}</span>
+          <button className="btn primary" onClick={() => go('practice?edit=new')}>+ {t('New game')}</button>
+        </section>
+      )}
       {!ctx.cls && <p className="card notice small">{t('Create a class first, then you can release games to it.')}</p>}
       {stageGroups(library).map(([stage, sets]) => (
         <section key={stage} className="card">
@@ -335,6 +360,7 @@ function Library({ ctx, admin, library, shares, releases, reload, setMsg }) {
                     {ctx.cls && (released.has(s.id)
                       ? <span className="small okc">✓ {t('Released to {name}', { name: ctx.cls.name })}</span>
                       : <button className="btn small primary" onClick={() => setRel(rel?.id === s.id ? null : { id: s.id, due: addDays(isoDay(), 7) })}>{t('Release to {name}', { name: ctx.cls.name })}</button>)}
+                    {admin && <button className="btn small" onClick={() => go(`practice?edit=${s.id}`)}>{t('Edit')}</button>}
                     {admin && <button className="btn small" onClick={() => setWho(who === s.id ? null : s.id)} aria-expanded={who === s.id}>{t('Teachers')} ({given})</button>}
                   </div>
                   {rel?.id === s.id && (

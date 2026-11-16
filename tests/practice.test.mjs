@@ -11,6 +11,7 @@ test('every workbook game is well formed', () => {
   assert.equal(new Set(SETS.map((s) => s.slug)).size, SETS.length);
   assert.deepEqual([...new Set(SETS.map((s) => s.stage))], [1, 2, 3, 4, 5, 6]);
   for (const s of SETS) assert.ok(s.title_ta && s.topic_ta && s.intro && s.intro_ta && s.source, s.slug);
+  for (const s of SETS) for (const it of s.items) assert.ok(it.why, `${s.slug}: every workbook question has an explanation`);
 });
 test('right answers are spread across the positions', () => {
   const pos = SETS.flatMap((s) => s.items).filter((i) => i.t === 'choice' && i.options.length === 4).map((i) => i.answer);

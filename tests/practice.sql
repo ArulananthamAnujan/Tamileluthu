@@ -60,10 +60,6 @@ do $$ begin
     insert into public.practice_shares(set_id, teacher_id) select x, 'b0000000-0000-4000-8000-000000000004' from ids;
     raise exception 'A game was given to a student';
   exception when insufficient_privilege then null; end;
-  begin
-    update public.practice_sets set title = 'Changed';
-    raise exception 'Games could be edited from the website';
-  exception when insufficient_privilege then null; end;
 end $$;
 
 -- 3. Teacher 1 sees only that game and releases it to their own class only.
@@ -247,6 +243,52 @@ select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000005'
 do $$ begin if (select count(*) from storage.objects where bucket_id = 'homework') <> 0 then raise exception 'Another class can open the file'; end if; end $$;
 select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000007',true);
 do $$ begin if (select count(*) from storage.objects where bucket_id = 'homework') <> 0 then raise exception 'Waiting account can open the file'; end if; end $$;
+
+-- 8. Editing games: admins only, questions are checked, and edits survive a reload of the workbook file.
+select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000002',true);
+do $$ begin
+  begin
+    insert into public.practice_sets(slug, topic, title, items) values('custom-teacher', 'T', 'T', '[{"t":"choice","q":"q","options":["a","b"],"answer":0}]');
+    raise exception 'Teacher created a game';
+  exception when insufficient_privilege then null; end;
+  update public.practice_sets set title = 'Hacked';
+  delete from public.practice_sets;
+end $$;
+select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000001',true);
+do $$ declare bad text; begin
+  if exists (select 1 from public.practice_sets where title = 'Hacked') or (select count(*) from public.practice_sets) < 18 then
+    raise exception 'Teacher changed or deleted games'; end if;
+  insert into public.practice_sets(id, slug, stage, topic, title, items) values('b5000000-0000-4000-8000-000000000001', 'custom-mine', 7, 'My topic', 'My game',
+    '[{"t":"choice","q":"எது சரி?","options":["அ","ஆ"],"answer":1},{"t":"spot","q":"தொடு","words":["ஒன்று","இரண்டு"],"answer":0},
+      {"t":"match","q":"பொருத்து","pairs":[["a","1"],["b","2"]]},{"t":"order","q":"வரிசை","lines":["x","y"]}]');
+  if (select edited_by from public.practice_sets where slug = 'custom-mine') is distinct from auth.uid() then raise exception 'Editor not recorded'; end if;
+  foreach bad in array array[
+    '[]', '{"t":"choice"}', '[{"t":"quiz","q":"q"}]', '[{"t":"choice","q":"","options":["a","b"],"answer":0}]',
+    '[{"t":"choice","q":"q","options":["a"],"answer":0}]', '[{"t":"choice","q":"q","options":["a","b"],"answer":2}]',
+    '[{"t":"choice","q":"q","options":["a",""],"answer":0}]', '[{"t":"choice","q":"q","options":["a","b"]}]',
+    '[{"t":"spot","q":"q","words":["a"],"answer":0}]', '[{"t":"match","q":"q","pairs":[["a","1"],["b"]]}]',
+    '[{"t":"match","q":"q","pairs":[["a","1"]]}]', '[{"t":"order","q":"q","lines":["x"]}]', '[{"t":"order","q":"q","lines":["x",3]}]'] loop
+    begin
+      update public.practice_sets set items = bad::jsonb where slug = 'custom-mine';
+      raise exception 'Bad questions accepted: %', bad;
+    exception when check_violation then null; end;
+  end loop;
+  update public.practice_sets set title = 'Fix the verb (school version)' where slug = 'verb-endings-1';
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub','',true); -- the SQL editor is not a signed-in person
+-- Loading the workbook again leaves the edited game alone and still refreshes the others.
+update public.practice_sets set title = 'From the workbook file', updated_at = now() where slug in ('verb-endings-1', 'register');
+do $$ begin
+  if (select title from public.practice_sets where slug = 'verb-endings-1') <> 'Fix the verb (school version)' then raise exception 'School edit was overwritten'; end if;
+  if (select title from public.practice_sets where slug = 'register') <> 'From the workbook file' then raise exception 'Unedited game was not refreshed'; end if;
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000001',true);
+do $$ begin
+  delete from public.practice_sets where slug = 'custom-mine';
+  if exists (select 1 from public.practice_sets where slug = 'custom-mine') then raise exception 'Admin could not delete own game'; end if;
+end $$;
 
 reset role;
 rollback;

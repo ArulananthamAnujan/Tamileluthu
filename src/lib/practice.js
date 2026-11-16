@@ -56,7 +56,7 @@ export function checkSet(set) {
   set.items.forEach((it, i) => {
     if (!GAME_TYPES.includes(it.t)) return bad(i, `unknown type ${it.t}`);
     if (!text(it.q)) bad(i, 'the question text is missing');
-    if (!text(it.why)) bad(i, 'the explanation is missing');
+    if (it.why != null && it.why !== '' && !text(it.why)) bad(i, 'the explanation is too long');
     if (it.t === 'choice') {
       if (!Array.isArray(it.options) || it.options.length < 2 || it.options.length > 6 || !it.options.every((x) => text(x))) bad(i, '2 to 6 options are needed');
       else if (!distinct(it.options)) bad(i, 'two options are the same');
