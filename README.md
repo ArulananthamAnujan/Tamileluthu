@@ -26,6 +26,14 @@ In **Diary → Post to the diary**, a teacher can:
 
 Students and parents open the files and watch the video from the diary or the Today page. Removing a file from a post, or deleting the post, deletes the file from storage.
 
+### Weekly homework: copy writing, reading comprehension and the presenter
+When the post type is **Homework**, the diary form has a box called **This week's parts**:
+- **Copy writing**: what to copy this week.
+- **Reading comprehension**: what to read and which questions to answer. Attach the passage as a file so students can read it on the page.
+- **Who presents this week?** Pick a student from the class list. The list is in turn order: students who have not presented yet come first, then whoever presented longest ago, and **Next in turn** picks the next student in one tap. You can add a presentation topic.
+
+Fill in only the parts that apply; a post with only these parts gets the title "This week's homework" by itself. Students and parents see the three parts as boxes on the post. The presenter's own box is highlighted, and the presenter and their parents get a notification. The parts are also included in the WhatsApp share text and in emails to parents.
+
 ### Documents shared with classes (batches)
 Open **Documents** to give students files that are not tied to one homework post, such as a workbook or notes.
 - **Share a document**: choose one or more files (PDF, Word, PowerPoint, Excel, pictures or audio; 25 MB each), tick the classes that should get them, and press **Upload and share**. Students and parents get a notification.
@@ -167,6 +175,7 @@ Test with `sk_test_` keys and card `4242 4242 4242 4242` before going live.
    - `supabase/migrations/20261115000001_practice_workbook.sql`: loads the 18 VCE writing workbook games. Redeploy `notify-parents` with these so emailed notices include the video link and file names
    - `supabase/migrations/20261116000000_practice_editor.sql`: lets admins edit games and add their own from the website
    - `supabase/migrations/20261117000000_documents.sql`: the Documents section (share a file with one or more classes)
+   - `supabase/migrations/20261118000000_weekly_homework.sql`: copy writing, reading comprehension and the weekly presenter on homework posts. Redeploy `notify-parents` with it
 2. **First admin (principal).** Run this once with their email:
    ```sql
    insert into public.teacher_emails(email, is_admin) values ('principal@yourschool.org', true)

@@ -169,7 +169,7 @@ function FamilyHome({ ctx }) {
       <div className="grid2">
         <section className="card">
           <h3>{t('This week')}</h3>
-          {items ? <ActivityList items={items} done={done} onToggle={ctx.role === 'student' ? toggle : undefined}
+          {items ? <ActivityList items={items} done={done} studentId={ctx.studentId} onToggle={ctx.role === 'student' ? toggle : undefined}
             classNames={names} showClass={ctx.classIds.length > 1} empty={t('No homework or notices this week.')} /> : <p className="muted">{t('Loading…')}</p>}
         </section>
         <aside className="stack">

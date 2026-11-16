@@ -33,6 +33,9 @@ export function noticeEmail(ctx, a) {
     subject: `${ctx.className}: ${a.title}`,
     html: wrap(ctx, `<p>Dear parent, / அன்புள்ள பெற்றோரே,</p><p style="font-size:17px"><b>${esc(a.title)}</b></p>
 ${a.body ? `<p style="white-space:pre-wrap">${esc(a.body)}</p>` : ''}
+${a.copy_work ? `<p><b>Copy writing / பார்த்து எழுதுதல்</b><br><span style="white-space:pre-wrap">${esc(a.copy_work)}</span></p>` : ''}
+${a.reading_work ? `<p><b>Reading comprehension / வாசிப்புப் புரிதல்</b><br><span style="white-space:pre-wrap">${esc(a.reading_work)}</span></p>` : ''}
+${a.presenter_name ? `<p><b>Presentation this week / முன்வைப்பு</b><br>${esc(a.presenter_name)}${a.presentation_topic ? ` · ${esc(a.presentation_topic)}` : ''}</p>` : ''}
 ${a.due_on ? `<p>Date / திகதி: ${esc(a.due_on)}</p>` : ''}
 ${a.link_url ? `<p><a href="${esc(a.link_url)}">${esc(a.link_url)}</a></p>` : ''}
 ${a.video_url ? `<p>Video / காணொளி: <a href="${esc(a.video_url)}">${esc(a.video_url)}</a></p>` : ''}
